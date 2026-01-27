@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### SQLite (local dev only) ###
+data/*.db
+data/*.db-journal
+data/*.db-wal
+data/*.db-shm

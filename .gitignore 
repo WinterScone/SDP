@@ -3,11 +3,11 @@
 *.iml
 
 # Maven
-**/target/
+target/
 
-# Databases / local files
-**/*.db
-**/data/
+# SQLite
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
 
-# OS
-.DS_Store
