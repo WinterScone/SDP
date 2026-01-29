@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Dashboard</title>
+    <title>Manage Admin</title>
 
     <style>
         body{
@@ -24,16 +24,16 @@
 
         h2{ margin-top:0; }
 
-        .menu{
+        .actions{
             display:flex;
             flex-direction:column;
             gap:14px;
             margin-top:16px;
         }
 
-        .btn{
+        button{
             width:100%;
-            padding:16px;
+            padding:14px;
             font-size:18px;
             border-radius:12px;
             border:2px solid #e5e7eb;
@@ -42,7 +42,7 @@
             text-align:left;
         }
 
-        .btn:hover{
+        button:hover{
             background:#f9fafb;
         }
     </style>
@@ -51,19 +51,17 @@
 <body>
 
 <section class="card">
-    <h2>Dashboard</h2>
+    <h2>Manage Admin</h2>
 
-    <div class="menu">
-        <button class="btn" onclick="window.location.href='/manage-admin.html'">
-            Manage Admin
+    <div class="actions">
+
+        <button onclick="window.location.href='/signup.html'">
+            + Create New Admin
         </button>
 
-        <button class="btn" onclick="window.location.href='/manage-patients.html'">
-            Manage Patient Details
-        </button>
 
-        <button class="btn" onclick="window.location.href='/manage-medicines.html'">
-            Manage Medicines
+        <button onclick="window.location.href='/dashboard.html'">
+            ← Back to Dashboard
         </button>
     </div>
 </section>

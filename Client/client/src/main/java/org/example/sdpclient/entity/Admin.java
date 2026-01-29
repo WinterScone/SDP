@@ -3,8 +3,10 @@ package org.example.sdpclient.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "admin")
 public class Admin {

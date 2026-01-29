@@ -1,0 +1,21 @@
+package org.example.sdpclient.enums;
+
+public enum MedicineType {
+    MEDICINE_ID1,
+    MEDICINE_ID2,
+    MEDICINE_ID3,
+    MEDICINE_ID4,
+    MEDICINE_ID5,
+    MEDICINE_ID6,
+    MEDICINE_ID7,
+    MEDICINE_ID8,
+    MEDICINE_ID9,
+    MEDICINE_ID10,
+    MEDICINE_ID11,
+    MEDICINE_ID12,
+    MEDICINE_ID13,
+    MEDICINE_ID14,
+    MEDICINE_ID15,
+    MEDICINE_ID16
+}
+

@@ -29,22 +29,22 @@ form.addEventListener("submit", async (e) => {
             const data = await res.json();
             console.log("Login success:", data);
 
-            message.textContent = "✅ Login success, redirecting...";
+            message.textContent = "Login success, redirecting...";
 
-            // ✅ REDIRECT AFTER LOGIN
+
             setTimeout(() => {
                 window.location.href = "/dashboard.html";
             }, 800);
 
         } else if (res.status === 401) {
-            message.textContent = "❌ Invalid username or password";
+            message.textContent = "Invalid username or password";
         } else {
-            message.textContent = `⚠️ Server error (${res.status})`;
+            message.textContent = `Server error (${res.status})`;
         }
 
     } catch (err) {
         console.error(err);
-        message.textContent = "⚠️ Cannot connect to server.";
+        message.textContent = "Cannot connect to server.";
     } finally {
         btn.disabled = false;
     }
