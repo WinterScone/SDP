@@ -5,6 +5,7 @@ function setMsg(text) {
     messageEl.textContent = text || "";
 }
 
+
 async function loadMedicines() {
     setMsg("Loading...");
     rowsEl.innerHTML = "";
@@ -18,8 +19,15 @@ async function loadMedicines() {
     const meds = await res.json();
     setMsg("");
 
-    // Optional: sort by id name
-    meds.sort((a, b) => String(a.medicineId).localeCompare(String(b.medicineId)));
+    meds.sort((a, b) => {
+        const aId = String(a.medicineId ?? "");
+        const bId = String(b.medicineId ?? "");
+
+        const aNum = parseInt(aId.replace(/\D+/g, ""), 10) || 0;
+        const bNum = parseInt(bId.replace(/\D+/g, ""), 10) || 0;
+
+        return aNum - bNum;
+    });
 
     for (const m of meds) {
         const tr = document.createElement("tr");
@@ -41,7 +49,6 @@ async function loadMedicines() {
         rowsEl.appendChild(tr);
     }
 
-    // attach save handlers
     rowsEl.querySelectorAll("button[data-save]").forEach(btn => {
         btn.addEventListener("click", () => saveQuantity(btn.getAttribute("data-save")));
     });
