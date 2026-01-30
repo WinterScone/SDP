@@ -14,12 +14,12 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/verify")
-public class VerificationController {
+public class AdminVerificationController {
 
     private final AdminRepository repo;
     private final PasswordEncoder encoder;
 
-    public VerificationController(AdminRepository repo, PasswordEncoder encoder) {
+    public AdminVerificationController(AdminRepository repo, PasswordEncoder encoder) {
         this.repo = repo;
         this.encoder = encoder;
     }

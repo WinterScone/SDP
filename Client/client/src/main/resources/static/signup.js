@@ -21,7 +21,7 @@ form.addEventListener("submit", async (e) => {
         if (res.ok) {
             msg.textContent = "Sign up successful! Redirecting...";
             setTimeout(() => {
-                window.location.href = "/login.html";
+                window.location.href = "/admin-login.html";
             }, 800);
         } else {
             msg.textContent = data.message || "Sign up failed";

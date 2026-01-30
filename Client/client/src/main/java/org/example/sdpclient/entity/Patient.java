@@ -22,8 +22,9 @@ public class Patient {
     @Column(unique = true, nullable = false)
     private String username;
 
-    @Column(nullable = false)
-    private String password;
+    @Column(name = "password", nullable = false)
+    private String passwordHash;
+
 
     @Column(nullable = false)
     private String firstName;
@@ -32,13 +33,13 @@ public class Patient {
     private String lastName;
 
     @Column(nullable = false)
-    private LocalDateTime dateOfBirth;
+    private String dateOfBirth;
 
     private String email;
     private String phone;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    @Column(name="created_at")
+    private String createdAt;
 
     @Column(name = "linked_admin_id")
     private Long linkedAdminId;
@@ -48,6 +49,6 @@ public class Patient {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
+        createdAt = LocalDateTime.now().toString();
     }
 }
