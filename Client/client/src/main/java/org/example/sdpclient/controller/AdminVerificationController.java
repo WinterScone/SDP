@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;
 import org.example.sdpclient.dto.AdminLogin;
 import org.example.sdpclient.dto.AdminRegisterRequest;
+import org.example.sdpclient.repository.AdminRepository;
 import org.example.sdpclient.service.AdminLoginService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,9 +21,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminVerificationController {
 
     private final AdminLoginService service;
+    private final AdminRepository adminRepo;
 
-    public AdminVerificationController(AdminLoginService service) {
+    public AdminVerificationController(AdminLoginService service, AdminRepository adminRepo) {
         this.service = service;
+        this.adminRepo = adminRepo;
     }
 
     @PostMapping("/login")
@@ -79,7 +82,17 @@ public class AdminVerificationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody AdminRegisterRequest req) {
+    public ResponseEntity<?> register(HttpServletRequest request, @RequestBody AdminRegisterRequest req) {
+        String username = getCookieValue(request, "adminUsername");
+        if (username == null || username.isBlank()) {
+            return ResponseEntity.status(401).body(Map.of("ok", false, "message", "Unauthorized"));
+        }
+
+        var caller = adminRepo.findByUsername(username);
+        if (caller.isEmpty() || !caller.get().isRoot()) {
+            return ResponseEntity.status(403).body(Map.of("ok", false, "message", "Only root admin can register new admins"));
+        }
+
         var res = service.register(req);
         if (!Boolean.TRUE.equals(res.get("ok"))) {
             return ResponseEntity.status(400).body(res);
