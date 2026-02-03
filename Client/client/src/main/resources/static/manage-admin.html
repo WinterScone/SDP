@@ -23,7 +23,15 @@
         }
 
         h2{
-            margin-top:0;
+            margin:0;
+        }
+
+        .topbar{
+            display:flex;
+            gap:12px;
+            align-items:center;
+            justify-content:space-between;
+            margin-bottom:16px;
         }
 
         .actions{
@@ -44,6 +52,12 @@
             text-align:left;
         }
 
+        .topbar button{
+            width:auto;
+            padding:10px 14px;
+            font-size:16px;
+        }
+
         button:hover{
             background:#f9fafb;
         }
@@ -53,7 +67,10 @@
 <body>
 
 <section class="card">
-    <h2>Manage Admin</h2>
+    <div class="topbar">
+        <h2>Manage Admin</h2>
+        <button onclick="window.location.href='/dashboard.html'">← Back</button>
+    </div>
 
     <div class="actions">
 
@@ -65,9 +82,6 @@
             + View All Patients
         </button>
 
-        <button onclick="window.location.href='/dashboard.html'">
-            ← Back to Dashboard
-        </button>
     </div>
 </section>
 
