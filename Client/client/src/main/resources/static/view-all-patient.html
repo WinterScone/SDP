@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>View All Patients</title>
+    <style>
+        body{ margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#f3f4f6; padding:24px; }
+        .card{ max-width:1100px; margin:0 auto; background:#fff; border-radius:16px; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,.08); }
+        table{ width:100%; border-collapse:collapse; margin-top:16px; }
+        th, td{ padding:12px; border-bottom:1px solid #e5e7eb; text-align:left; }
+        th{ background:#f9fafb; }
+        .top{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+        .btn{ padding:10px 14px; border-radius:10px; border:2px solid #e5e7eb; background:#fff; cursor:pointer; }
+        .btn:hover{ background:#f9fafb; }
+    </style>
+</head>
+<body>
+<section class="card">
+    <div class="top">
+        <h2 style="margin:0;">All Patients</h2>
+        <button class="btn" onclick="window.location.href='/manage-admin.html'">← Back</button>
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>First</th>
+            <th>Last</th>
+            <th>DOB</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Created</th>
+            <th>Linked Admin</th>
+        </tr>
+        </thead>
+        <tbody id="rows">
+        <tr><td colspan="8">Loading...</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<script>
+    async function loadPatients() {
+        const tbody = document.getElementById("rows");
+        try {
+            const res = await fetch("/api/admin/patients");
+            if (!res.ok) throw new Error("Failed to load patients: " + res.status);
+
+            const patients = await res.json();
+            if (!patients.length) {
+                tbody.innerHTML = `<tr><td colspan="8">No patients found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = patients.map(p => `
+          <tr>
+            <td>${p.id ?? ""}</td>
+            <td>${p.firstName ?? ""}</td>
+            <td>${p.lastName ?? ""}</td>
+            <td>${p.dateOfBirth ?? ""}</td>
+            <td>${p.email ?? ""}</td>
+            <td>${p.phone ?? ""}</td>
+            <td>${p.createdAt ?? ""}</td>
+            <td>${p.linkedAdminName ?? ""} ${p.linkedAdminId ? "(#" + p.linkedAdminId + ")" : ""}</td>
+          </tr>
+        `).join("");
+        } catch (e) {
+            tbody.innerHTML = `<tr><td colspan="8">${e.message}</td></tr>`;
+        }
+    }
+
+    loadPatients();
+</script>
+</body>
+</html>
