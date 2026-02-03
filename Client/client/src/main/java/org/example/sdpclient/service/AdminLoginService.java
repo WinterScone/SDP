@@ -35,7 +35,8 @@ public class AdminLoginService {
 
         return Map.of(
                 "ok", true,
-                "username", user.getUsername()
+                "username", user.getUsername(),
+                "root", user.isRoot()
         );
     }
 

@@ -1,86 +1,93 @@
-const rowsEl = document.getElementById("rows");
-const messageEl = document.getElementById("message");
-
-function setMsg(text) {
-    messageEl.textContent = text || "";
-}
-
-
-async function loadMedicines() {
-    setMsg("Loading...");
-    rowsEl.innerHTML = "";
-
-    const res = await fetch("/api/medicines");
+(async () => {
+    const res = await fetch("/api/verify/me");
     if (!res.ok) {
-        setMsg("Failed to load medicines.");
+        window.location.href = "/admin-login.html";
         return;
     }
 
-    const meds = await res.json();
-    setMsg("");
+    const rowsEl = document.getElementById("rows");
+    const messageEl = document.getElementById("message");
 
-    meds.sort((a, b) => {
-        const aId = String(a.medicineId ?? "");
-        const bId = String(b.medicineId ?? "");
-
-        const aNum = parseInt(aId.replace(/\D+/g, ""), 10) || 0;
-        const bNum = parseInt(bId.replace(/\D+/g, ""), 10) || 0;
-
-        return aNum - bNum;
-    });
-
-    for (const m of meds) {
-        const tr = document.createElement("tr");
-
-        tr.innerHTML = `
-      <td>${m.medicineId ?? ""}</td>
-      <td>${m.medicineName ?? ""}</td>
-      <td>${m.shape ?? ""}</td>
-      <td>${m.colour ?? ""}</td>
-      <td>${m.dosagePerForm ?? ""}</td>
-      <td>
-        <input type="number" min="0" value="${m.quantity ?? 0}" data-id="${m.medicineId}">
-      </td>
-      <td>
-        <button data-save="${m.medicineId}">Save</button>
-      </td>
-    `;
-
-        rowsEl.appendChild(tr);
+    function setMsg(text) {
+        messageEl.textContent = text || "";
     }
 
-    rowsEl.querySelectorAll("button[data-save]").forEach(btn => {
-        btn.addEventListener("click", () => saveQuantity(btn.getAttribute("data-save")));
-    });
-}
+    async function loadMedicines() {
+        setMsg("Loading...");
+        rowsEl.innerHTML = "";
 
-async function saveQuantity(medicineId) {
-    const input = rowsEl.querySelector(`input[data-id="${medicineId}"]`);
-    const qty = Number(input.value);
+        const res = await fetch("/api/medicines");
+        if (!res.ok) {
+            setMsg("Failed to load medicines.");
+            return;
+        }
 
-    if (!Number.isFinite(qty) || qty < 0) {
-        setMsg("Quantity must be 0 or more.");
-        return;
+        const meds = await res.json();
+        setMsg("");
+
+        meds.sort((a, b) => {
+            const aId = String(a.medicineId ?? "");
+            const bId = String(b.medicineId ?? "");
+
+            const aNum = parseInt(aId.replace(/\D+/g, ""), 10) || 0;
+            const bNum = parseInt(bId.replace(/\D+/g, ""), 10) || 0;
+
+            return aNum - bNum;
+        });
+
+        for (const m of meds) {
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+          <td>${m.medicineId ?? ""}</td>
+          <td>${m.medicineName ?? ""}</td>
+          <td>${m.shape ?? ""}</td>
+          <td>${m.colour ?? ""}</td>
+          <td>${m.dosagePerForm ?? ""}</td>
+          <td>
+            <input type="number" min="0" value="${m.quantity ?? 0}" data-id="${m.medicineId}">
+          </td>
+          <td>
+            <button data-save="${m.medicineId}">Save</button>
+          </td>
+        `;
+
+            rowsEl.appendChild(tr);
+        }
+
+        rowsEl.querySelectorAll("button[data-save]").forEach(btn => {
+            btn.addEventListener("click", () => saveQuantity(btn.getAttribute("data-save")));
+        });
     }
 
-    setMsg(`Saving ${medicineId}...`);
+    async function saveQuantity(medicineId) {
+        const input = rowsEl.querySelector(`input[data-id="${medicineId}"]`);
+        const qty = Number(input.value);
 
-    const res = await fetch(`/api/medicines/${medicineId}/quantity`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quantity: qty })
-    });
+        if (!Number.isFinite(qty) || qty < 0) {
+            setMsg("Quantity must be 0 or more.");
+            return;
+        }
 
-    if (res.ok) {
-        setMsg(`Saved ${medicineId}`);
-        setTimeout(() => setMsg(""), 1000);
-    } else {
-        const text = await res.text().catch(() => "");
-        setMsg(`Save failed (${res.status}) ${text}`);
+        setMsg(`Saving ${medicineId}...`);
+
+        const res = await fetch(`/api/medicines/${medicineId}/quantity`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ quantity: qty })
+        });
+
+        if (res.ok) {
+            setMsg(`Saved ${medicineId}`);
+            setTimeout(() => setMsg(""), 1000);
+        } else {
+            const text = await res.text().catch(() => "");
+            setMsg(`Save failed (${res.status}) ${text}`);
+        }
     }
-}
 
-loadMedicines().catch(err => {
-    console.error(err);
-    setMsg("Error loading medicines.");
-});
+    loadMedicines().catch(err => {
+        console.error(err);
+        setMsg("Error loading medicines.");
+    });
+})();
