@@ -1,5 +1,5 @@
 const params = new URLSearchParams(window.location.search);
-const q = params.get("q") || "";
+const q = (params.get("q") || "").trim();
 
 const rows = document.getElementById("rows");
 const msg = document.getElementById("message");
@@ -7,46 +7,67 @@ const msg = document.getElementById("message");
 loadPatients();
 
 async function loadPatients() {
-    if (!q.trim()) {
+    if (!q) {
         msg.textContent = "No search keyword provided.";
         return;
     }
 
     msg.textContent = `Searching: ${q}`;
 
-    const res = await fetch(`/api/admin/patients/search?q=${encodeURIComponent(q)}`);
-    if (!res.ok) {
-        msg.textContent = "Failed to load patients.";
-        return;
-    }
+    try {
+        const res = await fetch(`/api/admin/patients/search?q=${encodeURIComponent(q)}`, {
+            credentials: "include",
+        });
 
-    const patients = await res.json();
+        if (!res.ok) {
+            const text = await res.text().catch(() => "");
+            msg.textContent = `Failed to load patients. (${res.status}) ${text}`;
+            return;
+        }
+
+        const patients = await res.json();
+        renderRows(patients);
+
+        msg.textContent = patients.length
+            ? `Found ${patients.length} patient(s).`
+            : "No patients found.";
+    } catch (err) {
+        console.error(err);
+        msg.textContent = "Network error while loading patients.";
+    }
+}
+
+function renderRows(patients) {
     rows.innerHTML = "";
 
-    if (patients.length === 0) {
-        msg.textContent = "No patients found.";
-        return;
-    }
-
-    patients.forEach(p => {
+    patients.forEach((p) => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-      <td>${p.id}</td>
+      <td>${safe(p.id)}</td>
       <td>${safe(p.firstName)}</td>
       <td>${safe(p.lastName)}</td>
-      <td>${safe(p.dateOfBirth)}</td>
+      <td>${formatDob(p.dateOfBirth)}</td>
       <td>${safe(p.email)}</td>
       <td>${safe(p.phone)}</td>
-      <td><button onclick="goPrescriptions(${p.id})">Manage Prescriptions</button></td>
+      <td>
+        <button onclick="goPrescriptions(${safe(p.id)})">
+          Manage Prescriptions
+        </button>
+      </td>
     `;
         rows.appendChild(tr);
     });
-
-    msg.textContent = `Found ${patients.length} patient(s).`;
 }
 
 function goPrescriptions(patientId) {
     window.location.href = `/manage-prescriptions.html?patientId=${patientId}`;
 }
 
-function safe(v) { return v == null ? "" : String(v); }
+function formatDob(dob) {
+    if (!dob) return "";
+    return String(dob).split("T")[0];
+}
+
+function safe(v) {
+    return v == null ? "" : String(v);
+}

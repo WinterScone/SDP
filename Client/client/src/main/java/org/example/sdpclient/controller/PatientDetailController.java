@@ -1,10 +1,14 @@
 package org.example.sdpclient.controller;
 
 import org.example.sdpclient.dto.PatientPrescriptionsResponse;
+import org.example.sdpclient.dto.PatientSummaryDto;
+import org.example.sdpclient.dto.PatientViewDto;
+import org.example.sdpclient.entity.Patient;
 import org.example.sdpclient.service.PatientDetailService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -16,6 +20,22 @@ public class PatientDetailController {
 
     public PatientDetailController(PatientDetailService service) {
         this.service = service;
+    }
+
+    @GetMapping("/getAllPatients")
+    public List<PatientSummaryDto> getAllPatients() {
+
+        return service.getAllPatients()
+                .stream()
+                .map(p -> new PatientSummaryDto(
+                        p.getId(),
+                        p.getFirstName(),
+                        p.getLastName(),
+                        String.valueOf(p.getDateOfBirth()),
+                        p.getEmail(),
+                        p.getPhone()
+                ))
+                .toList();
     }
 
     @GetMapping("/{patientId}/prescriptions")

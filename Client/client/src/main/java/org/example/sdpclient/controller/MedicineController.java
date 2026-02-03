@@ -20,7 +20,7 @@ public class MedicineController {
     }
 
     @GetMapping
-    public List<Medicine> getAll() {
+    public List<Medicine> getAllMedicines() {
         return service.getAll();
     }
 

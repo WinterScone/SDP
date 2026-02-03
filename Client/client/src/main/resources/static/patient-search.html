@@ -5,27 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Search Patient</title>
     <style>
-        body{
-            margin:0;
+        body {
+            margin: 0;
             font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-            background:#f3f4f6;
-            padding:24px;
+            background: #f3f4f6;
+            padding: 24px;
         }
-        .card{
+
+        .card {
             max-width: 800px;
             margin: 0 auto;
-            background:#fff;
-            border-radius:16px;
-            padding:24px;
-            box-shadow:0 10px 25px rgba(0,0,0,.08);
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0,0,0,.08);
         }
-        .topbar{
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            margin-bottom:12px;
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
         }
-        input{
+
+        input {
             width: 100%;
             padding: 14px;
             font-size: 16px;
@@ -33,16 +36,70 @@
             border: 2px solid #e5e7eb;
             outline: none;
         }
-        button{
-            padding:10px 14px;
-            font-size:16px;
-            border-radius:12px;
-            border:2px solid #e5e7eb;
-            background:#fff;
-            cursor:pointer;
+
+        button {
+            padding: 10px 14px;
+            font-size: 16px;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+            background: #fff;
+            cursor: pointer;
         }
-        button:hover{ background:#f9fafb; }
-        .row{ display:flex; gap:12px; }
+
+        button:hover {
+            background: #f9fafb;
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        th {
+            background: #f9fafb;
+            font-weight: 600;
+        }
+
+        tbody tr:hover {
+            background: #fafafa;
+        }
+
+        .msg {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        table button {
+            padding: 6px 12px;
+            font-size: 13px;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+        }
+
+        table button:hover {
+            background: #f3f4f6;
+        }
+
+        /* Responsive rule */
+        @media (max-width: 900px) {
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
     </style>
 </head>
 <body>
@@ -57,6 +114,27 @@
         <input id="q" placeholder="Search by phone / email / first name / last name" />
         <button id="searchBtn">Search</button>
     </div>
+
+    <br>
+    <div id="message" class="msg"></div>
+    <br>
+
+    <table class="patientsTable">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>First name</th>
+            <th>Last name</th>
+            <th>DOB</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+
+        <tbody id="rows"></tbody>
+        <!-- JS inserts rows here -->
+    </table>
 </section>
 
 <script src="/patient-search.js"></script>
