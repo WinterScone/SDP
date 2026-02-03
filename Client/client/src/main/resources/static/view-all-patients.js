@@ -1,12 +1,9 @@
 let admins = [];
 
-// IMPORTANT: attach functions used by inline HTML handlers to window
 window.linkAdmin = linkAdmin;
 
 async function loadAdmins() {
     try {
-        // If your backend endpoint is /api/admin/options, change ONLY this line:
-        // const res = await fetch("/api/admin/options");
         const res = await fetch("/api/admin/admins");
 
         if (!res.ok) throw new Error("Failed to load admins");
@@ -32,7 +29,6 @@ async function linkAdmin(patientId, adminId) {
 
         if (!res.ok) throw new Error("Failed to link admin");
 
-        // Optional: no alert, just quick feedback in console
         console.log(`Linked patient ${patientId} to admin ${adminId}`);
     } catch (e) {
         alert("Error: " + e.message);
@@ -87,5 +83,4 @@ async function loadPatients() {
     }
 }
 
-// Run after file loads (script is at bottom of HTML)
 loadPatients();
