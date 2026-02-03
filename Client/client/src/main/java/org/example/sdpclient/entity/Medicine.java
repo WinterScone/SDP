@@ -24,7 +24,7 @@ public class Medicine {
 
     private String shape;
     private String colour;
-    private String dosagePerForm;
+    private Integer dosagePerForm;
     private int quantity;
 
 }
