@@ -1,0 +1,153 @@
+package org.example.sdpclient.controller;
+
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.example.sdpclient.configuration.WebMvcConfig;
+import org.example.sdpclient.dto.*;
+import org.example.sdpclient.entity.Medicine;
+import org.example.sdpclient.entity.Patient;
+import org.example.sdpclient.entity.Prescription;
+import org.example.sdpclient.enums.MedicineType;
+import org.example.sdpclient.service.AdminManagePatientDetailService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+@WebMvcTest(
+        controllers = AdminManagePatientDetailController.class,
+        excludeFilters = @ComponentScan.Filter(
+                type = FilterType.ASSIGNABLE_TYPE,
+                classes = WebMvcConfig.class
+        )
+)
+@AutoConfigureMockMvc(addFilters = false) // also disables Spring Security filters (if any)
+class AdminManagePatientDetailControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockitoBean
+    private AdminManagePatientDetailService service;
+
+    @Test
+    void searchPatients_shouldReturn200_andDelegateToService() throws Exception {
+        PatientViewDto dto = new PatientViewDto(
+                1L, "John", "Doe", "2000-01-01", "j@e.com", "123", List.of()
+        );
+
+        when(service.searchPatients("abc")).thenReturn(List.of(dto));
+
+        mockMvc.perform(get("/api/admin/patients/search").param("q", "abc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)));
+
+        verify(service).searchPatients("abc");
+    }
+
+    @Test
+    void getPatient_shouldReturn404_whenPatientNotFound() throws Exception {
+        when(service.findPatient(10L)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/admin/patients/10"))
+                .andExpect(status().isNotFound());
+
+        verify(service).findPatient(10L);
+        verify(service, never()).getPrescriptionViews(anyLong());
+    }
+
+    @Test
+    void listMedicines_shouldReturn200_andDelegateToService() throws Exception {
+        MedicineViewDto med = new MedicineViewDto(MedicineType.MEDICINE_ID1, "TestMed");
+        when(service.listMedicines()).thenReturn(List.of(med));
+
+        mockMvc.perform(get("/api/admin/medicines"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)));
+
+        verify(service).listMedicines();
+    }
+
+    @Test
+    void addPrescription_shouldReturn400_whenBodyMissingRequiredFields() throws Exception {
+        String body = """
+                {"medicineId":"MEDICINE_ID1","dosage":"  ","frequency":""}
+                """;
+
+        mockMvc.perform(post("/api/admin/patients/10/prescriptions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void addPrescription_shouldReturn201_whenCreated() throws Exception {
+        String body = """
+                {"medicineId":"MEDICINE_ID1","dosage":"10mg","frequency":"daily"}
+                """;
+
+        Patient patient = new Patient();
+        patient.setId(10L);
+
+        Medicine med = new Medicine();
+        med.setMedicineId(MedicineType.MEDICINE_ID1);
+        med.setMedicineName("TestMed");
+
+        when(service.findPatient(10L)).thenReturn(Optional.of(patient));
+        when(service.findMedicineById(MedicineType.MEDICINE_ID1)).thenReturn(Optional.of(med));
+        when(service.prescriptionExists(10L, MedicineType.MEDICINE_ID1)).thenReturn(false);
+
+        mockMvc.perform(post("/api/admin/patients/10/prescriptions")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated());
+
+        verify(service).createPrescription(eq(patient), eq(med), any(PrescriptionCreateDto.class));
+    }
+
+    @Test
+    void updatePrescription_shouldReturn200_whenUpdated() throws Exception {
+        String body = """
+                {"dosage":"10mg","frequency":"daily"}
+                """;
+
+        Prescription rx = new Prescription();
+        rx.setId(5L);
+
+        when(service.findPrescription(5L)).thenReturn(Optional.of(rx));
+
+        mockMvc.perform(put("/api/admin/prescriptions/5")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isOk());
+
+        verify(service).updatePrescription(eq(rx), any(PrescriptionUpdateDto.class));
+    }
+
+    @Test
+    void deletePrescription_shouldReturn204_whenDeleted() throws Exception {
+        when(service.prescriptionIdExists(5L)).thenReturn(true);
+
+        mockMvc.perform(delete("/api/admin/prescriptions/5"))
+                .andExpect(status().isNoContent());
+
+        verify(service).prescriptionIdExists(5L);
+        verify(service).deletePrescription(5L);
+    }
+}
