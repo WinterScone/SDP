@@ -41,7 +41,6 @@ public class AdminLoginService {
     }
 
     public Map<String, Object> register(AdminRegisterRequest req) {
-        // Basic validation (optional but helpful)
         if (req.getUsername() == null || req.getUsername().trim().isEmpty()
                 || req.getPassword() == null || req.getPassword().isEmpty()
                 || req.getFirstName() == null || req.getFirstName().trim().isEmpty()
