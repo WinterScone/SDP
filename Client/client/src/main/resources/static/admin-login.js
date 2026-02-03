@@ -29,7 +29,6 @@ form.addEventListener("submit", async (e) => {
             const data = await res.json();
             console.log("Login success:", data);
 
-            localStorage.setItem("adminUsername", data.username);
             message.textContent = "Login success, redirecting...";
 
             setTimeout(() => {
