@@ -1,6 +1,7 @@
 package org.example.sdpclient.controller;
 
 import org.example.sdpclient.dto.AdminLogin;
+import org.example.sdpclient.dto.AdminRegisterRequest;
 import org.example.sdpclient.service.AdminLoginService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,18 +24,16 @@ public class AdminVerificationController {
     public ResponseEntity<?> login(@RequestBody AdminLogin req) {
         var res = service.login(req);
         if (!Boolean.TRUE.equals(res.get("ok"))) {
-            return ResponseEntity.status(400)
-                    .body(res);
+            return ResponseEntity.status(400).body(res);
         }
         return ResponseEntity.ok(res);
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody AdminLogin req) {
+    public ResponseEntity<?> register(@RequestBody AdminRegisterRequest req) {
         var res = service.register(req);
         if (!Boolean.TRUE.equals(res.get("ok"))) {
-            return ResponseEntity.status(400)
-                    .body(res);
+            return ResponseEntity.status(400).body(res);
         }
         return ResponseEntity.ok(res);
     }
