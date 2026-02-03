@@ -94,12 +94,23 @@
             text-decoration:underline;
         }
 
+        .topbar{
+            display:flex;
+            gap:12px;
+            align-items:center;
+            justify-content:space-between;
+            margin-bottom:12px;
+        }
+
     </style>
 </head>
 
 <body>
 <section class="card">
-    <h2>Patient</h2>
+    <div class="topbar">
+        <h2>Patient</h2>
+        <button class="btn" onclick="window.location.href='/first-page.html'">← Back</button>
+    </div>
 
     <form id="loginForm" novalidate>
         <label for="username">Username</label>
