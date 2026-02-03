@@ -11,7 +11,7 @@ import lombok.Setter;
 public class Prescription {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(optional = false)

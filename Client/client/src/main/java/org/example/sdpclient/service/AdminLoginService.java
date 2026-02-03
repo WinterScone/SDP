@@ -35,12 +35,12 @@ public class AdminLoginService {
 
         return Map.of(
                 "ok", true,
-                "username", user.getUsername()
+                "username", user.getUsername(),
+                "root", user.isRoot()
         );
     }
 
     public Map<String, Object> register(AdminRegisterRequest req) {
-        // Basic validation (optional but helpful)
         if (req.getUsername() == null || req.getUsername().trim().isEmpty()
                 || req.getPassword() == null || req.getPassword().isEmpty()
                 || req.getFirstName() == null || req.getFirstName().trim().isEmpty()

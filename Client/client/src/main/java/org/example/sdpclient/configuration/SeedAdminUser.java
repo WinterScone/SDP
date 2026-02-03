@@ -11,16 +11,33 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class SeedAdminUser {
 
     @Bean
-    CommandLineRunner seedAdmin(AdminRepository repo, PasswordEncoder encoder) {
+    CommandLineRunner seedAdmins(AdminRepository repo, PasswordEncoder encoder) {
         return args -> {
-            if (repo.findByUsername("admin").isEmpty()) {
-                Admin admin = new Admin();
-                admin.setUsername("admin");
-                admin.setPasswordHash(encoder.encode("admin123"));
-                admin.setFirstName("Admin");
-                admin.setLastName("User");
-                repo.save(admin);
-            }
+            seed(repo, encoder, "root",   "root",     "Root",  "Root",  true);
+            seed(repo, encoder, "admin1", "admin123", "Admin", "One",   false);
+            seed(repo, encoder, "admin2", "admin123", "Admin", "Two",   false);
+            seed(repo, encoder, "admin3", "admin123", "Admin", "Three", false);
         };
     }
+
+    private void seed(AdminRepository repo,
+                      PasswordEncoder encoder,
+                      String username,
+                      String rawPassword,
+                      String firstName,
+                      String lastName,
+                      boolean root) {
+
+        if (repo.findByUsername(username).isPresent()) return;
+
+        Admin admin = new Admin();
+        admin.setUsername(username);
+        admin.setPasswordHash(encoder.encode(rawPassword));
+        admin.setFirstName(firstName);
+        admin.setLastName(lastName);
+        admin.setRoot(root);
+
+        repo.save(admin);
+    }
 }
+
