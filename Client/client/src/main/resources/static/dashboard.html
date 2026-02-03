@@ -53,7 +53,10 @@
 <body>
 
 <section class="card">
-    <h2>Dashboard</h2>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2>Dashboard</h2>
+        <button class="btn" id="logoutBtn" style="width:auto; padding:10px 16px; font-size:14px;">Logout</button>
+    </div>
 
     <div class="menu">
         <button class="btn" onclick="window.location.href='/manage-admin.html'">
@@ -75,5 +78,6 @@
     </div>
 </section>
 
+<script src="/dashboard.js"></script>
 </body>
 </html>
