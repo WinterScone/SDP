@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Manage Medicines</title>
+    <title>Manage Prescriptions</title>
     <style>
         body{
             margin:0;
@@ -11,18 +11,13 @@
             background:#f3f4f6;
             padding:24px;
         }
-
         .card{
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 0 auto;
             background:#fff;
             border-radius:16px;
             padding:24px;
             box-shadow:0 10px 25px rgba(0,0,0,.08);
-        }
-
-        h2{
-            margin:0 0 14px;
         }
         .topbar{
             display:flex;
@@ -31,7 +26,6 @@
             justify-content:space-between;
             margin-bottom:12px;
         }
-
         button{
             padding:10px 14px;
             font-size:16px;
@@ -40,68 +34,78 @@
             background:#fff;
             cursor:pointer;
         }
-
-        button:hover{
-            background:#f9fafb;
-        }
-
+        button:hover{ background:#f9fafb; }
         table{
             width:100%;
             border-collapse:collapse;
             font-size:14px;
+            margin-top: 10px;
         }
-
         th, td{
             padding:10px;
             border-bottom:1px solid #e5e7eb;
             text-align:left;
             vertical-align:middle;
         }
-
-        th{
-            background:#f9fafb;
-        }
-
-        input[type="number"]{
-            width: 110px;
+        th{ background:#f9fafb; }
+        input{
             padding:8px;
             font-size:14px;
+            border:2px solid #e5e7eb;
+            border-radius:10px;
+            width: 160px;
         }
-
-        .msg{
+        select{
+            padding:8px;
             font-size:14px;
-            color:#6b7280;
+            border:2px solid #e5e7eb;
+            border-radius:10px;
+            width: 260px;
+            background:#fff;
         }
-
+        .msg{ font-size:14px; color:#6b7280; }
+        .sectionTitle{ margin-top: 18px; }
     </style>
 </head>
 
 <body>
 <section class="card">
     <div class="topbar">
-        <h2>Manage Medicines</h2>
+        <h2>Manage Prescriptions</h2>
         <div style="display:flex; gap:10px; align-items:center;">
             <span id="message" class="msg"></span>
-            <button onclick="window.location.href='/dashboard.html'">← Back</button>
+            <button onclick="history.back()">← Back</button>
         </div>
+    </div>
+
+    <h3 class="sectionTitle">Patient Details</h3>
+    <table>
+        <tbody id="patientInfo"></tbody>
+    </table>
+
+    <h3 class="sectionTitle">Prescriptions</h3>
+
+    <div style="display:flex; gap:10px; align-items:center; margin: 10px 0;">
+        <select id="newMedicine"></select>
+        <input id="newDosage" placeholder="Dosage (e.g. 500mg)" />
+        <input id="newFrequency" placeholder="Frequency (e.g. 2/day)" />
+        <button id="addBtn">Add</button>
     </div>
 
     <table>
         <thead>
         <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Shape</th>
-            <th>Colour</th>
+            <th>Medicine</th>
             <th>Dosage</th>
-            <th>Quantity</th>
+            <th>Frequency</th>
             <th>Updated</th>
+            <th>Delete</th>
         </tr>
         </thead>
         <tbody id="rows"></tbody>
     </table>
 </section>
 
-<script src="/manage-medicines.js"></script>
+<script src="/manage-prescriptions.js"></script>
 </body>
 </html>
