@@ -26,7 +26,7 @@ Admin types:
 
 
 Manage patient details:  
-- 
+- TODO
 
 
 View all admins:  
