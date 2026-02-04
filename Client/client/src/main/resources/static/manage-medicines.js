@@ -38,18 +38,29 @@
         for (const m of meds) {
             const tr = document.createElement("tr");
 
+            const medicineId = m.medicineId ?? "";
+            const qtyCellId = `qty-cell-${medicineId}`;
+            const statusId = `status-${medicineId}`;
+
             tr.innerHTML = `
           <td>${m.medicineId ?? ""}</td>
           <td>${m.medicineName ?? ""}</td>
           <td>${m.shape ?? ""}</td>
           <td>${m.colour ?? ""}</td>
           <td>${m.dosagePerForm ?? ""}</td>
+          <td id="${qtyCellId}">${m.quantity ?? 0}</td>
           <td>
-            <input type="number" min="0" value="${m.quantity ?? 0}" data-id="${m.medicineId}">
+            <input
+                type="number"
+                min="0"
+                value="${m.quantity ?? 0}"
+                data-id="${medicineId}"
+            />
           </td>
-          <td>
-            <button data-save="${m.medicineId}">Save</button>
-          </td>
+        <td>
+          <button data-save="${medicineId}">Save</button>
+          <span id="${statusId}" style="margin-left:10px;"></span>
+        </td>
         `;
 
             rowsEl.appendChild(tr);
@@ -77,9 +88,16 @@
             body: JSON.stringify({ quantity: qty })
         });
 
+        const qtyCell = document.getElementById(`qty-cell-${medicineId}`);
+        const statusEl = document.getElementById(`status-${medicineId}`);
+
         if (res.ok) {
-            setMsg(`Saved ${medicineId}`);
-            setTimeout(() => setMsg(""), 1000);
+            if (qtyCell) qtyCell.textContent = String(qty);
+            if (statusEl) {
+                statusEl.textContent = "Saved";
+                setTimeout(() => statusEl.textContent = "", 1200);
+            }
+            setMsg("");
         } else {
             const text = await res.text().catch(() => "");
             setMsg(`Save failed (${res.status}) ${text}`);
