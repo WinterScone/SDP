@@ -68,7 +68,7 @@ class AdminPatientControllerTest {
 
     @Test
     void getAllAdmins_shouldReturn200_andList() throws Exception {
-        AdminDto dto = new AdminDto(1L, "admin1");
+        AdminDto dto = new AdminDto(1L, "admin1", "Admin", "One", "admin1@admin.com", "07700 900101", false);
         when(adminListService.getAllAdmins()).thenReturn(List.of(dto));
 
         mockMvc.perform(get("/api/admin/admins"))
