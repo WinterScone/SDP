@@ -1,0 +1,29 @@
+/* Dashboard/menu-specific styles */
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.menu .btn {
+    width: 100%;
+    padding: 16px;
+    font-size: 18px;
+    text-align: left;
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.actions button {
+    width: 100%;
+    padding: 14px;
+    font-size: 18px;
+    text-align: left;
+}
