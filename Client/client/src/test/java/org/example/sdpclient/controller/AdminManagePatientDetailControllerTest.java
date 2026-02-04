@@ -85,7 +85,7 @@ class AdminManagePatientDetailControllerTest {
     @Test
     void addPrescription_shouldReturn400_whenBodyMissingRequiredFields() throws Exception {
         String body = """
-                {"medicineId":"MEDICINE_ID1","dosage":"  ","frequency":""}
+                {"medicineId":"VTM01","dosage":"  ","frequency":""}
                 """;
 
         mockMvc.perform(post("/api/admin/patients/10/prescriptions")
@@ -99,7 +99,7 @@ class AdminManagePatientDetailControllerTest {
     @Test
     void addPrescription_shouldReturn201_whenCreated() throws Exception {
         String body = """
-                {"medicineId":"MEDICINE_ID1","dosage":"10mg","frequency":"daily"}
+                {"medicineId":"VTM01","dosage":"10mg","frequency":"daily"}
                 """;
 
         Patient patient = new Patient();

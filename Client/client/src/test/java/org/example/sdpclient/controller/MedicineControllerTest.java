@@ -64,7 +64,7 @@ class MedicineControllerTest {
 
     @Test
     void updateQuantity_shouldReturn400_whenQuantityMissing() throws Exception {
-        mockMvc.perform(patch("/api/medicines/MEDICINE_ID1/quantity")
+        mockMvc.perform(patch("/api/medicines/VTM01/quantity")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest())
@@ -76,7 +76,7 @@ class MedicineControllerTest {
 
     @Test
     void updateQuantity_shouldReturn400_whenQuantityNegative() throws Exception {
-        mockMvc.perform(patch("/api/medicines/MEDICINE_ID1/quantity")
+        mockMvc.perform(patch("/api/medicines/VTM01/quantity")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"quantity\":-1}"))
                 .andExpect(status().isBadRequest())
@@ -90,7 +90,7 @@ class MedicineControllerTest {
     void updateQuantity_shouldReturn400_whenMedicineNotFound() throws Exception {
         when(service.exists(MedicineType.VTM01)).thenReturn(false);
 
-        mockMvc.perform(patch("/api/medicines/MEDICINE_ID1/quantity")
+        mockMvc.perform(patch("/api/medicines/VTM01/quantity")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"quantity\":5}"))
                 .andExpect(status().isBadRequest())
@@ -105,7 +105,7 @@ class MedicineControllerTest {
     void updateQuantity_shouldReturn200_whenUpdated() throws Exception {
         when(service.exists(MedicineType.VTM01)).thenReturn(true);
 
-        mockMvc.perform(patch("/api/medicines/MEDICINE_ID1/quantity")
+        mockMvc.perform(patch("/api/medicines/VTM01/quantity")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"quantity\":20}"))
                 .andExpect(status().isOk())
