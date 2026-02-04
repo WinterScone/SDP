@@ -47,9 +47,7 @@
             const patients = JSON.parse(text);
             renderRows(patients);
 
-            msg.textContent = patients.length
-                ? `Showing ${patients.length} patient(s).`
-                : "No patients found.";
+            msg.textContent = "";
         } catch (err) {
             console.error("Fetch crashed:", err);
             msg.textContent = `Network/JS error: ${err.message}`;
