@@ -17,7 +17,15 @@ public class AdminListService {
     public List<AdminDto> getAllAdmins() {
         return adminRepo.findAll()
                 .stream()
-                .map(a -> new AdminDto(a.getId(), a.getUsername()))
+                .map(a -> new AdminDto(
+                        a.getId(),
+                        a.getUsername(),
+                        a.getFirstName(),
+                        a.getLastName(),
+                        a.getEmail(),
+                        a.getPhone(),
+                        a.isRoot()
+                ))
                 .toList();
     }
 }

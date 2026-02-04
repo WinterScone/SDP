@@ -29,4 +29,8 @@ public class Admin {
 
     @Column(nullable = false)
     private boolean root = false;
+
+    private String email;
+
+    private String phone;
 }

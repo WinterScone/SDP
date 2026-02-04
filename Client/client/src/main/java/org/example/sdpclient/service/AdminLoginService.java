@@ -44,7 +44,9 @@ public class AdminLoginService {
         if (req.getUsername() == null || req.getUsername().trim().isEmpty()
                 || req.getPassword() == null || req.getPassword().isEmpty()
                 || req.getFirstName() == null || req.getFirstName().trim().isEmpty()
-                || req.getLastName() == null || req.getLastName().trim().isEmpty()) {
+                || req.getLastName() == null || req.getLastName().trim().isEmpty()
+                || req.getEmail() == null || req.getEmail().trim().isEmpty()
+                || req.getPhone() == null || req.getPhone().trim().isEmpty()) {
             return Map.of(
                     "ok", false,
                     "message", "All fields are required"
@@ -52,6 +54,7 @@ public class AdminLoginService {
         }
 
         var username = req.getUsername().trim();
+        var email = req.getEmail().trim();
 
         if (repo.findByUsername(username).isPresent()) {
             return Map.of(
@@ -65,6 +68,8 @@ public class AdminLoginService {
         admin.setPasswordHash(encoder.encode(req.getPassword()));
         admin.setFirstName(req.getFirstName().trim());
         admin.setLastName(req.getLastName().trim());
+        admin.setEmail(email);
+        admin.setPhone(req.getPhone().trim());
 
         repo.save(admin);
 

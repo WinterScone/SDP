@@ -27,9 +27,11 @@
         const username = document.getElementById("su-username").value.trim();
         const firstName = document.getElementById("su-firstname").value.trim();
         const lastName = document.getElementById("su-lastname").value.trim();
+        const email = document.getElementById("su-email").value.trim();
+        const phone = document.getElementById("su-phone").value.trim();
         const password = document.getElementById("su-password").value;
 
-        if (!username || !firstName || !lastName || !password) {
+        if (!username || !firstName || !lastName || !email || !phone || !password) {
             msg.textContent = "Please fill in all fields.";
             return;
         }
@@ -40,7 +42,7 @@
             const res = await fetch("/api/verify/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password, firstName, lastName })
+                body: JSON.stringify({ username, password, firstName, lastName, email, phone })
             });
 
             const data = await res.json();
