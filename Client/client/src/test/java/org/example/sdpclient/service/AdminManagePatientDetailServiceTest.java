@@ -121,7 +121,7 @@ class AdminManagePatientDetailServiceTest {
     @Test
     void getPrescriptionViews_shouldMapPrescriptionsToDtos() {
         Medicine med = new Medicine();
-        med.setMedicineId(MedicineType.MEDICINE_ID1);
+        med.setMedicineId(MedicineType.VTM01);
         med.setMedicineName("TestMed");
 
         Prescription rx = new Prescription();
@@ -146,14 +146,14 @@ class AdminManagePatientDetailServiceTest {
     @Test
     void prescriptionExists_shouldDelegateToRepository() {
         when(prescriptionRepository
-                .existsByPatientIdAndMedicine_MedicineId(7L, MedicineType.MEDICINE_ID1))
+                .existsByPatientIdAndMedicine_MedicineId(7L, MedicineType.VTM01))
                 .thenReturn(true);
 
-        boolean exists = service.prescriptionExists(7L, MedicineType.MEDICINE_ID1);
+        boolean exists = service.prescriptionExists(7L, MedicineType.VTM01);
 
         assertTrue(exists);
         verify(prescriptionRepository)
-                .existsByPatientIdAndMedicine_MedicineId(7L, MedicineType.MEDICINE_ID1);
+                .existsByPatientIdAndMedicine_MedicineId(7L, MedicineType.VTM01);
     }
 
 
@@ -195,7 +195,7 @@ class AdminManagePatientDetailServiceTest {
         patient.setId(1L);
 
         Medicine medicine = new Medicine();
-        medicine.setMedicineId(MedicineType.MEDICINE_ID1); // <-- FIXED
+        medicine.setMedicineId(MedicineType.VTM01);
         medicine.setMedicineName("Amoxicillin");
 
         PrescriptionCreateDto dto = mock(PrescriptionCreateDto.class);
@@ -240,7 +240,7 @@ class AdminManagePatientDetailServiceTest {
     @Test
     void listMedicines_shouldMapMedicinesToDtos() {
         Medicine m1 = new Medicine();
-        m1.setMedicineId(MedicineType.MEDICINE_ID1);
+        m1.setMedicineId(MedicineType.VTM01);
         m1.setMedicineName("TestMed");
 
         when(medicineRepository.findAll()).thenReturn(List.of(m1));
@@ -258,7 +258,7 @@ class AdminManagePatientDetailServiceTest {
 
     @Test
     void findMedicineById_shouldDelegateToRepository() {
-        MedicineType type = MedicineType.MEDICINE_ID1;
+        MedicineType type = MedicineType.VTM01;
 
         Medicine med = new Medicine();
         med.setMedicineId(type);

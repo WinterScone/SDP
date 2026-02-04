@@ -45,7 +45,7 @@ class MedicineControllerTest {
     @Test
     void getAll_shouldReturn200_andList() throws Exception {
         Medicine med = new Medicine();
-        med.setMedicineId(MedicineType.MEDICINE_ID1);
+        med.setMedicineId(MedicineType.VTM01);
         med.setMedicineName("Amoxicillin");
         med.setQuantity(10);
 
@@ -88,7 +88,7 @@ class MedicineControllerTest {
 
     @Test
     void updateQuantity_shouldReturn400_whenMedicineNotFound() throws Exception {
-        when(service.exists(MedicineType.MEDICINE_ID1)).thenReturn(false);
+        when(service.exists(MedicineType.VTM01)).thenReturn(false);
 
         mockMvc.perform(patch("/api/medicines/MEDICINE_ID1/quantity")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -97,13 +97,13 @@ class MedicineControllerTest {
                 .andExpect(jsonPath("$.ok").value(false))
                 .andExpect(jsonPath("$.message").value("Not found"));
 
-        verify(service).exists(MedicineType.MEDICINE_ID1);
+        verify(service).exists(MedicineType.VTM01);
         verify(service, never()).updateQuantity(any(), anyInt());
     }
 
     @Test
     void updateQuantity_shouldReturn200_whenUpdated() throws Exception {
-        when(service.exists(MedicineType.MEDICINE_ID1)).thenReturn(true);
+        when(service.exists(MedicineType.VTM01)).thenReturn(true);
 
         mockMvc.perform(patch("/api/medicines/MEDICINE_ID1/quantity")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -111,8 +111,8 @@ class MedicineControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ok").value(true));
 
-        verify(service).exists(MedicineType.MEDICINE_ID1);
-        verify(service).updateQuantity(MedicineType.MEDICINE_ID1, 20);
+        verify(service).exists(MedicineType.VTM01);
+        verify(service).updateQuantity(MedicineType.VTM01, 20);
     }
 }
 

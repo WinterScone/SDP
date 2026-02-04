@@ -72,7 +72,7 @@ class AdminManagePatientDetailControllerTest {
 
     @Test
     void listMedicines_shouldReturn200_andDelegateToService() throws Exception {
-        MedicineViewDto med = new MedicineViewDto(MedicineType.MEDICINE_ID1, "TestMed");
+        MedicineViewDto med = new MedicineViewDto(MedicineType.VTM01, "TestMed");
         when(service.listMedicines()).thenReturn(List.of(med));
 
         mockMvc.perform(get("/api/admin/medicines"))
@@ -106,12 +106,12 @@ class AdminManagePatientDetailControllerTest {
         patient.setId(10L);
 
         Medicine med = new Medicine();
-        med.setMedicineId(MedicineType.MEDICINE_ID1);
+        med.setMedicineId(MedicineType.VTM01);
         med.setMedicineName("TestMed");
 
         when(service.findPatient(10L)).thenReturn(Optional.of(patient));
-        when(service.findMedicineById(MedicineType.MEDICINE_ID1)).thenReturn(Optional.of(med));
-        when(service.prescriptionExists(10L, MedicineType.MEDICINE_ID1)).thenReturn(false);
+        when(service.findMedicineById(MedicineType.VTM01)).thenReturn(Optional.of(med));
+        when(service.prescriptionExists(10L, MedicineType.VTM01)).thenReturn(false);
 
         mockMvc.perform(post("/api/admin/patients/10/prescriptions")
                         .contentType(MediaType.APPLICATION_JSON)

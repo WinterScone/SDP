@@ -42,7 +42,7 @@ class PatientDetailServiceTest {
     @Test
     void getPrescriptionItems_shouldMapPrescriptionsToResponseItems() {
         Medicine med = new Medicine();
-        med.setMedicineId(MedicineType.MEDICINE_ID1);
+        med.setMedicineId(MedicineType.VTM01);
         med.setMedicineName("Amoxicillin");
 
         Prescription rx = new Prescription();
