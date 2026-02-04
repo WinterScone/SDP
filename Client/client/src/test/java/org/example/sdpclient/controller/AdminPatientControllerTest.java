@@ -66,7 +66,6 @@ class AdminPatientControllerTest {
         verify(service).getAllPatientsSafe();
     }
 
-<<<<<<< HEAD
     @Test
     void getAllAdmins_shouldReturn200_andList() throws Exception {
         AdminDto dto = new AdminDto(1L, "admin1", "Admin", "One", "admin1@admin.com", "07700 900101", false);
@@ -78,19 +77,7 @@ class AdminPatientControllerTest {
 
         verify(adminListService).getAllAdmins();
     }
-=======
-//    @Test
-//    void getAllAdmins_shouldReturn200_andList() throws Exception {
-//        AdminDto dto = new AdminDto(1L, "admin1");
-//        when(adminListService.getAllAdmins()).thenReturn(List.of(dto));
-//
-//        mockMvc.perform(get("/api/admin/admins"))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$", hasSize(1)));
-//
-//        verify(adminListService).getAllAdmins();
-//    }
->>>>>>> f770003 (add)
+
 
     @Test
     void linkAdminToPatient_shouldReturn400_whenAdminIdMissing() throws Exception {
