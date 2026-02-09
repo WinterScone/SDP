@@ -1,0 +1,27 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+*.iml
+.vscode
+.DS_Store
+
+# Maven
+Client/client/target/
+**/target/
+
+# Documentation
+documentation/
+
+# Database (will be created by container)
+*.db
+*.db-journal
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
