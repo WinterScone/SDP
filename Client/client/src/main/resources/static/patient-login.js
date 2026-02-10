@@ -28,7 +28,7 @@ form.addEventListener("submit", async (e) => {
         const data = await res.json().catch(() => null);
 
         if (!res.ok || !data || data.ok !== true) {
-            setMessage("Invalid username or password.");
+            setMessage(data?.message || "Invalid username or password.");
             return;
         }
 
