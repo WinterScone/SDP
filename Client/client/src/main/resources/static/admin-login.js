@@ -36,8 +36,9 @@ form.addEventListener("submit", async (e) => {
                 window.location.href = "/dashboard.html";
             }, 800);
 
-        } else if (res.status === 401) {
-            message.textContent = "Invalid username or password";
+        } else if (res.status === 400 || res.status === 401) {
+            const data = await res.json();
+            message.textContent = data.message || "Invalid username or password";
         } else {
             message.textContent = `Server error (${res.status})`;
         }
