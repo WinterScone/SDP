@@ -25,6 +25,14 @@ public class PatientDetailService {
         return patientRepo.findAll(Sort.by("id"));
     }
 
+    public List<Patient> getAllPatientsForAdmin(Long adminId, boolean isRoot) {
+        if (isRoot) {
+            return patientRepo.findAll(Sort.by("id"));
+        } else {
+            return patientRepo.findByLinkedAdminId(adminId);
+        }
+    }
+
     public boolean patientExists(Long patientId) {
         return patientRepo.existsById(patientId);
     }
