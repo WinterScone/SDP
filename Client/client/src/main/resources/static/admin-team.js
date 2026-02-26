@@ -38,7 +38,7 @@
         admins.forEach((a) => {
             const tr = document.createElement("tr");
             const fullName = `${safe(a.firstName)} ${safe(a.lastName)}`;
-            const rootMark = a.root ? '<span class="checkmark">[X]</span>' : "";
+            const rootMark = a.root ? '<span class="checkmark">√</span>' : "";
 
             tr.innerHTML = `
           <td>${safe(fullName)}</td>
