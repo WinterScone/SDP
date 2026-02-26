@@ -15,6 +15,10 @@
         window.location.href = `/manage-prescriptions.html?patientId=${patientId}`;
     };
 
+    window.goIntakeHistory = function(patientId) {
+        window.location.href = `/intake-history.html?patientId=${patientId}`;
+    };
+
     loadPatients();
 
     async function loadPatients() {
@@ -58,9 +62,12 @@
           <td>${formatDob(p.dateOfBirth)}</td>
           <td>${safe(p.email)}</td>
           <td>${safe(p.phone)}</td>
-          <td>
+          <td style="display:flex; gap:6px;">
             <button onclick="goPrescriptions(${safe(p.id)})">
               Manage Prescriptions
+            </button>
+            <button onclick="goIntakeHistory(${safe(p.id)})">
+              View Intake History
             </button>
           </td>
         `;
