@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Intake History</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <style>
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0 0 4px 0;
+        }
+    </style>
+</head>
+<body>
+
+<section class="card wide">
+    <div class="topbar">
+        <h2 id="title">Intake History</h2>
+        <div style="display:flex; gap:8px;">
+            <button class="btn" onclick="window.location.href='/patient-dashboard.html'">← Back</button>
+            <button class="btn" id="logoutBtn">Logout</button>
+        </div>
+    </div>
+
+    <p class="section-title">History</p>
+    <div id="message" class="msg"></div>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+            <tr>
+                <th>Medicine ID</th>
+                <th>Medicine Name</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Notes</th>
+            </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+        </table>
+    </div>
+</section>
+
+<script src="/patient-intake-history.js"></script>
+</body>
+</html>
