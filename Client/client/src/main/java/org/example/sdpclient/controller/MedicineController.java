@@ -1,7 +1,10 @@
 package org.example.sdpclient.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
+import org.example.sdpclient.dto.ReduceMedicineRequest;
 import org.example.sdpclient.entity.Medicine;
 import org.example.sdpclient.enums.MedicineType;
+import org.example.sdpclient.repository.MedicineRepository;
 import org.example.sdpclient.service.MedicineService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -47,9 +50,28 @@ public class MedicineController {
                             "Not found")
                     );
         }
-
         service.updateQuantity(id, quantity);
         return ResponseEntity.ok(Map.of("ok", true));
+    }
+
+    @PostMapping("/reduce")
+    public ResponseEntity<?> reduceMedicine(@RequestBody ReduceMedicineRequest request) {
+
+        if (request.getMedicineName() == null || request.getQuantity() == null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("ok", false, "message", "Medicine name and quantity required"));
+        }
+
+        try {
+            service.reduceQuantityByName(
+                    request.getMedicineName(),
+                    request.getQuantity()
+            );
+            return ResponseEntity.ok(Map.of("ok", true));
+        } catch (RuntimeException ex) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("ok", false, "message", ex.getMessage()));
+        }
     }
 }
 
