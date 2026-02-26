@@ -29,13 +29,20 @@ public class AdminManagePatientDetailService {
     }
 
 
-    public List<PatientViewDto> searchPatients(String q) {
+    public List<PatientViewDto> searchPatients(String q, Long adminId, boolean isRoot) {
         String keyword = q == null ? "" : q.trim();
         if (keyword.isEmpty()) {
             return List.of();
         }
 
-        return patientRepository.searchByKeyword(keyword).stream()
+        List<Patient> patients;
+        if (isRoot) {
+            patients = patientRepository.searchByKeyword(keyword);
+        } else {
+            patients = patientRepository.searchByKeywordAndLinkedAdmin(keyword, adminId);
+        }
+
+        return patients.stream()
                 .map(p -> new PatientViewDto(
                         p.getId(),
                         p.getFirstName(),
@@ -46,6 +53,14 @@ public class AdminManagePatientDetailService {
                         List.of()
                 ))
                 .toList();
+    }
+
+    public boolean canAdminAccessPatient(Long patientId, Long adminId, boolean isRoot) {
+        if (isRoot) {
+            return true;
+        }
+        Optional<Patient> patient = patientRepository.findById(patientId);
+        return patient.isPresent() && adminId.equals(patient.get().getLinkedAdminId());
     }
 
     public Optional<Patient> findPatient(Long id) {

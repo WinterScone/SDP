@@ -22,7 +22,7 @@ public class AdminLoginService {
     }
 
     public Map<String, Object> login(AdminLogin req) {
-        var userOptional = repo.findByUsername(req.getUsername());
+        var userOptional = repo.findByUsernameIgnoreCase(req.getUsername());
 
         if (userOptional.isEmpty()) {
             return Map.of("ok", false);
@@ -35,6 +35,7 @@ public class AdminLoginService {
 
         return Map.of(
                 "ok", true,
+                "id", user.getId(),
                 "username", user.getUsername(),
                 "root", user.isRoot()
         );
@@ -56,7 +57,7 @@ public class AdminLoginService {
         var username = req.getUsername().trim();
         var email = req.getEmail().trim();
 
-        if (repo.findByUsername(username).isPresent()) {
+        if (repo.findByUsernameIgnoreCase(username).isPresent()) {
             return Map.of(
                     "ok", false,
                     "message", "Username already exists"

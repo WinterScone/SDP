@@ -21,7 +21,7 @@ public class PatientLoginService {
     }
 
     public Map<String, Object> login(PatientLogin req) {
-        var userOptional = repo.findByUsername(req.getUsername());
+        var userOptional = repo.findByUsernameIgnoreCase(req.getUsername());
         if (userOptional.isEmpty()) {
             return Map.of(
                     "ok",
@@ -60,7 +60,7 @@ public class PatientLoginService {
 
         String username = req.getUsername().trim();
 
-        if (repo.existsByUsername(username)) {
+        if (repo.existsByUsernameIgnoreCase(username)) {
             return Map.of(
                     "ok",
                     false,
