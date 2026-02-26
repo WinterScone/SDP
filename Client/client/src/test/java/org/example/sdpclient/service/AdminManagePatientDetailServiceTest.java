@@ -45,7 +45,7 @@ class AdminManagePatientDetailServiceTest {
 
     @Test
     void searchPatients_shouldReturnEmpty_whenQueryIsNull() {
-        List<PatientViewDto> result = service.searchPatients(null);
+        List<PatientViewDto> result = service.searchPatients(null, 1L, false);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
@@ -54,7 +54,7 @@ class AdminManagePatientDetailServiceTest {
 
     @Test
     void searchPatients_shouldReturnEmpty_whenQueryIsBlank() {
-        List<PatientViewDto> result = service.searchPatients("   ");
+        List<PatientViewDto> result = service.searchPatients("   ", 1L, false);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
@@ -81,7 +81,7 @@ class AdminManagePatientDetailServiceTest {
 
         when(patientRepository.searchByKeyword("abc")).thenReturn(List.of(p1, p2));
 
-        List<PatientViewDto> result = service.searchPatients("  abc  ");
+        List<PatientViewDto> result = service.searchPatients("  abc  ", 1L, true);
 
         assertEquals(2, result.size());
 
