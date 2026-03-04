@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -55,4 +57,9 @@ public class Patient {
     protected void onCreate() {
         createdAt = LocalDateTime.now().toString();
     }
+
+    @JdbcTypeCode(SqlTypes.VARBINARY)
+    @Column(name = "face_data")
+    private byte[] faceData;
+
 }
