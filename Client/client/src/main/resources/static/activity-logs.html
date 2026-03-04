@@ -9,18 +9,6 @@
         .card {
             max-width: 1400px;
         }
-        table {
-            margin-top: 16px;
-        }
-        th, td {
-            padding: 12px;
-        }
-        .top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-        }
         .activity-type {
             display: inline-block;
             padding: 4px 8px;
@@ -43,25 +31,27 @@
 </head>
 <body>
 <section class="card">
-    <div class="top">
-        <h2 style="margin:0;">Activity Logs</h2>
+    <div class="topbar">
+        <h2>Activity Logs</h2>
         <button class="btn" onclick="window.location.href='/advanced.html'">← Back</button>
     </div>
 
-    <table id="logsTable" style="display:none;">
-        <thead>
-        <tr>
-            <th>Timestamp</th>
-            <th>Activity Type</th>
-            <th>Description</th>
-            <th>Admin</th>
-            <th>Patient</th>
-            <th>Medicine</th>
-        </tr>
-        </thead>
-        <tbody id="logsBody">
-        </tbody>
-    </table>
+    <div class="table-wrapper">
+        <table id="logsTable" style="display:none;">
+            <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Activity Type</th>
+                <th>Description</th>
+                <th>Admin</th>
+                <th>Patient</th>
+                <th>Medicine</th>
+            </tr>
+            </thead>
+            <tbody id="logsBody">
+            </tbody>
+        </table>
+    </div>
 
     <div id="loadingMessage">
         <p style="text-align: center; padding: 40px; color: #6b7280;">Loading activity logs...</p>
