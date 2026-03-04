@@ -37,9 +37,9 @@ async function loadActivityLogs() {
 
             return `
                 <tr>
-                    <td class="timestamp">${formattedTime}</td>
+                    <td>${formattedTime}</td>
                     <td><span class="activity-type ${activityTypeClass}">${formatActivityType(log.activityType)}</span></td>
-                    <td class="description">${escapeHtml(log.description)}</td>
+                    <td>${escapeHtml(log.description)}</td>
                     <td>${log.adminUsername || '-'}</td>
                     <td>${log.patientName || '-'}</td>
                     <td>${log.medicineName || '-'}</td>
