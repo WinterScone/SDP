@@ -5,32 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Activity Logs</title>
     <link rel="stylesheet" href="/css/common.css">
-    <style>
-        .card {
-            max-width: 1400px;
-        }
-        .activity-type {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-        .type-medicine { background: #dbeafe; color: #1e40af; }
-        .type-prescription { background: #dcfce7; color: #166534; }
-        .type-admin { background: #fef3c7; color: #92400e; }
-        .type-patient { background: #e0e7ff; color: #3730a3; }
-        .type-reset { background: #fee2e2; color: #991b1b; }
-        .no-logs {
-            text-align: center;
-            padding: 40px;
-            color: #6b7280;
-        }
-    </style>
 </head>
 <body>
-<section class="card">
+<section class="card extra-wide">
     <div class="topbar">
         <h2>Activity Logs</h2>
         <button class="btn" onclick="window.location.href='/advanced.html'">← Back</button>
@@ -53,15 +30,15 @@
         </table>
     </div>
 
-    <div id="loadingMessage">
-        <p style="text-align: center; padding: 40px; color: #6b7280;">Loading activity logs...</p>
+    <div id="loadingMessage" class="center-message">
+        <p>Loading activity logs...</p>
     </div>
 
-    <div id="noLogsMessage" class="no-logs" style="display:none;">
+    <div id="noLogsMessage" class="center-message" style="display:none;">
         <p>No activity logs found.</p>
     </div>
 
-    <div id="errorMessage" style="display:none; text-align: center; padding: 40px; color: #dc2626;">
+    <div id="errorMessage" class="center-message error" style="display:none;">
         <p>Failed to load activity logs. Please try again.</p>
     </div>
 </section>

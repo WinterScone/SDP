@@ -5,60 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Patients</title>
     <link rel="stylesheet" href="/css/common.css">
-    <style>
-        .card {
-            max-width: 1100px;
-        }
-        input {
-            width: 100%;
-            padding: 14px;
-        }
-        .row {
-            display: flex;
-            gap: 12px;
-        }
-        tbody tr:hover {
-            background: #fafafa;
-            cursor: pointer;
-        }
-        table button {
-            padding: 6px 12px;
-            font-size: 13px;
-            border-radius: 8px;
-            border: 1px solid #d1d5db;
-        }
-        table button:hover {
-            background: #f3f4f6;
-        }
-    </style>
 </head>
 <body>
 
-<section class="card">
+<section class="card wide">
     <div class="topbar">
         <h2>Patients</h2>
-        <button onclick="window.location.href='/dashboard.html'">← Back</button>
+        <button class="btn" onclick="window.location.href='/dashboard.html'">← Back</button>
     </div>
 
-    <div class="row">
+    <div class="search-row">
         <input id="q" placeholder="Search by phone / email / first name / last name" />
         <button id="searchBtn">Search</button>
     </div>
 
-    <br>
     <div id="message" class="msg"></div>
-    <br>
 
     <div class="table-wrapper">
         <table class="patientsTable">
+            <colgroup>
+                <col class="col-id">
+                <col class="col-name">
+                <col class="col-actions">
+            </colgroup>
             <thead>
             <tr>
                 <th>ID</th>
-                <th>First name</th>
-                <th>Last name</th>
-                <th>DOB</th>
-                <th>Email</th>
-                <th>Phone</th>
+                <th>Name</th>
                 <th>Actions</th>
             </tr>
             </thead>

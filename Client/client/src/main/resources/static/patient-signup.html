@@ -5,33 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Patient Sign Up</title>
     <link rel="stylesheet" href="/css/common.css">
-    <link rel="stylesheet" href="/css/form.css">
-    <style>
-        h2 {
-            font-size: 28px;
-        }
-        #message {
-            font-size: 15px;
-        }
-        .helper {
-            margin-top: 14px;
-            font-size: 14px;
-            color: #6b7280;
-        }
-        .helper a {
-            color: #111827;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline;
-            padding: 0;
-            border: none;
-            background: none;
-        }
-        .helper a:hover {
-            text-decoration: underline;
-            background: none;
-        }
-    </style>
 </head>
 
 <body>
@@ -41,7 +14,7 @@
         <button class="btn" onclick="window.location.href='/patient-login.html'">← Back</button>
     </div>
 
-    <form id="signupForm" novalidate>
+    <form id="signupForm" class="form-long" novalidate>
         <label for="username">Username</label>
         <input id="username" type="text" autocomplete="username" required />
 
@@ -65,7 +38,7 @@
 
         <div class="row">
             <button class="btn" type="submit">Sign up</button>
-            <span id="message"></span>
+            <div id="message" class="msg"></div>
         </div>
     </form>
 

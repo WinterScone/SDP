@@ -16,7 +16,7 @@ RUN ./mvnw dependency:go-offline -B
 COPY Client/client/src src
 
 # Build the application
-RUN ./mvnw clean package -DskipTests
+RUN ./mvnw clean package -Dmaven.test.skip=true
 
 # Production stage
 FROM eclipse-temurin:21-jre-alpine

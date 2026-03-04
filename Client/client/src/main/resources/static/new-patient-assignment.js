@@ -52,7 +52,7 @@
             const patients = await res.json();
 
             if (!patients.length) {
-                tbody.innerHTML = `<tr><td colspan="8">No patients found.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7">No patients found.</td></tr>`;
                 return;
             }
 
@@ -63,15 +63,23 @@
                     return `<option value="${a.id}" ${a.id === p.linkedAdminId ? "selected" : ""}>${label}</option>`;
                 }).join("");
 
+                // Format date of birth
+                const dob = p.dateOfBirth ? formatDate(p.dateOfBirth) : "";
+
+                // Format created date to YYYY-MM-DD
+                const created = p.createdAt ? formatDate(p.createdAt) : "";
+
+                // Combine first and last name
+                const fullName = [p.firstName, p.lastName].filter(n => n).join(" ");
+
                 return `
                   <tr>
-                    <td>${p.id ?? ""}</td>
-                    <td>${p.firstName ?? ""}</td>
-                    <td>${p.lastName ?? ""}</td>
-                    <td>${p.dateOfBirth ?? ""}</td>
+                    <td class="center">${p.id ?? ""}</td>
+                    <td>${fullName}</td>
+                    <td>${dob}</td>
                     <td>${p.email ?? ""}</td>
                     <td>${p.phone ?? ""}</td>
-                    <td>${p.createdAt ?? ""}</td>
+                    <td>${created}</td>
                     <td>
                       <select onchange="linkAdmin(${p.id}, this.value)">
                         <option value="">-- Select Admin --</option>
@@ -83,8 +91,14 @@
             }).join("");
 
         } catch (e) {
-            tbody.innerHTML = `<tr><td colspan="8">${e.message}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7">${e.message}</td></tr>`;
         }
+    }
+
+    function formatDate(dateString) {
+        if (!dateString) return "";
+        // Extract just the date part (YYYY-MM-DD) from datetime strings
+        return dateString.split("T")[0];
     }
 
     loadPatients();
