@@ -15,20 +15,29 @@ public class DatabaseResetService {
     private final AdminRepository adminRepo;
     private final PatientRepository patientRepo;
     private final PrescriptionRepository prescriptionRepo;
+    private final ActivityLogService activityLogService;
 
     private static final Set<String> SEED_ADMIN_USERNAMES = Set.of("root", "testAdmin1", "testAdmin2");
     private static final Set<String> SEED_PATIENT_USERNAMES = Set.of("testPatient1", "testPatient2");
 
     public DatabaseResetService(AdminRepository adminRepo,
                                 PatientRepository patientRepo,
-                                PrescriptionRepository prescriptionRepo) {
+                                PrescriptionRepository prescriptionRepo,
+                                ActivityLogService activityLogService) {
         this.adminRepo = adminRepo;
         this.patientRepo = patientRepo;
         this.prescriptionRepo = prescriptionRepo;
+        this.activityLogService = activityLogService;
     }
 
     @Transactional
-    public void resetToSeedData() {
+    public void resetToSeedData(Long adminId, String adminUsername) {
+        // Get stats before clearing
+        ResetStats stats = getResetStats();
+
+        // Clear all activity logs first
+        activityLogService.clearAllLogs();
+
         // Delete all prescriptions first (foreign key constraint)
         prescriptionRepo.deleteAll();
 
@@ -53,6 +62,15 @@ public class DatabaseResetService {
                 .filter(a -> !SEED_ADMIN_USERNAMES.contains(a.getUsername()))
                 .toList();
         adminRepo.deleteAll(adminsToDelete);
+
+        // Log the database reset action
+        activityLogService.logDatabaseReset(
+                adminId,
+                adminUsername,
+                (int) stats.patientsToDelete(),
+                (int) stats.adminsToDelete(),
+                (int) stats.prescriptionsToDelete()
+        );
     }
 
     public ResetStats getResetStats() {

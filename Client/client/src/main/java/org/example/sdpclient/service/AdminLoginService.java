@@ -15,10 +15,13 @@ public class AdminLoginService {
 
     private final AdminRepository repo;
     private final PasswordEncoder encoder;
+    private final ActivityLogService activityLogService;
 
-    public AdminLoginService(AdminRepository repo, PasswordEncoder encoder) {
+    public AdminLoginService(AdminRepository repo, PasswordEncoder encoder,
+                            ActivityLogService activityLogService) {
         this.repo = repo;
         this.encoder = encoder;
+        this.activityLogService = activityLogService;
     }
 
     public Map<String, Object> login(AdminLogin req) {
@@ -41,7 +44,8 @@ public class AdminLoginService {
         );
     }
 
-    public Map<String, Object> register(AdminRegisterRequest req) {
+    public Map<String, Object> register(AdminRegisterRequest req, Long creatorAdminId,
+                                       String creatorAdminUsername) {
         if (req.getUsername() == null || req.getUsername().trim().isEmpty()
                 || req.getPassword() == null || req.getPassword().isEmpty()
                 || req.getFirstName() == null || req.getFirstName().trim().isEmpty()
@@ -73,6 +77,15 @@ public class AdminLoginService {
         admin.setPhone(req.getPhone().trim());
 
         repo.save(admin);
+
+        // Log the activity
+        String newAdminFullName = admin.getFirstName() + " " + admin.getLastName();
+        activityLogService.logAdminCreated(
+                admin.getUsername(),
+                newAdminFullName,
+                creatorAdminId,
+                creatorAdminUsername
+        );
 
         return Map.of(
                 "ok", true,

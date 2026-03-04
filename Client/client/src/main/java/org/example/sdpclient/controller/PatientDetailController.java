@@ -45,10 +45,7 @@ public class PatientDetailController {
     }
 
     @GetMapping("/{patientId}/prescriptions")
-    public ResponseEntity<?> getPatientPrescriptions(@PathVariable Long patientId, HttpServletRequest request) {
-        Long adminId = getAdminIdFromCookie(request);
-        boolean isRoot = isRootAdmin(request);
-
+    public ResponseEntity<?> getPatientPrescriptions(@PathVariable Long patientId) {
         if (!service.patientExists(patientId)) {
             return ResponseEntity.status(400)
                     .body(Map.of(
@@ -56,20 +53,6 @@ public class PatientDetailController {
                             false,
                             "error",
                             "Patient not found")
-                    );
-        }
-
-        // Check if admin has access to this patient
-        var patients = service.getAllPatientsForAdmin(adminId, isRoot);
-        boolean hasAccess = patients.stream().anyMatch(p -> p.getId().equals(patientId));
-
-        if (!hasAccess) {
-            return ResponseEntity.status(403)
-                    .body(Map.of(
-                            "ok",
-                            false,
-                            "error",
-                            "Access denied to this patient")
                     );
         }
 
