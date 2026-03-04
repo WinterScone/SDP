@@ -62,7 +62,10 @@ public class AdminPatientController {
                     .body(Map.of("error", "adminId is required"));
         }
 
-        service.linkAdminToPatient(patientId, adminId);
+        Long assignerAdminId = getAdminIdFromCookie(request);
+        String assignerAdminUsername = getCookieValue(request, "adminUsername");
+
+        service.linkAdminToPatient(patientId, adminId, assignerAdminId, assignerAdminUsername);
         return ResponseEntity.ok(Map.of("ok", true));
     }
 
@@ -75,7 +78,10 @@ public class AdminPatientController {
 
         try {
             var stats = resetService.getResetStats();
-            resetService.resetToSeedData();
+            Long adminId = getAdminIdFromCookie(request);
+            String adminUsername = getCookieValue(request, "adminUsername");
+
+            resetService.resetToSeedData(adminId, adminUsername);
 
             return ResponseEntity.ok(Map.of(
                     "ok", true,
@@ -96,6 +102,18 @@ public class AdminPatientController {
     private boolean isRootAdmin(HttpServletRequest request) {
         String rootStr = getCookieValue(request, "adminRoot");
         return "true".equalsIgnoreCase(rootStr);
+    }
+
+    private Long getAdminIdFromCookie(HttpServletRequest request) {
+        String idStr = getCookieValue(request, "adminId");
+        if (idStr == null || idStr.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
+        try {
+            return Long.parseLong(idStr);
+        } catch (NumberFormatException e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid admin ID");
+        }
     }
 
     private String getCookieValue(HttpServletRequest request, String name) {

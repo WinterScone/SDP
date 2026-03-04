@@ -19,13 +19,16 @@ public class AdminManagePatientDetailService {
     private final PatientRepository patientRepository;
     private final PrescriptionRepository prescriptionRepository;
     private final MedicineRepository medicineRepository;
+    private final ActivityLogService activityLogService;
 
     public AdminManagePatientDetailService(PatientRepository patientRepository,
                                            PrescriptionRepository prescriptionRepository,
-                                           MedicineRepository medicineRepository) {
+                                           MedicineRepository medicineRepository,
+                                           ActivityLogService activityLogService) {
         this.patientRepository = patientRepository;
         this.prescriptionRepository = prescriptionRepository;
         this.medicineRepository = medicineRepository;
+        this.activityLogService = activityLogService;
     }
 
 
@@ -88,7 +91,8 @@ public class AdminManagePatientDetailService {
         return prescriptionRepository.findById(id);
     }
 
-    public void createPrescription(Patient patient, Medicine medicine, PrescriptionCreateDto dto) {
+    public void createPrescription(Patient patient, Medicine medicine, PrescriptionCreateDto dto,
+                                  Long adminId, String adminUsername) {
 
         Prescription rx = new Prescription();
         rx.setPatient(patient);
@@ -97,6 +101,18 @@ public class AdminManagePatientDetailService {
         rx.setFrequency(dto.getFrequency().trim());
 
         prescriptionRepository.save(rx);
+
+        // Log the activity
+        String patientName = patient.getFirstName() + " " + patient.getLastName();
+        activityLogService.logPrescriptionCreated(
+                patient.getId(),
+                patientName,
+                medicine.getMedicineName(),
+                dto.getDosage().trim(),
+                dto.getFrequency().trim(),
+                adminId,
+                adminUsername
+        );
     }
 
     public void updatePrescription(Prescription rx, PrescriptionUpdateDto dto) {
@@ -109,7 +125,26 @@ public class AdminManagePatientDetailService {
         return prescriptionRepository.existsById(id);
     }
 
-    public void deletePrescription(Long id) {
+    public void deletePrescription(Long id, Long adminId, String adminUsername) {
+        // Get prescription details before deleting for logging
+        Optional<Prescription> rxOpt = prescriptionRepository.findById(id);
+        if (rxOpt.isPresent()) {
+            Prescription rx = rxOpt.get();
+            Patient patient = rx.getPatient();
+            String patientName = patient.getFirstName() + " " + patient.getLastName();
+
+            // Log the activity before deletion
+            activityLogService.logPrescriptionDeleted(
+                    patient.getId(),
+                    patientName,
+                    rx.getMedicine().getMedicineName(),
+                    rx.getDosage(),
+                    rx.getFrequency(),
+                    adminId,
+                    adminUsername
+            );
+        }
+
         prescriptionRepository.deleteById(id);
     }
 

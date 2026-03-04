@@ -104,7 +104,10 @@ public class AdminVerificationController {
             return ResponseEntity.status(403).body(Map.of("ok", false, "message", "Only root admin can register new admins"));
         }
 
-        var res = service.register(req);
+        Long creatorAdminId = caller.get().getId();
+        String creatorAdminUsername = caller.get().getUsername();
+
+        var res = service.register(req, creatorAdminId, creatorAdminUsername);
         if (!Boolean.TRUE.equals(res.get("ok"))) {
             return ResponseEntity.status(400).body(res);
         }

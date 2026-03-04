@@ -91,7 +91,8 @@ public class AdminManagePatientDetailController {
             );
         }
 
-        service.createPrescription(patient, medicine, dto);
+        String adminUsername = getCookieValue(request, "adminUsername");
+        service.createPrescription(patient, medicine, dto, adminId, adminUsername);
     }
 
     @PutMapping("/prescriptions/{id}")
@@ -127,7 +128,8 @@ public class AdminManagePatientDetailController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied to this patient");
         }
 
-        service.deletePrescription(id);
+        String adminUsername = getCookieValue(request, "adminUsername");
+        service.deletePrescription(id, adminId, adminUsername);
     }
 
     private Long getAdminIdFromCookie(HttpServletRequest request) {
