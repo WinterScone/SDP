@@ -11,6 +11,8 @@ services:
     volumes:
       # Persist SQLite database
       - sdp-data:/app/Client/client/data
+    env_file:
+      - ./Client/client/.env
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - SERVER_PORT=8080

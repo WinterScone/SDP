@@ -18,24 +18,29 @@ public class SmsService {
         this.twilioConfig = twilioConfig;
     }
 
-    public boolean sendSms(String to, String body) {
+    public String sendSms(String to, String body) {
         if (twilioConfig.getAccountSid() == null || twilioConfig.getAccountSid().isBlank()) {
             log.warn("Twilio not configured — skipping SMS to {}", to);
-            return false;
+            return "Twilio not configured";
         }
 
         try {
+            String fromNumber = twilioConfig.getPhoneNumber();
+            if (fromNumber == null || fromNumber.isBlank()) {
+                log.warn("Twilio phone number not configured");
+                return "Twilio phone number not configured";
+            }
             Message message = Message.creator(
                     new PhoneNumber(to),
-                    new PhoneNumber(twilioConfig.getPhoneNumber()),
+                    new PhoneNumber(fromNumber),
                     body
             ).create();
 
-            log.info("SMS sent to {} — SID: {}", to, message.getSid());
-            return true;
+            log.info("SMS sent to {} from {} — SID: {}", to, twilioConfig.getPhoneNumber(), message.getSid());
+            return null;
         } catch (Exception e) {
-            log.error("Failed to send SMS to {}: {}", to, e.getMessage());
-            return false;
+            log.error("Failed to send SMS to {} from {}: {}", to, twilioConfig.getPhoneNumber(), e.getMessage());
+            return "From: " + twilioConfig.getPhoneNumber() + " — " + e.getMessage();
         }
     }
 }

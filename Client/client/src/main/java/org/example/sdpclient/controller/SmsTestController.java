@@ -29,13 +29,13 @@ public class SmsTestController {
                     .body(Map.of("ok", false, "error", "Both 'to' and 'message' are required"));
         }
 
-        boolean sent = smsService.sendSms(to, message);
+        String error = smsService.sendSms(to, message);
 
-        if (sent) {
+        if (error == null) {
             return ResponseEntity.ok(Map.of("ok", true, "message", "SMS sent to " + to));
         } else {
             return ResponseEntity.status(500)
-                    .body(Map.of("ok", false, "error", "Failed to send SMS. Check Twilio config."));
+                    .body(Map.of("ok", false, "error", error));
         }
     }
 }
