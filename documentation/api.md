@@ -8,46 +8,91 @@ All API endpoints are prefixed with `/api`
 
 ## Authentication
 
-Most endpoints use **cookie-based authentication**. After login, cookies are automatically set and must be included in subsequent requests.
+Most endpoints use **cookie-based authentication**. After admin login, three cookies are set automatically:
+
+| Cookie | HttpOnly | Description |
+|--------|----------|-------------|
+| `adminId` | Yes | Numeric admin ID |
+| `adminUsername` | Yes | Admin username |
+| `adminRoot` | No | `"true"` if root admin |
+
+Include these cookies in subsequent requests. Endpoints marked **Root** require `adminRoot=true`. Endpoints marked **Admin** require a valid `adminId` cookie.
 
 ---
 
-## Endpoints
+## 1. Admin Authentication
 
-### 1. Medicine Management
-
-#### Get All Medicines
+### Login
 ```
-GET /api/medicines
-```
-
-**Response:**
-```json
-[
-  {
-    "medicineId": "PARACETAMOL",
-    "medicineName": "Paracetamol",
-    "shape": "Tablet",
-    "colour": "White",
-    "dosagePerForm": 500,
-    "quantity": 100
-  }
-]
-```
-
-#### Update Medicine Quantity
-```
-PATCH /api/medicines/{medicineId}/quantity
+POST /api/verify/login
 ```
 
 **Request Body:**
 ```json
 {
-  "quantity": 150
+  "username": "admin",
+  "password": "adminpass"
 }
 ```
 
-**Response:**
+**Success Response (200):** Sets `adminId`, `adminUsername`, `adminRoot` cookies.
+```json
+{
+  "ok": true,
+  "id": 1,
+  "username": "admin",
+  "root": true
+}
+```
+
+**Error Response (400):**
+```json
+{
+  "ok": false,
+  "error": "Invalid credentials"
+}
+```
+
+### Logout
+```
+POST /api/verify/logout
+```
+
+**Response (200):** Clears all admin cookies.
+
+### Get Current Admin
+```
+GET /api/verify/me
+```
+**Auth:** Admin
+
+**Response (200):**
+```json
+{
+  "ok": true,
+  "username": "admin"
+}
+```
+
+### Register New Admin
+```
+POST /api/verify/register
+```
+**Auth:** Root
+
+**Request Body:**
+```json
+{
+  "username": "newadmin",
+  "password": "password",
+  "firstName": "Jane",
+  "lastName": "Smith",
+  "email": "jane@example.com",
+  "phone": "0987654321"
+}
+```
+
+**Response (200):**
 ```json
 {
   "ok": true
@@ -56,9 +101,9 @@ PATCH /api/medicines/{medicineId}/quantity
 
 ---
 
-### 2. Patient Authentication
+## 2. Patient Authentication
 
-#### Patient Login
+### Patient Login
 ```
 POST /api/patient/login
 ```
@@ -71,7 +116,7 @@ POST /api/patient/login
 }
 ```
 
-**Success Response:**
+**Success Response (200):**
 ```json
 {
   "ok": true,
@@ -80,15 +125,7 @@ POST /api/patient/login
 }
 ```
 
-**Error Response:**
-```json
-{
-  "ok": false,
-  "error": "Invalid credentials"
-}
-```
-
-#### Patient Signup
+### Patient Signup
 ```
 POST /api/patient/signup
 ```
@@ -106,7 +143,7 @@ POST /api/patient/signup
 }
 ```
 
-**Success Response:**
+**Success Response (200):**
 ```json
 {
   "ok": true,
@@ -116,95 +153,90 @@ POST /api/patient/signup
 
 ---
 
-### 3. Admin Authentication
+## 3. Medicine Management
 
-#### Admin Login
+### Get All Medicines
 ```
-POST /api/verify/login
+GET /api/medicines
 ```
+
+**Response (200):**
+```json
+[
+  {
+    "medicineId": "VTM01",
+    "medicineName": "Vitamin C",
+    "shape": "Tablet",
+    "colour": "White",
+    "dosagePerForm": 1000,
+    "quantity": 100
+  }
+]
+```
+
+### Update Medicine Quantity
+```
+PATCH /api/medicines/{medicineId}/quantity
+```
+**Auth:** Admin
+
+`{medicineId}` is a `MedicineType` enum value (e.g. `VTM01`, `SUP01`, `MINMG`).
 
 **Request Body:**
 ```json
 {
-  "username": "admin",
-  "password": "adminpass"
+  "quantity": 150
 }
 ```
 
-**Success Response (sets cookies):**
-```json
-{
-  "ok": true,
-  "username": "admin",
-  "root": true
-}
-```
-
-**Cookies Set:**
-- `adminUsername` (HttpOnly)
-- `adminRoot`
-
-#### Admin Logout
-```
-POST /api/verify/logout
-```
-
-**Response:**
-```
-200 OK
-```
-
-#### Get Current Admin
-```
-GET /api/verify/me
-```
-
-**Requires:** Cookie authentication
-
-**Response:**
-```json
-{
-  "ok": true,
-  "username": "admin"
-}
-```
-
-#### Register New Admin (Root Only)
-```
-POST /api/verify/register
-```
-
-**Requires:** Root admin authentication
-
-**Request Body:**
-```json
-{
-  "username": "newadmin",
-  "password": "password",
-  "firstName": "Jane",
-  "lastName": "Smith",
-  "email": "jane@example.com",
-  "phone": "0987654321"
-}
-```
-
-**Response:**
+**Response (200):**
 ```json
 {
   "ok": true
 }
 ```
 
+### Reduce Medicine Stock
+```
+POST /api/medicines/reduce
+```
+
+Reduces stock quantity by medicine name. Returns error if insufficient stock.
+
+**Request Body:**
+```json
+{
+  "medicineName": "Vitamin C",
+  "quantity": 10
+}
+```
+
+**Response (200):**
+```json
+{
+  "ok": true
+}
+```
+
+**Error Response (400):**
+```json
+{
+  "ok": false,
+  "message": "Not enough stock"
+}
+```
+
 ---
 
-### 4. Patient Details
+## 4. Patient Details
 
-#### Get All Patients (Summary)
+### Get All Patients (Summary)
 ```
 GET /api/patient/getAllPatients
 ```
+**Auth:** Admin (scoped to linked patients; root sees all)
 
-**Response:**
+**Response (200):**
 ```json
 [
   {
@@ -218,57 +250,143 @@ GET /api/patient/getAllPatients
 ]
 ```
 
-#### Get Patient Prescriptions
+### Get Patient Prescriptions
 ```
 GET /api/patient/{patientId}/prescriptions
 ```
 
-**Response:**
+**Response (200):**
 ```json
 {
   "patientId": 1,
   "prescriptions": [
     {
       "id": 1,
-      "medicineName": "Paracetamol",
-      "dosage": "500mg",
-      "frequency": "Twice daily"
+      "medicineName": "Vitamin C",
+      "dosage": "1000mg",
+      "frequency": "Once daily"
     }
   ]
 }
 ```
 
+### Log Medicine Intake
+```
+POST /api/patient/{patientId}/intake
+```
+
+**Request Body:**
+```json
+{
+  "medicineId": "VTM01",
+  "takenDate": "2026-03-10",
+  "takenTime": "08:30",
+  "notes": "Taken with breakfast"
+}
+```
+
+**Response (200):**
+```json
+{
+  "ok": true
+}
+```
+
+### Get Intake History
+```
+GET /api/patient/{patientId}/intake
+```
+
+**Response (200):**
+```json
+{
+  "patientId": 1,
+  "history": [ ]
+}
+```
+
 ---
 
-### 5. Admin-Patient Management
+## 5. Admin Patient Management
 
-#### Get All Patients (Detailed)
+### Search Patients
 ```
-GET /api/admin/patients
+GET /api/admin/patients/search?q={query}
 ```
+**Auth:** Admin (scoped to linked patients; root sees all)
 
-**Requires:** Admin authentication
-
-**Response:**
+**Response (200):**
 ```json
 [
   {
     "id": 1,
     "firstName": "John",
     "lastName": "Doe",
-    "username": "patient123",
+    "dateOfBirth": "1990-01-01",
+    "email": "john@example.com",
+    "phone": "1234567890",
+    "prescriptions": []
+  }
+]
+```
+
+### Get Patient Detail
+```
+GET /api/admin/patients/{id}
+```
+**Auth:** Admin (must be linked to patient, or root)
+
+**Response (200):**
+```json
+{
+  "id": 1,
+  "firstName": "John",
+  "lastName": "Doe",
+  "dateOfBirth": "1990-01-01",
+  "email": "john@example.com",
+  "phone": "1234567890",
+  "prescriptions": [
+    {
+      "id": 1,
+      "medicineId": "VTM01",
+      "medicineName": "Vitamin C",
+      "dosage": "1000mg",
+      "frequency": "Once daily"
+    }
+  ]
+}
+```
+
+### List All Patients (for Assignment)
+```
+GET /api/admin/patients
+```
+**Auth:** Root
+
+**Response (200):**
+```json
+[
+  {
+    "id": 1,
+    "firstName": "John",
+    "lastName": "Doe",
+    "dateOfBirth": "1990-01-01",
+    "email": "john@example.com",
+    "phone": "1234567890",
+    "createdAt": "2026-01-15T10:30:00",
     "linkedAdminId": 2,
     "linkedAdminName": "Dr. Smith"
   }
 ]
 ```
 
-#### Get All Admins
+### List All Admins
 ```
 GET /api/admin/admins
 ```
+**Auth:** Admin
 
-**Response:**
+**Response (200):**
 ```json
 [
   {
@@ -282,10 +400,11 @@ GET /api/admin/admins
 ]
 ```
 
-#### Link Patient to Admin
+### Link Patient to Admin
 ```
 PUT /api/admin/patients/{patientId}/link-admin
 ```
+**Auth:** Root
 
 **Request Body:**
 ```json
@@ -294,18 +413,136 @@ PUT /api/admin/patients/{patientId}/link-admin
 }
 ```
 
-**Response:**
+**Response (200):**
 ```json
 {
   "ok": true
 }
 ```
 
+### Reset Database
+```
+POST /api/admin/reset-database
+```
+**Auth:** Root
+
+Deletes all non-seed admins, patients, and prescriptions.
+
+**Response (200):**
+```json
+{
+  "ok": true,
+  "message": "Deleted 3 admins, 5 patients, 12 prescriptions. Seed data preserved."
+}
+```
+
+---
+
+## 6. Prescription Management
+
+### List Medicines (ID + Name)
+```
+GET /api/admin/medicines
+```
+**Auth:** Admin
+
+**Response (200):**
+```json
+[
+  {
+    "medicineId": "VTM01",
+    "medicineName": "Vitamin C"
+  }
+]
+```
+
+### Create Prescription
+```
+POST /api/admin/patients/{patientId}/prescriptions
+```
+**Auth:** Admin (must be linked to patient, or root)
+
+**Request Body:**
+```json
+{
+  "medicineId": "VTM01",
+  "dosage": "1000mg",
+  "frequency": "Once daily"
+}
+```
+
+**Response:** `201 Created`
+
+**Error (409):** Prescription already exists for this medicine.
+
+### Update Prescription
+```
+PUT /api/admin/prescriptions/{prescriptionId}
+```
+**Auth:** Admin (must be linked to patient, or root)
+
+**Request Body:**
+```json
+{
+  "dosage": "500mg",
+  "frequency": "Twice daily"
+}
+```
+
+**Response:** `200 OK`
+
+### Delete Prescription
+```
+DELETE /api/admin/prescriptions/{prescriptionId}
+```
+**Auth:** Admin (must be linked to patient, or root)
+
+**Response:** `204 No Content`
+
+---
+
+## 7. Activity Logs
+
+### Get All Activity Logs
+```
+GET /api/admin/activity-logs
+```
+**Auth:** Root
+
+**Response (200):**
+```json
+[
+  {
+    "id": 1,
+    "activityType": "MEDICINE_QUANTITY_UPDATE",
+    "description": "Updated Vitamin C quantity to 150",
+    "adminId": 1,
+    "adminUsername": "admin",
+    "patientId": null,
+    "patientName": null,
+    "medicineName": "Vitamin C",
+    "additionalDetails": null,
+    "timestamp": "2026-03-10T14:30:00"
+  }
+]
+```
+
+---
+
+## 8. Health Check
+
+```
+GET /api/admin/ping    →  "pong"
+GET /api/public/ping   →  "pong-public"
+```
+
+No authentication required.
+
 ---
 
 ## Error Responses
 
-All endpoints may return error responses in this format:
+All endpoints may return errors in this format:
 
 ```json
 {
@@ -315,12 +552,41 @@ All endpoints may return error responses in this format:
 }
 ```
 
-**Common HTTP Status Codes:**
-- `200` - Success
-- `400` - Bad Request (invalid data)
-- `401` - Unauthorized (not logged in)
-- `403` - Forbidden (insufficient permissions)
-- `404` - Not Found
+| Status | Meaning |
+|--------|---------|
+| `200` | Success |
+| `201` | Created |
+| `204` | No Content (success, no body) |
+| `400` | Bad Request (invalid data) |
+| `401` | Unauthorized (not logged in) |
+| `403` | Forbidden (insufficient permissions) |
+| `404` | Not Found |
+| `409` | Conflict (duplicate resource) |
+
+---
+
+## Medicine ID Reference
+
+The `medicineId` field uses the `MedicineType` enum:
+
+| ID | Name | Shape | Colour | Dosage (mg) |
+|----|------|-------|--------|-------------|
+| VTM01 | Vitamin C | Tablet | White | 1000 |
+| VTM02 | Vitamin E | Capsule | Green | 268 |
+| VTM03 | Vitamin B6 | Tablet | Pale Yellow | 100 |
+| SUP01 | Omega-3 Fish Oil | Capsule | Clear | 1000 |
+| MINMG | Magnesium | Tablet | White | 400 |
+| MINCA | Calcium | Tablet | White | 600 |
+| MINZN | Zinc | Tablet | Brown | 50 |
+| MINFE | Iron | Tablet | Brown | 18 |
+| SUP02 | Probiotics | Capsule | White | 1000 |
+| SUP03 | Turmeric | Capsule | Yellow | 500 |
+| SUP04 | CoQ10 | Capsule | Yellow | 100 |
+| SUP05 | Ashwagandha | Capsule | Green | 500 |
+| MINK | Potassium | Tablet | Pale Yellow | 2500 |
+| SUP06 | Ginkgo Biloba | Capsule | Brown | 100 |
+| SUP07 | Milk Thistle | Capsule | White | 240 |
+| SUP08 | L-Theanine | Capsule | White | 400 |
 
 ---
 
@@ -338,46 +604,22 @@ The API supports Cross-Origin Resource Sharing (CORS) and can be accessed from a
 
 ```javascript
 // Get all medicines
-fetch('https://www.sdpgroup16.com/api/medicines')
-  .then(response => response.json())
-  .then(data => console.log(data));
+const meds = await fetch('https://www.sdpgroup16.com/api/medicines')
+  .then(r => r.json());
 
 // Patient login
-fetch('https://www.sdpgroup16.com/api/patient/login', {
+const login = await fetch('https://www.sdpgroup16.com/api/patient/login', {
   method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    username: 'patient123',
-    password: 'password'
-  })
-})
-  .then(response => response.json())
-  .then(data => console.log(data));
-```
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ username: 'patient123', password: 'password' })
+}).then(r => r.json());
 
-### Python (Requests)
-
-```python
-import requests
-
-# Get all medicines
-response = requests.get('https://www.sdpgroup16.com/api/medicines')
-medicines = response.json()
-print(medicines)
-
-# Patient login
-login_data = {
-    'username': 'patient123',
-    'password': 'password'
-}
-response = requests.post(
-    'https://www.sdpgroup16.com/api/patient/login',
-    json=login_data
-)
-result = response.json()
-print(result)
+// Reduce medicine stock
+await fetch('https://www.sdpgroup16.com/api/medicines/reduce', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ medicineName: 'Vitamin C', quantity: 5 })
+});
 ```
 
 ### cURL
@@ -391,17 +633,17 @@ curl -X POST https://www.sdpgroup16.com/api/patient/login \
   -H "Content-Type: application/json" \
   -d '{"username":"patient123","password":"password"}'
 
-# Update medicine quantity
-curl -X PATCH https://www.sdpgroup16.com/api/medicines/PARACETAMOL/quantity \
+# Update medicine quantity (with admin cookies)
+curl -X PATCH https://www.sdpgroup16.com/api/medicines/VTM01/quantity \
   -H "Content-Type: application/json" \
+  -b "adminId=1; adminUsername=admin; adminRoot=true" \
   -d '{"quantity":200}'
+
+# Reduce medicine stock
+curl -X POST https://www.sdpgroup16.com/api/medicines/reduce \
+  -H "Content-Type: application/json" \
+  -d '{"medicineName":"Vitamin C","quantity":5}'
 ```
-
----
-
-## Rate Limiting
-
-Currently, there are no rate limits. However, please be respectful and avoid excessive requests.
 
 ---
 
