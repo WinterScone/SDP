@@ -18,6 +18,7 @@
     const newMedicine = document.getElementById("newMedicine");
     const newDosage = document.getElementById("newDosage");
     const newFrequency = document.getElementById("newFrequency");
+    const newScheduledTimes = document.getElementById("newScheduledTimes");
 
     showFormBtn.addEventListener("click", () => {
         prescriptionForm.style.display = "block";
@@ -30,6 +31,7 @@
         newMedicine.value = "";
         newDosage.value = "";
         newFrequency.value = "";
+        newScheduledTimes.value = "";
         msg.textContent = "";
     });
 
@@ -39,8 +41,8 @@
 
     init();
 
-    async function init(){
-        if(!patientId){
+    async function init() {
+        if (!patientId) {
             msg.textContent = "Missing patientId in URL.";
             return;
         }
@@ -49,9 +51,9 @@
         await loadPatientAndPrescriptions();
     }
 
-    async function loadMedicines(){
+    async function loadMedicines() {
         const res = await fetch("/api/admin/medicines");
-        if(!res.ok){
+        if (!res.ok) {
             msg.textContent = "Failed to load medicines.";
             return;
         }
@@ -65,9 +67,9 @@
                 .join("");
     }
 
-    async function loadPatientAndPrescriptions(){
+    async function loadPatientAndPrescriptions() {
         const res = await fetch(`/api/admin/patients/${patientId}`);
-        if(!res.ok){
+        if (!res.ok) {
             msg.textContent = "Failed to load patient.";
             return;
         }
@@ -85,22 +87,25 @@
         renderPrescriptions(p.prescriptions || []);
     }
 
-    function renderPrescriptions(list){
+    function renderPrescriptions(list) {
         rows.innerHTML = "";
 
-        if(list.length === 0){
+        if (list.length === 0) {
             const tr = document.createElement("tr");
-            tr.innerHTML = `<td colspan="5">No prescriptions found.</td>`;
+            tr.innerHTML = `<td colspan="6">No prescriptions found.</td>`;
             rows.appendChild(tr);
             return;
         }
 
         list.forEach(rx => {
+            const times = formatScheduledTimesForInput(rx);
+
             const tr = document.createElement("tr");
             tr.innerHTML = `
-          <td>${escapeHtml(rx.medicineName)}</td>
-          <td><input id="dosage-${rx.id}" value="${escapeAttr(rx.dosage)}" /></td>
-          <td><input id="freq-${rx.id}" value="${escapeAttr(rx.frequency)}" /></td>
+          <td>${escapeHtml(rx.medicineName || rx.medicine?.medicineName || "")}</td>
+          <td><input id="dosage-${rx.id}" value="${escapeAttr(rx.dosage || "")}" /></td>
+          <td><input id="freq-${rx.id}" value="${escapeAttr(rx.frequency || "")}" /></td>
+          <td><input id="times-${rx.id}" value="${escapeAttr(times)}" placeholder="08:00, 20:00" /></td>
           <td><button onclick="saveRx(${rx.id})">Save</button></td>
           <td><button onclick="deleteRx(${rx.id})">Delete</button></td>
         `;
@@ -108,72 +113,139 @@
         });
     }
 
-    window.saveRx = async function(id){
+    window.saveRx = async function(id) {
         const dosage = document.getElementById(`dosage-${id}`).value.trim();
         const frequency = document.getElementById(`freq-${id}`).value.trim();
+        const timesRaw = document.getElementById(`times-${id}`).value.trim();
 
-        if(!dosage || !frequency){
+        if (!dosage || !frequency) {
             msg.textContent = "Dosage and frequency are required.";
+            return;
+        }
+
+        const scheduledTimes = parseTimes(timesRaw);
+        if (scheduledTimes === null) {
+            msg.textContent = "Invalid time format. Use 08:00, 20:00";
             return;
         }
 
         const res = await fetch(`/api/admin/prescriptions/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ dosage, frequency })
+            body: JSON.stringify({
+                dosage,
+                frequency,
+                scheduledTimes
+            })
         });
 
         msg.textContent = res.ok ? "Saved." : "Save failed.";
-        if(res.ok) await loadPatientAndPrescriptions();
+        if (res.ok) await loadPatientAndPrescriptions();
     };
 
-    window.deleteRx = async function(id){
-        if(!confirm("Delete this prescription?")) return;
+    window.deleteRx = async function(id) {
+        if (!confirm("Delete this prescription?")) return;
 
-        const res = await fetch(`/api/admin/prescriptions/${id}`, { method: "DELETE" });
+        const res = await fetch(`/api/admin/prescriptions/${id}`, {
+            method: "DELETE"
+        });
+
         msg.textContent = res.ok ? "Deleted." : "Delete failed.";
-        if(res.ok) await loadPatientAndPrescriptions();
+        if (res.ok) await loadPatientAndPrescriptions();
     };
 
-    async function addPrescription(){
+    async function addPrescription() {
         const medicineId = newMedicine.value;
         const dosage = newDosage.value.trim();
         const frequency = newFrequency.value.trim();
+        const timesRaw = newScheduledTimes.value.trim();
 
-        if(!medicineId || !dosage || !frequency){
+        if (!medicineId || !dosage || !frequency) {
             msg.textContent = "Select medicine + dosage + frequency.";
+            return;
+        }
+
+        const scheduledTimes = parseTimes(timesRaw);
+        if (scheduledTimes === null) {
+            msg.textContent = "Invalid time format. Use 08:00, 20:00";
             return;
         }
 
         const res = await fetch(`/api/admin/patients/${patientId}/prescriptions`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ medicineId, dosage, frequency })
+            body: JSON.stringify({
+                medicineId,
+                dosage,
+                frequency,
+                scheduledTimes
+            })
         });
 
-        if(res.ok){
+        if (res.ok) {
             msg.textContent = "Added.";
             newMedicine.value = "";
             newDosage.value = "";
             newFrequency.value = "";
+            newScheduledTimes.value = "";
             prescriptionForm.style.display = "none";
             showFormBtn.style.display = "block";
             await loadPatientAndPrescriptions();
         } else {
-            msg.textContent = "Add failed (maybe already exists).";
+            msg.textContent = "Add failed.";
         }
     }
 
-    function safe(v){ return v == null ? "" : String(v); }
+    function parseTimes(raw) {
+        if (!raw) return [];
 
-    function escapeHtml(s){
-        return safe(s)
-            .replaceAll("&","&amp;")
-            .replaceAll("<","&lt;")
-            .replaceAll(">","&gt;");
+        const parts = raw
+            .split(",")
+            .map(s => s.trim())
+            .filter(Boolean);
+
+        const regex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+        for (const t of parts) {
+            if (!regex.test(t)) {
+                return null;
+            }
+        }
+
+        return parts;
     }
 
-    function escapeAttr(s){
-        return escapeHtml(s).replaceAll('"',"&quot;");
+    function formatScheduledTimesForInput(rx) {
+        if (Array.isArray(rx.scheduledTimes)) {
+            return rx.scheduledTimes.join(", ");
+        }
+
+        if (Array.isArray(rx.reminderTimes)) {
+            return rx.reminderTimes
+                .map(rt => {
+                    if (typeof rt === "string") return rt;
+                    if (rt && rt.reminderTime) return rt.reminderTime;
+                    return "";
+                })
+                .filter(Boolean)
+                .join(", ");
+        }
+
+        return "";
+    }
+
+    function safe(v) {
+        return v == null ? "" : String(v);
+    }
+
+    function escapeHtml(s) {
+        return safe(s)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;");
+    }
+
+    function escapeAttr(s) {
+        return escapeHtml(s).replaceAll('"', "&quot;");
     }
 })();
