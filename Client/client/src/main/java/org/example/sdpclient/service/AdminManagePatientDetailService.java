@@ -4,18 +4,20 @@ import org.example.sdpclient.dto.*;
 import org.example.sdpclient.entity.Medicine;
 import org.example.sdpclient.entity.Patient;
 import org.example.sdpclient.entity.Prescription;
+import org.example.sdpclient.entity.PrescriptionReminderTime;
 import org.example.sdpclient.enums.MedicineType;
 import org.example.sdpclient.repository.MedicineRepository;
 import org.example.sdpclient.repository.PatientRepository;
 import org.example.sdpclient.repository.PrescriptionRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class AdminManagePatientDetailService {
-
     private final PatientRepository patientRepository;
     private final PrescriptionRepository prescriptionRepository;
     private final MedicineRepository medicineRepository;
@@ -30,7 +32,6 @@ public class AdminManagePatientDetailService {
         this.medicineRepository = medicineRepository;
         this.activityLogService = activityLogService;
     }
-
 
     public List<PatientViewDto> searchPatients(String q, Long adminId, boolean isRoot) {
         String keyword = q == null ? "" : q.trim();
@@ -70,7 +71,6 @@ public class AdminManagePatientDetailService {
         return patientRepository.findById(id);
     }
 
-
     public List<PrescriptionViewDto> getPrescriptionViews(Long patientId) {
         return prescriptionRepository.findByPatientId(patientId).stream()
                 .map(rx -> new PrescriptionViewDto(
@@ -92,17 +92,50 @@ public class AdminManagePatientDetailService {
     }
 
     public void createPrescription(Patient patient, Medicine medicine, PrescriptionCreateDto dto,
-                                  Long adminId, String adminUsername) {
+                                   Long adminId, String adminUsername) {
 
         Prescription rx = new Prescription();
         rx.setPatient(patient);
         rx.setMedicine(medicine);
         rx.setDosage(dto.getDosage().trim());
         rx.setFrequency(dto.getFrequency().trim());
+        rx.setActive(true);
+
+        try {
+            rx.setStartDate(LocalDate.parse(dto.getStartDate()));
+            rx.setEndDate(LocalDate.parse(dto.getEndDate()));
+        } catch (Exception e) {
+            throw new IllegalArgumentException("startDate and endDate must be yyyy-MM-dd");
+        }
+
+        if (dto.getReminderTimes() == null || dto.getReminderTimes().isEmpty()) {
+            throw new IllegalArgumentException("At least one reminder time is required");
+        }
+
+        for (String timeText : dto.getReminderTimes()) {
+            if (timeText == null || timeText.isBlank()) {
+                continue;
+            }
+
+            LocalTime parsedTime;
+            try {
+                parsedTime = LocalTime.parse(timeText.trim());
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Reminder times must be HH:mm:ss");
+            }
+
+            PrescriptionReminderTime rt = new PrescriptionReminderTime();
+            rt.setPrescription(rx);
+            rt.setReminderTime(parsedTime);
+            rx.getReminderTimes().add(rt);
+        }
+
+        if (rx.getReminderTimes().isEmpty()) {
+            throw new IllegalArgumentException("At least one valid reminder time is required");
+        }
 
         prescriptionRepository.save(rx);
 
-        // Log the activity
         String patientName = patient.getFirstName() + " " + patient.getLastName();
         activityLogService.logPrescriptionCreated(
                 patient.getId(),
@@ -126,14 +159,12 @@ public class AdminManagePatientDetailService {
     }
 
     public void deletePrescription(Long id, Long adminId, String adminUsername) {
-        // Get prescription details before deleting for logging
         Optional<Prescription> rxOpt = prescriptionRepository.findById(id);
         if (rxOpt.isPresent()) {
             Prescription rx = rxOpt.get();
             Patient patient = rx.getPatient();
             String patientName = patient.getFirstName() + " " + patient.getLastName();
 
-            // Log the activity before deletion
             activityLogService.logPrescriptionDeleted(
                     patient.getId(),
                     patientName,
@@ -144,10 +175,8 @@ public class AdminManagePatientDetailService {
                     adminUsername
             );
         }
-
         prescriptionRepository.deleteById(id);
     }
-
 
     public List<MedicineViewDto> listMedicines() {
         return medicineRepository.findAll().stream()

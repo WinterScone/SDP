@@ -9,6 +9,7 @@ import org.example.sdpclient.repository.PatientRepository;
 import org.example.sdpclient.service.AdminManagePatientDetailService;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -64,7 +65,9 @@ public class AdminManagePatientDetailController {
 
     @PostMapping("/patients/{id}/prescriptions")
     @ResponseStatus(HttpStatus.CREATED)
-    public void addPrescription(@PathVariable Long id, @RequestBody PrescriptionCreateDto dto, HttpServletRequest request) {
+    public void addPrescription(@PathVariable Long id,
+                                @RequestBody PrescriptionCreateDto dto,
+                                HttpServletRequest request) {
         Long adminId = getAdminIdFromCookie(request);
         boolean isRoot = isRootAdmin(request);
 
@@ -72,10 +75,17 @@ public class AdminManagePatientDetailController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied to this patient");
         }
 
-        if (dto == null || dto.getMedicineId() == null
+        if (dto == null
+                || dto.getMedicineId() == null
                 || AdminManagePatientDetailService.isBlank(dto.getDosage())
-                || AdminManagePatientDetailService.isBlank(dto.getFrequency())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "medicineId, dosage and frequency are required"
+                || AdminManagePatientDetailService.isBlank(dto.getFrequency())
+                || AdminManagePatientDetailService.isBlank(dto.getStartDate())
+                || AdminManagePatientDetailService.isBlank(dto.getEndDate())
+                || dto.getReminderTimes() == null
+                || dto.getReminderTimes().isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "medicineId, dosage, frequency, startDate, endDate and reminderTimes are required"
             );
         }
 
@@ -87,7 +97,9 @@ public class AdminManagePatientDetailController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Medicine not found"));
 
         if (service.prescriptionExists(id, medId)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Prescription already exists for this medicine"
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Prescription already exists for this medicine"
             );
         }
 
