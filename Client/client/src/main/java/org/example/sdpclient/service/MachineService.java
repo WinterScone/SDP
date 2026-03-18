@@ -49,6 +49,7 @@ public class MachineService {
                     null,
                     null,
                     null,
+                    null,
                     List.of(),
                     "No matching patient found"
             );
@@ -87,8 +88,8 @@ public class MachineService {
                 dueItems.add(
                         new PatientPrescriptionsResponse.PrescriptionItem(
                                 prescription.getId(),
-                                prescription.getMedicine().getMedicineId().getId(),   // numeric slot/servo number
-                                prescription.getMedicine().getMedicineId().name(),    // enum code
+                                prescription.getMedicine().getMedicineId().getId(),
+                                prescription.getMedicine().getMedicineId().name(),
                                 prescription.getMedicine().getMedicineName(),
                                 prescription.getDosage(),
                                 reminderTime.getReminderTime().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
@@ -97,12 +98,18 @@ public class MachineService {
             }
         }
 
+        String patientName = (patient.getFirstName() == null ? "" : patient.getFirstName().trim())
+                + " "
+                + (patient.getLastName() == null ? "" : patient.getLastName().trim());
+        patientName = patientName.trim();
+
         return new MachineIdentifyResponse(
                 true,
                 true,
                 patient.getId(),
                 patient.getFirstName(),
                 patient.getLastName(),
+                patientName,
                 dueItems,
                 dueItems.isEmpty()
                         ? "Patient identified successfully, but no medicine is due now"

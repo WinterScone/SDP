@@ -12,12 +12,14 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MachineIdentifyResponse {
-
     private boolean ok;
     private boolean matched;
+
     private Long patientId;
     private String firstName;
     private String lastName;
+    private String patientName;
+
     private List<PatientPrescriptionsResponse.PrescriptionItem> prescriptions;
     private String message;
 }

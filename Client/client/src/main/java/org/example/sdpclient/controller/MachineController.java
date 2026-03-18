@@ -37,6 +37,7 @@ public class MachineController {
                             null,
                             null,
                             null,
+                            null,
                             "Unauthorized machine request"
                     )
             );
@@ -48,6 +49,7 @@ public class MachineController {
                         new MachineIdentifyResponse(
                                 false,
                                 false,
+                                null,
                                 null,
                                 null,
                                 null,
@@ -66,6 +68,7 @@ public class MachineController {
                     new MachineIdentifyResponse(
                             false,
                             false,
+                            null,
                             null,
                             null,
                             null,
