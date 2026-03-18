@@ -111,7 +111,7 @@ public class PatientFaceController {
             if (image == null || image.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "ok", false,
-                        "verified", false,
+                        "matched", false,
                         "error", "Image file is required"
                 ));
             }
@@ -121,25 +121,42 @@ public class PatientFaceController {
             if (patient == null) {
                 return ResponseEntity.ok(Map.of(
                         "ok", true,
-                        "verified", false,
+                        "matched", false,
                         "message", "No matching patient found"
                 ));
             }
 
+            var prescriptions = patient.getPrescriptions().stream()
+                    .map(p -> Map.of(
+                            "prescriptionId", p.getId(),
+                            "medicineCode", p.getMedicine().getMedicineId().name(),
+                            "medicineName", p.getMedicine().getMedicineName(),
+                            "dosage", p.getDosage(),
+                            "frequency", p.getFrequency(),
+                            "scheduledTimes", p.getReminderTimes().stream()
+                                    .map(rt -> rt.getReminderTime().toString())
+                                    .toList()
+                    ))
+                    .toList();
+
             return ResponseEntity.ok(Map.of(
                     "ok", true,
-                    "verified", true,
+                    "matched", true,
                     "patientId", patient.getId(),
                     "firstName", patient.getFirstName(),
                     "lastName", patient.getLastName(),
+                    "patientName", patient.getFirstName() + " " + patient.getLastName(),
+                    "prescriptions", prescriptions,
                     "message", "Patient identified successfully"
             ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
                     "ok", false,
-                    "verified", false,
+                    "matched", false,
                     "error", e.getMessage()
             ));
         }
     }
+
+
 }
