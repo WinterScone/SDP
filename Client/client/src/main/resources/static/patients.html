@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Patients</title>
+    <link rel="stylesheet" href="/css/common.css">
+</head>
+<body>
+
+<section class="card wide">
+    <div class="topbar">
+        <h2>Patients</h2>
+        <button class="btn" onclick="window.location.href='/dashboard.html'">← Back</button>
+    </div>
+
+    <div class="search-row">
+        <input id="q" placeholder="Search by phone / email / first name / last name" />
+        <button id="searchBtn">Search</button>
+    </div>
+
+    <div id="message" class="msg"></div>
+
+    <div class="table-wrapper">
+        <table class="patientsTable">
+            <colgroup>
+                <col class="col-id">
+                <col class="col-name">
+                <col class="col-actions">
+            </colgroup>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+
+            <tbody id="rows"></tbody>
+        </table>
+    </div>
+</section>
+
+<script src="/patients.js"></script>
+</body>
+</html>

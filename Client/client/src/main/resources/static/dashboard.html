@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+
+<body>
+
+<section class="card">
+    <div class="topbar">
+        <h2>Dashboard</h2>
+        <button class="btn" id="logoutBtn">Logout</button>
+    </div>
+
+    <div class="menu">
+        <button class="btn" onclick="window.location.href='/medicine.html'">
+            Medicine
+        </button>
+
+        <button class="btn" onclick="window.location.href='/patients.html'">
+            Patients
+        </button>
+
+        <button class="btn" onclick="window.location.href='/admin-team.html'">
+            Admin Team
+        </button>
+
+        <button class="btn" id="advancedBtn" style="display:none;" onclick="window.location.href='/advanced.html'">
+            Advanced
+        </button>
+
+    </div>
+</section>
+
+<script src="/dashboard.js"></script>
+</body>
+</html>
