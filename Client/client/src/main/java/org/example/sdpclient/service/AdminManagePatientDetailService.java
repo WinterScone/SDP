@@ -1,6 +1,10 @@
 package org.example.sdpclient.service;
 
-import org.example.sdpclient.dto.*;
+import org.example.sdpclient.dto.MedicineViewDto;
+import org.example.sdpclient.dto.PatientViewDto;
+import org.example.sdpclient.dto.PrescriptionCreateDto;
+import org.example.sdpclient.dto.PrescriptionUpdateDto;
+import org.example.sdpclient.dto.PrescriptionViewDto;
 import org.example.sdpclient.entity.Medicine;
 import org.example.sdpclient.entity.Patient;
 import org.example.sdpclient.entity.Prescription;
@@ -11,13 +15,14 @@ import org.example.sdpclient.repository.PatientRepository;
 import org.example.sdpclient.repository.PrescriptionRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class AdminManagePatientDetailService {
+
     private final PatientRepository patientRepository;
     private final PrescriptionRepository prescriptionRepository;
     private final MedicineRepository medicineRepository;
@@ -78,7 +83,10 @@ public class AdminManagePatientDetailService {
                         rx.getMedicine().getMedicineId(),
                         rx.getMedicine().getMedicineName(),
                         rx.getDosage(),
-                        rx.getFrequency()
+                        rx.getFrequency(),
+                        rx.getReminderTimes().stream()
+                                .map(rt -> rt.getReminderTime().toString())
+                                .toList()
                 ))
                 .toList();
     }
@@ -91,48 +99,17 @@ public class AdminManagePatientDetailService {
         return prescriptionRepository.findById(id);
     }
 
-    public void createPrescription(Patient patient, Medicine medicine, PrescriptionCreateDto dto,
-                                   Long adminId, String adminUsername) {
-
+    public void createPrescription(Patient patient,
+                                   Medicine medicine,
+                                   PrescriptionCreateDto dto,
+                                   Long adminId,
+                                   String adminUsername) {
         Prescription rx = new Prescription();
         rx.setPatient(patient);
         rx.setMedicine(medicine);
         rx.setDosage(dto.getDosage().trim());
         rx.setFrequency(dto.getFrequency().trim());
-        rx.setActive(true);
-
-        try {
-            rx.setStartDate(LocalDate.parse(dto.getStartDate()));
-            rx.setEndDate(LocalDate.parse(dto.getEndDate()));
-        } catch (Exception e) {
-            throw new IllegalArgumentException("startDate and endDate must be yyyy-MM-dd");
-        }
-
-        if (dto.getReminderTimes() == null || dto.getReminderTimes().isEmpty()) {
-            throw new IllegalArgumentException("At least one reminder time is required");
-        }
-
-        for (String timeText : dto.getReminderTimes()) {
-            if (timeText == null || timeText.isBlank()) {
-                continue;
-            }
-
-            LocalTime parsedTime;
-            try {
-                parsedTime = LocalTime.parse(timeText.trim());
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Reminder times must be HH:mm:ss");
-            }
-
-            PrescriptionReminderTime rt = new PrescriptionReminderTime();
-            rt.setPrescription(rx);
-            rt.setReminderTime(parsedTime);
-            rx.getReminderTimes().add(rt);
-        }
-
-        if (rx.getReminderTimes().isEmpty()) {
-            throw new IllegalArgumentException("At least one valid reminder time is required");
-        }
+        applyScheduledTimes(rx, dto.getScheduledTimes());
 
         prescriptionRepository.save(rx);
 
@@ -151,6 +128,8 @@ public class AdminManagePatientDetailService {
     public void updatePrescription(Prescription rx, PrescriptionUpdateDto dto) {
         rx.setDosage(dto.getDosage().trim());
         rx.setFrequency(dto.getFrequency().trim());
+        applyScheduledTimes(rx, dto.getScheduledTimes());
+
         prescriptionRepository.save(rx);
     }
 
@@ -175,6 +154,7 @@ public class AdminManagePatientDetailService {
                     adminUsername
             );
         }
+
         prescriptionRepository.deleteById(id);
     }
 
@@ -193,5 +173,28 @@ public class AdminManagePatientDetailService {
 
     public static boolean isBlank(String s) {
         return s == null || s.trim().isEmpty();
+    }
+
+    private void applyScheduledTimes(Prescription rx, List<String> scheduledTimes) {
+        rx.getReminderTimes().clear();
+
+        if (scheduledTimes == null) {
+            return;
+        }
+
+        List<PrescriptionReminderTime> reminderTimes = new ArrayList<>();
+
+        for (String timeStr : scheduledTimes) {
+            if (timeStr == null || timeStr.isBlank()) {
+                continue;
+            }
+
+            PrescriptionReminderTime rt = new PrescriptionReminderTime();
+            rt.setPrescription(rx);
+            rt.setReminderTime(LocalTime.parse(timeStr.trim()));
+            reminderTimes.add(rt);
+        }
+
+        rx.getReminderTimes().addAll(reminderTimes);
     }
 }
