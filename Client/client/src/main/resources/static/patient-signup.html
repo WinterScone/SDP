@@ -11,30 +11,40 @@
 <section class="card">
     <div class="topbar">
         <h2>New Patient</h2>
-        <button class="btn" onclick="window.location.href='/patient-login.html'">← Back</button>
+        <button class="btn" onclick="window.location.href='/dashboard.html'">← Back</button>
     </div>
 
     <form id="signupForm" class="form-long" novalidate>
-        <label for="username">Username</label>
-        <input id="username" type="text" autocomplete="username" required />
 
-        <label for="password">Password</label>
-        <input id="password" type="password" autocomplete="new-password" required />
-
-        <label for="firstName">First name</label>
+        <label for="firstName">First name *</label>
         <input id="firstName" type="text" autocomplete="given-name" required />
 
-        <label for="lastName">Last name</label>
+        <label for="lastName">Last name *</label>
         <input id="lastName" type="text" autocomplete="family-name" required />
 
-        <label for="dateOfBirth">Date of birth</label>
+        <label for="dateOfBirth">Date of birth *</label>
         <input id="dateOfBirth" type="date" required />
+
+        <label for="phone">Phone</label>
+        <input id="phone" type="tel" autocomplete="tel" />
 
         <label for="email">Email</label>
         <input id="email" type="email" autocomplete="email" />
 
-        <label for="phone">Phone</label>
-        <input id="phone" type="tel" autocomplete="tel" />
+        <label for="username">Username *</label>
+        <input id="username" type="text" autocomplete="username" required />
+
+        <label for="password">Password *</label>
+        <input id="password" type="password" autocomplete="new-password" required />
+
+        <div style="margin-top: 16px; padding: 12px; border: 1px solid #d0d7de; border-radius: 6px; background: #f6f8fa;">
+            <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px; color: #24292f;">Facial Recognition</div>
+            <p style="font-size: 13px; color: #57606a; margin: 0 0 10px 0; line-height: 1.6;">This system can use facial recognition to verify your identity when collecting the medication. Your facial data will be stored securely and used solely for authentication purposes. You may opt out at any time by talking to your assigned administrator.</p>
+            <label style="display: flex; align-items: flex-start; gap: 8px; font-weight: normal; cursor: pointer;">
+                <input id="faceConsent" type="checkbox" style="width: auto; height: auto; margin-top: 2px; min-height: unset;" />
+                <span>I consent to the collection and use of my facial data for identity verification purposes.</span>
+            </label>
+        </div>
 
         <div class="row">
             <button class="btn" type="submit">Sign up</button>
@@ -42,9 +52,6 @@
         </div>
     </form>
 
-    <p class="helper">
-        Existing patient? <a href="/patient-login.html">Log in</a>
-    </p>
 </section>
 
 <script src="/patient-signup.js"></script>

@@ -17,6 +17,7 @@ form.addEventListener("submit", async (e) => {
         dateOfBirth: document.getElementById("dateOfBirth").value,
         email: document.getElementById("email").value.trim(),
         phone: document.getElementById("phone").value.trim(),
+        faceRecognitionConsent: document.getElementById("faceConsent").checked,
     };
 
     if (!payload.email) payload.email = null;

@@ -89,6 +89,7 @@ public class PatientLoginService {
             patient.setPhone(req.getPhone().trim());
         }
 
+        patient.setFaceRecognitionConsent(req.isFaceRecognitionConsent());
         patient.setLinkedAdminId(null);
         patient.setLinkedAdminName(null);
 

@@ -62,4 +62,7 @@ public class Patient {
     @Column(name = "face_data")
     private byte[] faceData;
 
+    @Column(name = "face_recognition_consent", nullable = false)
+    private boolean faceRecognitionConsent = false;
+
 }
