@@ -21,8 +21,8 @@ public class PatientFaceController {
     }
 
     @PostMapping(value = "/{patientId}/enroll", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> enrollFace(@PathVariable Long patientId,
-                                        @RequestParam("image") MultipartFile image) {
+    public ResponseEntity enrollFace(@PathVariable Long patientId,
+                                     @RequestParam("image") MultipartFile image) {
         try {
             if (image == null || image.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of(
@@ -33,19 +33,15 @@ public class PatientFaceController {
 
             String contentType = image.getContentType();
             if (contentType == null ||
-                    !(contentType.equalsIgnoreCase(MediaType.IMAGE_JPEG_VALUE)
-                            || contentType.equalsIgnoreCase(MediaType.IMAGE_PNG_VALUE))) {
+                    !(contentType.equalsIgnoreCase(MediaType.IMAGE_JPEG_VALUE) ||
+                            contentType.equalsIgnoreCase(MediaType.IMAGE_PNG_VALUE))) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "ok", false,
                         "error", "Only JPG and PNG images are allowed"
                 ));
             }
 
-            patientFaceService.enrollFace(
-                    patientId,
-                    image.getBytes(),
-                    contentType
-            );
+            patientFaceService.enrollFace(patientId, image.getBytes(), contentType);
 
             return ResponseEntity.ok(Map.of(
                     "ok", true,
@@ -59,8 +55,9 @@ public class PatientFaceController {
             ));
         }
     }
+
     @GetMapping("/{patientId}/image")
-    public ResponseEntity<byte[]> getPatientFace(@PathVariable Long patientId) {
+    public ResponseEntity getPatientFace(@PathVariable Long patientId) {
         Patient patient = patientFaceService.getPatient(patientId);
 
         if (patient.getFaceData() == null || patient.getFaceData().length == 0) {
@@ -68,22 +65,18 @@ public class PatientFaceController {
         }
 
         return ResponseEntity.ok()
-                .header("Content-Type", patient.getFaceContentType() != null
-                        ? patient.getFaceContentType()
-                        : "image/jpeg")
+                .header("Content-Type",
+                        patient.getFaceContentType() != null ? patient.getFaceContentType() : "image/jpeg")
                 .body(patient.getFaceData());
     }
 
     @PostMapping(value = "/{patientId}/verify", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> verifyFace(@PathVariable Long patientId,
-                                        @RequestParam("image") MultipartFile image) {
+    public ResponseEntity verifyFace(@PathVariable Long patientId,
+                                     @RequestParam("image") MultipartFile image) {
         try {
             if (image == null || image.isEmpty()) {
                 return ResponseEntity.badRequest().body(new FaceVerifyResponse(
-                        false,
-                        false,
-                        patientId,
-                        "Image file is required"
+                        false, false, patientId, "Image file is required"
                 ));
             }
 
@@ -97,16 +90,13 @@ public class PatientFaceController {
             ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new FaceVerifyResponse(
-                    false,
-                    false,
-                    patientId,
-                    e.getMessage()
+                    false, false, patientId, e.getMessage()
             ));
         }
     }
 
     @PostMapping(value = "/identify", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> identifyFace(@RequestParam("image") MultipartFile image) {
+    public ResponseEntity identifyFace(@RequestParam("image") MultipartFile image) {
         try {
             if (image == null || image.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of(
@@ -129,7 +119,7 @@ public class PatientFaceController {
             var prescriptions = patient.getPrescriptions().stream()
                     .map(p -> Map.of(
                             "prescriptionId", p.getId(),
-                            "medicineCode", p.getMedicine().getMedicineId().name(),
+                            "medicineId", p.getMedicine().getMedicineId().getId(),
                             "medicineName", p.getMedicine().getMedicineName(),
                             "dosage", p.getDosage(),
                             "frequency", p.getFrequency(),
@@ -157,6 +147,4 @@ public class PatientFaceController {
             ));
         }
     }
-
-
 }
