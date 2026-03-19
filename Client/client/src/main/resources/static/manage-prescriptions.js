@@ -151,7 +151,7 @@ function renderPrescriptions(prescriptions) {
 
     rowsEl.innerHTML = prescriptions.map(p => `
         <tr>
-            <td class="nowrap">${p.medicineNumber ? `Dispenser ${escapeHtml(p.medicineNumber)}` : "-"}</td>
+            <td class="nowrap">${p.medicineCode ?? "-"}</td>
             <td class="wrap">${escapeHtml(p.medicineName ?? "")}</td>
             <td><input type="text" value="${escapeAttr(p.dosage ?? "")}" id="dosage-${p.id}" /></td>
             <td><input type="text" value="${escapeAttr(p.frequency ?? "")}" id="frequency-${p.id}" /></td>

@@ -28,10 +28,12 @@ public class AdminManagePatientDetailService {
     private final MedicineRepository medicineRepository;
     private final ActivityLogService activityLogService;
 
-    public AdminManagePatientDetailService(PatientRepository patientRepository,
-                                           PrescriptionRepository prescriptionRepository,
-                                           MedicineRepository medicineRepository,
-                                           ActivityLogService activityLogService) {
+    public AdminManagePatientDetailService(
+            PatientRepository patientRepository,
+            PrescriptionRepository prescriptionRepository,
+            MedicineRepository medicineRepository,
+            ActivityLogService activityLogService
+    ) {
         this.patientRepository = patientRepository;
         this.prescriptionRepository = prescriptionRepository;
         this.medicineRepository = medicineRepository;
@@ -68,6 +70,7 @@ public class AdminManagePatientDetailService {
         if (isRoot) {
             return true;
         }
+
         Optional<Patient> patient = patientRepository.findById(patientId);
         return patient.isPresent() && adminId.equals(patient.get().getLinkedAdminId());
     }
@@ -81,7 +84,6 @@ public class AdminManagePatientDetailService {
                 .map(rx -> new PrescriptionViewDto(
                         rx.getId(),
                         rx.getMedicine().getMedicineId().getId(),
-                        rx.getMedicine().getMedicineId(),
                         rx.getMedicine().getMedicineName(),
                         rx.getDosage(),
                         rx.getFrequency(),
@@ -123,8 +125,8 @@ public class AdminManagePatientDetailService {
         if (times == null || times.isEmpty()) {
             times = dto.getReminderTimes();
         }
-        applyScheduledTimes(rx, times);
 
+        applyScheduledTimes(rx, times);
         prescriptionRepository.save(rx);
 
         String patientName = patient.getFirstName() + " " + patient.getLastName();
@@ -143,7 +145,6 @@ public class AdminManagePatientDetailService {
         rx.setDosage(dto.getDosage().trim());
         rx.setFrequency(dto.getFrequency().trim());
         applyScheduledTimes(rx, dto.getScheduledTimes());
-
         prescriptionRepository.save(rx);
     }
 
@@ -197,7 +198,6 @@ public class AdminManagePatientDetailService {
         }
 
         List<PrescriptionReminderTime> reminderTimes = new ArrayList<>();
-
         for (String timeStr : scheduledTimes) {
             if (timeStr == null || timeStr.isBlank()) {
                 continue;
