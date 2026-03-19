@@ -33,15 +33,22 @@
         <select id="newMedicine"></select>
 
         <label for="newDosage">Dosage</label>
-        <input id="newDosage" type="text" placeholder="e.g. 500mg" />
+        <input id="newDosage" type="text" placeholder="e.g. 500" />
 
         <label for="newFrequency">Frequency</label>
-        <input id="newFrequency" type="text" placeholder="e.g. 2/day" />
+        <select id="newFrequency">
+            <option value="">Select Frequency</option>
+            <option value="ONCE_A_DAY">Once a day</option>
+            <option value="TWICE_A_DAY">Twice a day</option>
+            <option value="THREE_TIMES_A_DAY">Three times a day</option>
+            <option value="FOUR_TIMES_A_DAY">Four times a day</option>
+        </select>
 
         <div class="row">
-            <button id="addBtn">Add</button>
+            <button id="addBtn" type="button">Add</button>
             <button type="button" id="cancelBtn">Cancel</button>
         </div>
+        <div id="formMessage" class="msg" style="margin-top: 8px;"></div>
     </div>
 
     <div class="table-wrapper">

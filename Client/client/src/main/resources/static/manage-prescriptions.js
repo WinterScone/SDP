@@ -18,6 +18,7 @@
     const newMedicine = document.getElementById("newMedicine");
     const newDosage = document.getElementById("newDosage");
     const newFrequency = document.getElementById("newFrequency");
+    const formMessage = document.getElementById("formMessage");
 
     showFormBtn.addEventListener("click", () => {
         prescriptionForm.style.display = "block";
@@ -31,6 +32,7 @@
         newDosage.value = "";
         newFrequency.value = "";
         msg.textContent = "";
+        formMessage.textContent = "";
     });
 
     document.getElementById("addBtn").addEventListener("click", addPrescription);
@@ -100,7 +102,12 @@
             tr.innerHTML = `
           <td>${escapeHtml(rx.medicineName)}</td>
           <td><input id="dosage-${rx.id}" value="${escapeAttr(rx.dosage)}" /></td>
-          <td><input id="freq-${rx.id}" value="${escapeAttr(rx.frequency)}" /></td>
+          <td><select id="freq-${rx.id}">
+            <option value="ONCE_A_DAY"${rx.frequency === 'ONCE_A_DAY' ? ' selected' : ''}>Once a day</option>
+            <option value="TWICE_A_DAY"${rx.frequency === 'TWICE_A_DAY' ? ' selected' : ''}>Twice a day</option>
+            <option value="THREE_TIMES_A_DAY"${rx.frequency === 'THREE_TIMES_A_DAY' ? ' selected' : ''}>Three times a day</option>
+            <option value="FOUR_TIMES_A_DAY"${rx.frequency === 'FOUR_TIMES_A_DAY' ? ' selected' : ''}>Four times a day</option>
+          </select></td>
           <td><button onclick="saveRx(${rx.id})">Save</button></td>
           <td><button onclick="deleteRx(${rx.id})">Delete</button></td>
         `;
@@ -110,7 +117,7 @@
 
     window.saveRx = async function(id){
         const dosage = document.getElementById(`dosage-${id}`).value.trim();
-        const frequency = document.getElementById(`freq-${id}`).value.trim();
+        const frequency = document.getElementById(`freq-${id}`).value;
 
         if(!dosage || !frequency){
             msg.textContent = "Dosage and frequency are required.";
@@ -138,10 +145,11 @@
     async function addPrescription(){
         const medicineId = newMedicine.value;
         const dosage = newDosage.value.trim();
-        const frequency = newFrequency.value.trim();
+        const frequency = newFrequency.value;
 
         if(!medicineId || !dosage || !frequency){
-            msg.textContent = "Select medicine + dosage + frequency.";
+            formMessage.textContent = "Select medicine, dosage, and frequency.";
+            formMessage.className = "msg error";
             return;
         }
 
@@ -152,15 +160,18 @@
         });
 
         if(res.ok){
-            msg.textContent = "Added.";
+            msg.textContent = "Prescription added.";
             newMedicine.value = "";
             newDosage.value = "";
             newFrequency.value = "";
+            formMessage.textContent = "";
             prescriptionForm.style.display = "none";
             showFormBtn.style.display = "block";
             await loadPatientAndPrescriptions();
         } else {
-            msg.textContent = "Add failed (maybe already exists).";
+            const data = await res.json().catch(() => null);
+            formMessage.textContent = (data && data.message) ? data.message : "Add failed. Check dosage is a number and medicine is not already prescribed.";
+            formMessage.className = "msg error";
         }
     }
 
