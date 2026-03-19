@@ -31,7 +31,9 @@ async function loadPrescriptions() {
         return;
     }
 
-    if (username) titleEl.textContent = `Prescriptions for ${username}`;
+    if (username) {
+        titleEl.textContent = `Prescriptions for ${username}`;
+    }
 
     setMessage("Loading...");
 
@@ -45,6 +47,7 @@ async function loadPrescriptions() {
         }
 
         const list = data.prescriptions || [];
+
         if (list.length === 0) {
             rowsEl.innerHTML = "";
             setMessage("No prescriptions found.");
@@ -53,10 +56,12 @@ async function loadPrescriptions() {
 
         rowsEl.innerHTML = list.map(p => `
       <tr>
-        <td>${escapeHtml(p.medicineId)}</td>
-        <td>${escapeHtml(p.medicineName)}</td>
-        <td>${escapeHtml(p.dosage)}</td>
-        <td>${escapeHtml(p.frequency)}</td>
+        <td class="nowrap">${escapeHtml(p.prescriptionId)}</td>
+        <td class="nowrap">${p.medicineNumber ? `Dispenser ${escapeHtml(p.medicineNumber)}` : "-"}</td>
+        <td class="nowrap">${escapeHtml(p.medicineCode)}</td>
+        <td class="wrap">${escapeHtml(p.medicineName)}</td>
+        <td class="nowrap">${escapeHtml(p.dosage)}</td>
+        <td class="nowrap">${escapeHtml(p.scheduledTime)}</td>
       </tr>
     `).join("");
 

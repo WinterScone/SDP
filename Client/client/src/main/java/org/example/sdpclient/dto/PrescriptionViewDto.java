@@ -6,6 +6,7 @@ import java.util.List;
 
 public record PrescriptionViewDto(
         Long id,
+        Integer medicineNumber,
         MedicineType medicineId,
         String medicineName,
         String dosage,

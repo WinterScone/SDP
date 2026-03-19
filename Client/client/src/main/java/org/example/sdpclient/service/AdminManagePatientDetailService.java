@@ -80,6 +80,7 @@ public class AdminManagePatientDetailService {
         return prescriptionRepository.findByPatientId(patientId).stream()
                 .map(rx -> new PrescriptionViewDto(
                         rx.getId(),
+                        rx.getMedicine().getMedicineId().getId(),
                         rx.getMedicine().getMedicineId(),
                         rx.getMedicine().getMedicineName(),
                         rx.getDosage(),
