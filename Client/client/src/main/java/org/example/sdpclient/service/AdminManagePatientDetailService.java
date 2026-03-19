@@ -99,17 +99,30 @@ public class AdminManagePatientDetailService {
         return prescriptionRepository.findById(id);
     }
 
-    public void createPrescription(Patient patient,
-                                   Medicine medicine,
-                                   PrescriptionCreateDto dto,
-                                   Long adminId,
-                                   String adminUsername) {
+    public void createPrescription(Patient patient, Medicine medicine, PrescriptionCreateDto dto, Long adminId, String adminUsername) {
         Prescription rx = new Prescription();
         rx.setPatient(patient);
         rx.setMedicine(medicine);
         rx.setDosage(dto.getDosage().trim());
         rx.setFrequency(dto.getFrequency().trim());
-        applyScheduledTimes(rx, dto.getScheduledTimes());
+
+        if (!isBlank(dto.getStartDate())) {
+            rx.setStartDate(java.time.LocalDate.parse(dto.getStartDate().trim()));
+        } else {
+            rx.setStartDate(java.time.LocalDate.now());
+        }
+
+        if (!isBlank(dto.getEndDate())) {
+            rx.setEndDate(java.time.LocalDate.parse(dto.getEndDate().trim()));
+        } else {
+            rx.setEndDate(java.time.LocalDate.now().plusYears(1));
+        }
+
+        List<String> times = dto.getScheduledTimes();
+        if (times == null || times.isEmpty()) {
+            times = dto.getReminderTimes();
+        }
+        applyScheduledTimes(rx, times);
 
         prescriptionRepository.save(rx);
 

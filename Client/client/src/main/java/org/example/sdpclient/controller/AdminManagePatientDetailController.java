@@ -78,15 +78,33 @@ public class AdminManagePatientDetailController {
         if (dto == null
                 || dto.getMedicineId() == null
                 || AdminManagePatientDetailService.isBlank(dto.getDosage())
-                || AdminManagePatientDetailService.isBlank(dto.getFrequency())
-                || AdminManagePatientDetailService.isBlank(dto.getStartDate())
-                || AdminManagePatientDetailService.isBlank(dto.getEndDate())
-                || dto.getReminderTimes() == null
-                || dto.getReminderTimes().isEmpty()) {
+                || AdminManagePatientDetailService.isBlank(dto.getFrequency())) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "medicineId, dosage, frequency, startDate, endDate and reminderTimes are required"
+                    "medicineId, dosage and frequency are required"
             );
+        }
+
+        List<String> times = dto.getScheduledTimes();
+        if (times == null || times.isEmpty()) {
+            times = dto.getReminderTimes(); // fallback for old clients
+        }
+
+        if (times == null || times.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "scheduledTimes (or reminderTimes) is required"
+            );
+        }
+
+        dto.setScheduledTimes(times);
+        dto.setReminderTimes(times);
+
+        if (AdminManagePatientDetailService.isBlank(dto.getStartDate())) {
+            dto.setStartDate(java.time.LocalDate.now().toString());
+        }
+        if (AdminManagePatientDetailService.isBlank(dto.getEndDate())) {
+            dto.setEndDate(java.time.LocalDate.now().plusYears(1).toString());
         }
 
         var patient = service.findPatient(id)

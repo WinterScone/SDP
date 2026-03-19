@@ -15,6 +15,7 @@
     const prescriptionForm = document.getElementById("prescriptionForm");
     const showFormBtn = document.getElementById("showFormBtn");
     const cancelBtn = document.getElementById("cancelBtn");
+
     const newMedicine = document.getElementById("newMedicine");
     const newDosage = document.getElementById("newDosage");
     const newFrequency = document.getElementById("newFrequency");
@@ -23,6 +24,7 @@
     showFormBtn.addEventListener("click", () => {
         prescriptionForm.style.display = "block";
         showFormBtn.style.display = "none";
+        msg.textContent = "";
     });
 
     cancelBtn.addEventListener("click", () => {
@@ -39,7 +41,7 @@
 
     let medicinesCache = [];
 
-    init();
+    await init();
 
     async function init() {
         if (!patientId) {
@@ -53,8 +55,9 @@
 
     async function loadMedicines() {
         const res = await fetch("/api/admin/medicines");
+
         if (!res.ok) {
-            msg.textContent = "Failed to load medicines.";
+            msg.textContent = `Failed to load medicines (${res.status}).`;
             return;
         }
 
@@ -63,26 +66,30 @@
         newMedicine.innerHTML =
             `<option value="">Select Medicine</option>` +
             medicinesCache
-                .map(m => `<option value="${escapeAttr(m.medicineId)}">${escapeHtml(m.medicineName)}</option>`)
+                .map(
+                    (m) =>
+                        `<option value="${escapeAttr(m.medicineId)}">${escapeHtml(m.medicineName)}</option>`
+                )
                 .join("");
     }
 
     async function loadPatientAndPrescriptions() {
         const res = await fetch(`/api/admin/patients/${patientId}`);
+
         if (!res.ok) {
-            msg.textContent = "Failed to load patient.";
+            msg.textContent = `Failed to load patient (${res.status}).`;
             return;
         }
 
         const p = await res.json();
 
         patientInfo.innerHTML = `
-        <tr><th style="width:220px;">First Name</th><td>${safe(p.firstName)}</td></tr>
-        <tr><th>Last Name</th><td>${safe(p.lastName)}</td></tr>
-        <tr><th>Date of Birth</th><td>${safe(p.dateOfBirth)}</td></tr>
-        <tr><th>Email</th><td>${safe(p.email)}</td></tr>
-        <tr><th>Phone</th><td>${safe(p.phone)}</td></tr>
-      `;
+      <div><strong>First Name:</strong> ${safe(p.firstName)}</div>
+      <div><strong>Last Name:</strong> ${safe(p.lastName)}</div>
+      <div><strong>Date of Birth:</strong> ${safe(p.dateOfBirth)}</div>
+      <div><strong>Email:</strong> ${safe(p.email)}</div>
+      <div><strong>Phone:</strong> ${safe(p.phone)}</div>
+    `;
 
         renderPrescriptions(p.prescriptions || []);
     }
@@ -92,28 +99,36 @@
 
         if (list.length === 0) {
             const tr = document.createElement("tr");
-            tr.innerHTML = `<td colspan="6">No prescriptions found.</td>`;
+            tr.innerHTML = `<td colspan="5">No prescriptions found.</td>`;
             rows.appendChild(tr);
             return;
         }
 
-        list.forEach(rx => {
+        list.forEach((rx) => {
             const times = formatScheduledTimesForInput(rx);
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
-          <td>${escapeHtml(rx.medicineName || rx.medicine?.medicineName || "")}</td>
-          <td><input id="dosage-${rx.id}" value="${escapeAttr(rx.dosage || "")}" /></td>
-          <td><input id="freq-${rx.id}" value="${escapeAttr(rx.frequency || "")}" /></td>
-          <td><input id="times-${rx.id}" value="${escapeAttr(times)}" placeholder="08:00, 20:00" /></td>
-          <td><button onclick="saveRx(${rx.id})">Save</button></td>
-          <td><button onclick="deleteRx(${rx.id})">Delete</button></td>
-        `;
+        <td>${escapeHtml(rx.medicineName || rx.medicine?.medicineName || "")}</td>
+        <td>
+          <input id="dosage-${rx.id}" type="text" value="${escapeAttr(rx.dosage || "")}" />
+        </td>
+        <td>
+          <input id="freq-${rx.id}" type="text" value="${escapeAttr(rx.frequency || "")}" />
+        </td>
+        <td>
+          <input id="times-${rx.id}" type="text" value="${escapeAttr(times)}" placeholder="08:00, 20:00" />
+        </td>
+        <td class="actions">
+          <button type="button" onclick="saveRx(${rx.id})">Save</button>
+          <button type="button" onclick="deleteRx(${rx.id})">Delete</button>
+        </td>
+      `;
             rows.appendChild(tr);
         });
     }
 
-    window.saveRx = async function(id) {
+    window.saveRx = async function (id) {
         const dosage = document.getElementById(`dosage-${id}`).value.trim();
         const frequency = document.getElementById(`freq-${id}`).value.trim();
         const timesRaw = document.getElementById(`times-${id}`).value.trim();
@@ -132,26 +147,38 @@
         const res = await fetch(`/api/admin/prescriptions/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                dosage,
-                frequency,
-                scheduledTimes
-            })
+            body: JSON.stringify({ dosage, frequency, scheduledTimes }),
         });
 
-        msg.textContent = res.ok ? "Saved." : "Save failed.";
-        if (res.ok) await loadPatientAndPrescriptions();
+        if (res.ok) {
+            msg.textContent = "Saved.";
+            await loadPatientAndPrescriptions();
+        } else {
+            let errorText = "";
+            try {
+                errorText = await res.text();
+            } catch (_) {}
+            msg.textContent = `Save failed (${res.status})${errorText ? ": " + errorText : ""}`;
+        }
     };
 
-    window.deleteRx = async function(id) {
+    window.deleteRx = async function (id) {
         if (!confirm("Delete this prescription?")) return;
 
         const res = await fetch(`/api/admin/prescriptions/${id}`, {
-            method: "DELETE"
+            method: "DELETE",
         });
 
-        msg.textContent = res.ok ? "Deleted." : "Delete failed.";
-        if (res.ok) await loadPatientAndPrescriptions();
+        if (res.ok) {
+            msg.textContent = "Deleted.";
+            await loadPatientAndPrescriptions();
+        } else {
+            let errorText = "";
+            try {
+                errorText = await res.text();
+            } catch (_) {}
+            msg.textContent = `Delete failed (${res.status})${errorText ? ": " + errorText : ""}`;
+        }
     };
 
     async function addPrescription() {
@@ -171,15 +198,22 @@
             return;
         }
 
+        const today = new Date().toISOString().slice(0, 10);
+
+        const payload = {
+            medicineId,
+            dosage,
+            frequency,
+            startDate: today,
+            endDate: "2026-12-31",
+            reminderTimes: scheduledTimes,
+            scheduledTimes
+        };
+
         const res = await fetch(`/api/admin/patients/${patientId}/prescriptions`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                medicineId,
-                dosage,
-                frequency,
-                scheduledTimes
-            })
+            body: JSON.stringify(payload)
         });
 
         if (res.ok) {
@@ -192,7 +226,11 @@
             showFormBtn.style.display = "block";
             await loadPatientAndPrescriptions();
         } else {
-            msg.textContent = "Add failed.";
+            let errorText = "";
+            try {
+                errorText = await res.text();
+            } catch (e) {}
+            msg.textContent = `Add failed (${res.status})${errorText ? ": " + errorText : ""}`;
         }
     }
 
@@ -201,7 +239,7 @@
 
         const parts = raw
             .split(",")
-            .map(s => s.trim())
+            .map((s) => s.trim())
             .filter(Boolean);
 
         const regex = /^([01]\d|2[0-3]):([0-5]\d)$/;
@@ -222,7 +260,7 @@
 
         if (Array.isArray(rx.reminderTimes)) {
             return rx.reminderTimes
-                .map(rt => {
+                .map((rt) => {
                     if (typeof rt === "string") return rt;
                     if (rt && rt.reminderTime) return rt.reminderTime;
                     return "";
