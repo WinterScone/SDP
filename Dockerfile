@@ -16,7 +16,7 @@ RUN ./mvnw dependency:go-offline -B
 COPY Client/client/src src
 
 # Build the application
-RUN ./mvnw clean package -DskipTests
+RUN ./mvnw clean package -Dmaven.test.skip=true
 
 # Production stage
 FROM eclipse-temurin:21-jre-alpine
@@ -24,8 +24,9 @@ FROM eclipse-temurin:21-jre-alpine
 # Set working directory
 WORKDIR /app
 
-# Create directory for SQLite database
-RUN mkdir -p /app/Client/client/data
+# Set database path and create directory
+ENV DB_PATH=/app/data
+RUN mkdir -p /app/data
 
 # Copy the JAR from build stage
 COPY --from=build /app/target/*.jar app.jar

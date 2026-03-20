@@ -12,9 +12,11 @@ import java.util.List;
 @Service
 public class MedicineService {
     private final MedicineRepository repo;
+    private final ActivityLogService activityLogService;
 
-    public MedicineService(MedicineRepository repo) {
+    public MedicineService(MedicineRepository repo, ActivityLogService activityLogService) {
         this.repo = repo;
+        this.activityLogService = activityLogService;
     }
 
     public List<Medicine> getAll() {
@@ -25,10 +27,20 @@ public class MedicineService {
         return repo.existsById(id);
     }
 
-    public void updateQuantity(MedicineType id, int quantity) {
+    public void updateQuantity(MedicineType id, int quantity, Long adminId, String adminUsername) {
         Medicine medicine = repo.findById(id).orElseThrow();
+        int oldQuantity = medicine.getQuantity();
         medicine.setQuantity(quantity);
         repo.save(medicine);
+
+        // Log the activity
+        activityLogService.logMedicineStockChange(
+                medicine.getMedicineName(),
+                oldQuantity,
+                quantity,
+                adminId,
+                adminUsername
+        );
     }
 
 

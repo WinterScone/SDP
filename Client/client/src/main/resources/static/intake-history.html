@@ -5,79 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Intake History</title>
     <link rel="stylesheet" href="/css/common.css">
-    <style>
-        .log-form {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            align-items: flex-end;
-            margin-top: 16px;
-        }
-
-        .log-form .field {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .log-form label {
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .log-form select,
-        .log-form input[type="date"],
-        .log-form input[type="time"],
-        .log-form input[type="text"] {
-            padding: 8px 10px;
-            font-size: 14px;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            background: #fff;
-        }
-
-        .section-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin: 0 0 4px 0;
-        }
-
-        #logMessage {
-            font-size: 14px;
-            margin-top: 8px;
-        }
-
-        .success { color: #16a34a; }
-        .error   { color: #dc2626; }
-
-        @media (max-width: 768px) {
-            .log-form {
-                flex-direction: column;
-            }
-
-            .log-form select,
-            .log-form input[type="date"],
-            .log-form input[type="time"],
-            .log-form input[type="text"] {
-                width: 100%;
-                font-size: 16px;
-                box-sizing: border-box;
-            }
-        }
-    </style>
 </head>
 <body>
 
-<section class="card wide" style="margin-bottom: 24px;">
+<section class="card wide">
     <div class="topbar">
         <h2 id="title">Intake History</h2>
-        <div style="display:flex; gap:8px;">
+        <div class="topbar-actions">
             <button class="btn" id="backBtn" onclick="window.location.href='/patient-dashboard.html'">← Back</button>
             <button class="btn" id="logoutBtn">Logout</button>
         </div>
     </div>
 
-    <p class="section-title">Log New Intake</p>
+    <h3 class="section-title">Log New Intake</h3>
     <div class="log-form">
         <div class="field">
             <label for="medicineSelect">Medicine</label>
@@ -95,7 +35,7 @@
         </div>
         <div class="field">
             <label for="notesInput">Notes (optional)</label>
-            <input type="text" id="notesInput" placeholder="e.g. taken with food" maxlength="200" style="min-width:200px;" />
+            <input type="text" id="notesInput" placeholder="e.g. taken with food" maxlength="200" />
         </div>
         <div class="field">
             <label>&nbsp;</label>
@@ -106,7 +46,7 @@
 </section>
 
 <section class="card wide">
-    <p class="section-title">History</p>
+    <h3 class="section-title">History</h3>
     <div id="message" class="msg"></div>
     <div class="table-wrapper">
         <table>

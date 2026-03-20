@@ -40,14 +40,14 @@ class PatientLoginServiceTest {
         PatientLogin req = mock(PatientLogin.class);
         when(req.getUsername()).thenReturn("missing");
 
-        when(repo.findByUsername("missing")).thenReturn(Optional.empty());
+        when(repo.findByUsernameIgnoreCase("missing")).thenReturn(Optional.empty());
 
         Map<String, Object> result = service.login(req);
 
         assertEquals(false, result.get("ok"));
         assertEquals(1, result.size());
 
-        verify(repo).findByUsername("missing");
+        verify(repo).findByUsernameIgnoreCase("missing");
         verifyNoInteractions(encoder);
     }
 
@@ -62,7 +62,7 @@ class PatientLoginServiceTest {
         patient.setUsername("user");
         patient.setPasswordHash("hashed");
 
-        when(repo.findByUsername("user")).thenReturn(Optional.of(patient));
+        when(repo.findByUsernameIgnoreCase("user")).thenReturn(Optional.of(patient));
         when(encoder.matches("wrong", "hashed")).thenReturn(false);
 
         Map<String, Object> result = service.login(req);
@@ -70,7 +70,7 @@ class PatientLoginServiceTest {
         assertEquals(false, result.get("ok"));
         assertEquals(1, result.size());
 
-        verify(repo).findByUsername("user");
+        verify(repo).findByUsernameIgnoreCase("user");
         verify(encoder).matches("wrong", "hashed");
     }
 
@@ -85,7 +85,7 @@ class PatientLoginServiceTest {
         patient.setUsername("user");
         patient.setPasswordHash("hashed");
 
-        when(repo.findByUsername("user")).thenReturn(Optional.of(patient));
+        when(repo.findByUsernameIgnoreCase("user")).thenReturn(Optional.of(patient));
         when(encoder.matches("pw", "hashed")).thenReturn(true);
 
         Map<String, Object> result = service.login(req);
@@ -94,7 +94,7 @@ class PatientLoginServiceTest {
         assertEquals("user", result.get("username"));
         assertEquals(42L, result.get("patientId"));
 
-        verify(repo).findByUsername("user");
+        verify(repo).findByUsernameIgnoreCase("user");
         verify(encoder).matches("pw", "hashed");
     }
 
@@ -126,14 +126,14 @@ class PatientLoginServiceTest {
         when(req.getLastName()).thenReturn("Doe");
         when(req.getDateOfBirth()).thenReturn("2000-01-02");
 
-        when(repo.existsByUsername("user")).thenReturn(true);
+        when(repo.existsByUsernameIgnoreCase("user")).thenReturn(true);
 
         Map<String, Object> result = service.signup(req);
 
         assertEquals(false, result.get("ok"));
         assertEquals("Username already taken", result.get("error"));
 
-        verify(repo).existsByUsername("user");
+        verify(repo).existsByUsernameIgnoreCase("user");
         verify(repo, never()).save(any());
         verifyNoInteractions(encoder);
     }
@@ -149,7 +149,7 @@ class PatientLoginServiceTest {
         when(req.getEmail()).thenReturn("   "); // blank -> null
         when(req.getPhone()).thenReturn(null);  // null -> null
 
-        when(repo.existsByUsername("user")).thenReturn(false);
+        when(repo.existsByUsernameIgnoreCase("user")).thenReturn(false);
         when(encoder.encode("pw")).thenReturn("hashedPw");
 
         // Return a "saved" patient with an id
@@ -179,7 +179,7 @@ class PatientLoginServiceTest {
         assertNull(toSave.getLinkedAdminId());
         assertNull(toSave.getLinkedAdminName());
 
-        verify(repo).existsByUsername("user");
+        verify(repo).existsByUsernameIgnoreCase("user");
         verify(encoder).encode("pw");
     }
 
@@ -194,7 +194,7 @@ class PatientLoginServiceTest {
         when(req.getEmail()).thenReturn("  a@b.com  ");
         when(req.getPhone()).thenReturn("  123  ");
 
-        when(repo.existsByUsername("user")).thenReturn(false);
+        when(repo.existsByUsernameIgnoreCase("user")).thenReturn(false);
         when(encoder.encode("pw")).thenReturn("hashedPw");
 
         Patient saved = new Patient();

@@ -15,10 +15,13 @@ public class PatientAdminService {
 
     private final PatientRepository patientRepo;
     private final AdminRepository adminRepo;
+    private final ActivityLogService activityLogService;
 
-    public PatientAdminService(PatientRepository patientRepo, AdminRepository adminRepo) {
+    public PatientAdminService(PatientRepository patientRepo, AdminRepository adminRepo,
+                              ActivityLogService activityLogService) {
         this.patientRepo = patientRepo;
         this.adminRepo = adminRepo;
+        this.activityLogService = activityLogService;
     }
 
     public List<PatientRow> getAllPatientsSafe() {
@@ -39,7 +42,8 @@ public class PatientAdminService {
     }
 
     @Transactional
-    public void linkAdminToPatient(Long patientId, Long adminId) {
+    public void linkAdminToPatient(Long patientId, Long adminId, Long assignerAdminId,
+                                  String assignerAdminUsername) {
         var patient = patientRepo.findById(patientId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
@@ -52,9 +56,26 @@ public class PatientAdminService {
                         "Admin not found"
                 ));
 
+        // Check if this is a reassignment
+        boolean isReassignment = patient.getLinkedAdminId() != null;
+        String previousAdminName = patient.getLinkedAdminName();
+
         patient.setLinkedAdminId(adminId);
         patient.setLinkedAdminName(admin.getUsername());
         patientRepo.save(patient);
+
+        // Log the activity
+        String patientName = patient.getFirstName() + " " + patient.getLastName();
+        activityLogService.logPatientAssigned(
+                patientId,
+                patientName,
+                adminId,
+                admin.getUsername(),
+                assignerAdminId,
+                assignerAdminUsername,
+                isReassignment,
+                previousAdminName
+        );
     }
 }
 

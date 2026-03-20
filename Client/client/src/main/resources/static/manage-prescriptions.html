@@ -5,58 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Manage Prescriptions</title>
     <link rel="stylesheet" href="/css/common.css">
-    <style>
-        .card {
-            max-width: 1100px;
-        }
-        input {
-            width: 160px;
-        }
-        select {
-            width: 260px;
-        }
-        .sectionTitle {
-            margin-top: 18px;
-        }
-    </style>
 </head>
 
 <body>
-<section class="card">
+<section class="card wide">
     <div class="topbar">
         <h2>Manage Prescriptions</h2>
-        <div style="display:flex; gap:10px; align-items:center;">
-            <span id="message" class="msg"></span>
-            <button onclick="history.back()">← Back</button>
+        <div class="topbar-actions">
+            <div id="message" class="msg"></div>
+            <button class="btn" onclick="window.location.href='/patients.html'">← Back</button>
         </div>
     </div>
 
-    <h3 class="sectionTitle">Patient Details</h3>
-    <table>
-        <tbody id="patientInfo"></tbody>
-    </table>
-
-    <h3 class="sectionTitle">Prescriptions</h3>
-
-    <div style="display:flex; gap:10px; align-items:center; margin: 10px 0;">
-        <select id="newMedicine"></select>
-        <input id="newDosage" placeholder="Dosage (e.g. 500mg)" />
-        <input id="newFrequency" placeholder="Frequency (e.g. 2/day)" />
-        <button id="addBtn">Add</button>
+    <h3 class="section-title">Patient Details</h3>
+    <div class="table-wrapper">
+        <table>
+            <tbody id="patientInfo"></tbody>
+        </table>
     </div>
 
-    <table>
-        <thead>
-        <tr>
-            <th>Medicine</th>
-            <th>Dosage</th>
-            <th>Frequency</th>
-            <th>Updated</th>
-            <th>Delete</th>
-        </tr>
-        </thead>
-        <tbody id="rows"></tbody>
-    </table>
+    <h3 class="section-title">Prescriptions</h3>
+
+    <button id="showFormBtn">+ Add Prescription</button>
+
+    <div class="form-short" id="prescriptionForm" style="display: none;">
+        <label for="newMedicine">Medicine</label>
+        <select id="newMedicine"></select>
+
+        <label for="newDosage">Dosage</label>
+        <input id="newDosage" type="text" placeholder="e.g. 500mg" />
+
+        <label for="newFrequency">Frequency</label>
+        <input id="newFrequency" type="text" placeholder="e.g. 2/day" />
+
+        <div class="row">
+            <button id="addBtn">Add</button>
+            <button type="button" id="cancelBtn">Cancel</button>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+            <tr>
+                <th>Medicine</th>
+                <th>Dosage</th>
+                <th>Frequency</th>
+                <th>Updated</th>
+                <th>Delete</th>
+            </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+        </table>
+    </div>
 </section>
 
 <script src="/manage-prescriptions.js"></script>

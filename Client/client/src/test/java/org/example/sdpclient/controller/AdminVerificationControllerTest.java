@@ -144,7 +144,7 @@ class AdminVerificationControllerTest {
                 .andExpect(jsonPath("$.message").value("Unauthorized"));
 
         verifyNoInteractions(adminRepo);
-        verify(service, never()).register(any());
+        verify(service, never()).register(any(), any(), any());
     }
 
     @Test
@@ -164,7 +164,7 @@ class AdminVerificationControllerTest {
                 .andExpect(jsonPath("$.message").value("Only root admin can register new admins"));
 
         verify(adminRepo).findByUsername("admin1");
-        verify(service, never()).register(any());
+        verify(service, never()).register(any(), any(), any());
     }
 
     @Test
@@ -174,7 +174,7 @@ class AdminVerificationControllerTest {
         caller.setRoot(true);
 
         when(adminRepo.findByUsername("root")).thenReturn(Optional.of(caller));
-        when(service.register(any())).thenReturn(Map.of("ok", false, "message", "bad"));
+        when(service.register(any(), any(), any())).thenReturn(Map.of("ok", false, "message", "bad"));
 
         mockMvc.perform(post("/api/verify/register")
                         .cookie(new Cookie("adminUsername", "root"))
@@ -184,7 +184,7 @@ class AdminVerificationControllerTest {
                 .andExpect(jsonPath("$.ok").value(false));
 
         verify(adminRepo).findByUsername("root");
-        verify(service).register(any());
+        verify(service).register(any(), any(), any());
     }
 
     @Test
@@ -194,7 +194,7 @@ class AdminVerificationControllerTest {
         caller.setRoot(true);
 
         when(adminRepo.findByUsername("root")).thenReturn(Optional.of(caller));
-        when(service.register(any())).thenReturn(Map.of("ok", true, "username", "new"));
+        when(service.register(any(), any(), any())).thenReturn(Map.of("ok", true, "username", "new"));
 
         mockMvc.perform(post("/api/verify/register")
                         .cookie(new Cookie("adminUsername", "root"))
@@ -205,6 +205,6 @@ class AdminVerificationControllerTest {
                 .andExpect(jsonPath("$.username").value("new"));
 
         verify(adminRepo).findByUsername("root");
-        verify(service).register(any());
+        verify(service).register(any(), any(), any());
     }
 }

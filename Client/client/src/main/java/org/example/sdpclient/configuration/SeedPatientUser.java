@@ -16,17 +16,15 @@ public class SeedPatientUser {
     @Bean
     CommandLineRunner seedPatients(PatientRepository repo, PasswordEncoder encoder) {
         return args -> {
-            seed(repo, encoder, "patient1", "patient123",
-                    "Test", "Patient",
-                    LocalDate.of(2000, 1, 1).toString());
+            seed(repo, encoder, "testPatient1", "testPatient1",
+                    "Test", "Patient One",
+                    LocalDate.of(1990, 1, 1).toString(),
+                    "testpatient1@sdp.com", "07700 800001");
 
-            seed(repo, encoder, "patient2", "patient123",
-                    "Jane", "Doe",
-                    LocalDate.of(1995, 5, 20).toString());
-
-            seed(repo, encoder, "patient3", "patient123",
-                    "John", "Smith",
-                    LocalDate.of(1988, 11, 3).toString());
+            seed(repo, encoder, "testPatient2", "testPatient2",
+                    "Test", "Patient Two",
+                    LocalDate.of(1990, 1, 2).toString(),
+                    "testpatient2@sdp.com", "07700 800002");
         };
     }
 
@@ -36,7 +34,9 @@ public class SeedPatientUser {
                       String rawPassword,
                       String firstName,
                       String lastName,
-                      String dateOfBirth) {
+                      String dateOfBirth,
+                      String email,
+                      String phone) {
 
         if (repo.findByUsername(username).isPresent()) return;
 
@@ -46,6 +46,8 @@ public class SeedPatientUser {
         patient.setFirstName(firstName);
         patient.setLastName(lastName);
         patient.setDateOfBirth(dateOfBirth);
+        patient.setEmail(email);
+        patient.setPhone(phone);
 
         repo.save(patient);
     }

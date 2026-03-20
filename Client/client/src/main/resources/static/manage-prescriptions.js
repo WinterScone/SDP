@@ -12,9 +12,27 @@
     const patientInfo = document.getElementById("patientInfo");
     const rows = document.getElementById("rows");
 
+    const prescriptionForm = document.getElementById("prescriptionForm");
+    const showFormBtn = document.getElementById("showFormBtn");
+    const cancelBtn = document.getElementById("cancelBtn");
     const newMedicine = document.getElementById("newMedicine");
     const newDosage = document.getElementById("newDosage");
     const newFrequency = document.getElementById("newFrequency");
+
+    showFormBtn.addEventListener("click", () => {
+        prescriptionForm.style.display = "block";
+        showFormBtn.style.display = "none";
+    });
+
+    cancelBtn.addEventListener("click", () => {
+        prescriptionForm.style.display = "none";
+        showFormBtn.style.display = "block";
+        newMedicine.value = "";
+        newDosage.value = "";
+        newFrequency.value = "";
+        msg.textContent = "";
+    });
+
     document.getElementById("addBtn").addEventListener("click", addPrescription);
 
     let medicinesCache = [];
@@ -138,6 +156,8 @@
             newMedicine.value = "";
             newDosage.value = "";
             newFrequency.value = "";
+            prescriptionForm.style.display = "none";
+            showFormBtn.style.display = "block";
             await loadPatientAndPrescriptions();
         } else {
             msg.textContent = "Add failed (maybe already exists).";

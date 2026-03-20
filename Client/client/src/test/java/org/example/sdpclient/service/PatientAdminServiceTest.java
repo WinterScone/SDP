@@ -32,6 +32,9 @@ class PatientAdminServiceTest {
     @Mock
     private AdminRepository adminRepo;
 
+    @Mock
+    private ActivityLogService activityLogService;
+
     @InjectMocks
     private PatientAdminService service;
 
@@ -79,7 +82,7 @@ class PatientAdminServiceTest {
         when(patientRepo.findById(10L)).thenReturn(Optional.of(patient));
         when(adminRepo.findById(7L)).thenReturn(Optional.of(admin));
 
-        service.linkAdminToPatient(10L, 7L);
+        service.linkAdminToPatient(10L, 7L, 1L, "testAdmin");
 
         assertEquals(7L, patient.getLinkedAdminId());
         assertEquals("rootAdmin", patient.getLinkedAdminName());
@@ -98,7 +101,7 @@ class PatientAdminServiceTest {
 
         ResponseStatusException ex = assertThrows(
                 ResponseStatusException.class,
-                () -> service.linkAdminToPatient(10L, 7L)
+                () -> service.linkAdminToPatient(10L, 7L, 1L, "testAdmin")
         );
 
         assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
@@ -119,7 +122,7 @@ class PatientAdminServiceTest {
 
         ResponseStatusException ex = assertThrows(
                 ResponseStatusException.class,
-                () -> service.linkAdminToPatient(10L, 7L)
+                () -> service.linkAdminToPatient(10L, 7L, 1L, "testAdmin")
         );
 
         assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());

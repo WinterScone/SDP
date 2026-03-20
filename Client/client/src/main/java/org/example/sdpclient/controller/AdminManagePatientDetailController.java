@@ -1,5 +1,7 @@
 package org.example.sdpclient.controller;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.antlr.v4.runtime.tree.pattern.ParseTreePattern;
 import org.example.sdpclient.dto.*;
 import org.example.sdpclient.enums.MedicineType;
@@ -24,12 +26,20 @@ public class AdminManagePatientDetailController {
     }
 
     @GetMapping("/patients/search")
-    public List<PatientViewDto> searchPatients(@RequestParam(required = false) String q) {
-        return service.searchPatients(q);
+    public List<PatientViewDto> searchPatients(@RequestParam(required = false) String q, HttpServletRequest request) {
+        Long adminId = getAdminIdFromCookie(request);
+        boolean isRoot = isRootAdmin(request);
+        return service.searchPatients(q, adminId, isRoot);
     }
 
     @GetMapping("/patients/{id}")
-    public PatientViewDto getPatient(@PathVariable Long id) {
+    public PatientViewDto getPatient(@PathVariable Long id, HttpServletRequest request) {
+        Long adminId = getAdminIdFromCookie(request);
+        boolean isRoot = isRootAdmin(request);
+
+        if (!service.canAdminAccessPatient(id, adminId, isRoot)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied to this patient");
+        }
 
         var patient = service.findPatient(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient not found"));
@@ -54,7 +64,13 @@ public class AdminManagePatientDetailController {
 
     @PostMapping("/patients/{id}/prescriptions")
     @ResponseStatus(HttpStatus.CREATED)
-    public void addPrescription(@PathVariable Long id, @RequestBody PrescriptionCreateDto dto) {
+    public void addPrescription(@PathVariable Long id, @RequestBody PrescriptionCreateDto dto, HttpServletRequest request) {
+        Long adminId = getAdminIdFromCookie(request);
+        boolean isRoot = isRootAdmin(request);
+
+        if (!service.canAdminAccessPatient(id, adminId, isRoot)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied to this patient");
+        }
 
         if (dto == null || dto.getMedicineId() == null
                 || AdminManagePatientDetailService.isBlank(dto.getDosage())
@@ -75,11 +91,14 @@ public class AdminManagePatientDetailController {
             );
         }
 
-        service.createPrescription(patient, medicine, dto);
+        String adminUsername = getCookieValue(request, "adminUsername");
+        service.createPrescription(patient, medicine, dto, adminId, adminUsername);
     }
 
     @PutMapping("/prescriptions/{id}")
-    public void updatePrescription(@PathVariable Long id, @RequestBody PrescriptionUpdateDto dto) {
+    public void updatePrescription(@PathVariable Long id, @RequestBody PrescriptionUpdateDto dto, HttpServletRequest request) {
+        Long adminId = getAdminIdFromCookie(request);
+        boolean isRoot = isRootAdmin(request);
 
         if (dto == null
                 || AdminManagePatientDetailService.isBlank(dto.getDosage())
@@ -90,18 +109,52 @@ public class AdminManagePatientDetailController {
 
         var rx = service.findPrescription(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Prescription not found"));
 
+        if (!service.canAdminAccessPatient(rx.getPatient().getId(), adminId, isRoot)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied to this patient");
+        }
+
         service.updatePrescription(rx, dto);
     }
 
     @DeleteMapping("/prescriptions/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deletePrescription(@PathVariable Long id) {
+    public void deletePrescription(@PathVariable Long id, HttpServletRequest request) {
+        Long adminId = getAdminIdFromCookie(request);
+        boolean isRoot = isRootAdmin(request);
 
-        if (!service.prescriptionIdExists(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Prescription not found"
-            );
+        var rx = service.findPrescription(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Prescription not found"));
+
+        if (!service.canAdminAccessPatient(rx.getPatient().getId(), adminId, isRoot)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied to this patient");
         }
 
-        service.deletePrescription(id);
+        String adminUsername = getCookieValue(request, "adminUsername");
+        service.deletePrescription(id, adminId, adminUsername);
+    }
+
+    private Long getAdminIdFromCookie(HttpServletRequest request) {
+        String idStr = getCookieValue(request, "adminId");
+        if (idStr == null || idStr.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
+        try {
+            return Long.parseLong(idStr);
+        } catch (NumberFormatException e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid admin ID");
+        }
+    }
+
+    private boolean isRootAdmin(HttpServletRequest request) {
+        String rootStr = getCookieValue(request, "adminRoot");
+        return "true".equalsIgnoreCase(rootStr);
+    }
+
+    private String getCookieValue(HttpServletRequest request, String name) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) return null;
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals(name)) return cookie.getValue();
+        }
+        return null;
     }
 }

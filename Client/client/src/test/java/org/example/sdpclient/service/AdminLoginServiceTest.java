@@ -28,6 +28,9 @@ class AdminLoginServiceTest {
     @Mock
     private PasswordEncoder encoder;
 
+    @Mock
+    private ActivityLogService activityLogService;
+
     @InjectMocks
     private AdminLoginService service;
 
@@ -40,14 +43,14 @@ class AdminLoginServiceTest {
         AdminLogin req = mock(AdminLogin.class);
         when(req.getUsername()).thenReturn("missing");
 
-        when(repo.findByUsername("missing")).thenReturn(Optional.empty());
+        when(repo.findByUsernameIgnoreCase("missing")).thenReturn(Optional.empty());
 
         Map<String, Object> result = service.login(req);
 
         assertEquals(false, result.get("ok"));
         assertEquals(1, result.size());
 
-        verify(repo).findByUsername("missing");
+        verify(repo).findByUsernameIgnoreCase("missing");
         verifyNoInteractions(encoder);
     }
 
@@ -62,14 +65,14 @@ class AdminLoginServiceTest {
         admin.setPasswordHash("hashed");
         admin.setRoot(true);
 
-        when(repo.findByUsername("admin")).thenReturn(Optional.of(admin));
+        when(repo.findByUsernameIgnoreCase("admin")).thenReturn(Optional.of(admin));
         when(encoder.matches("wrongpw", "hashed")).thenReturn(false);
 
         Map<String, Object> result = service.login(req);
 
         assertEquals(false, result.get("ok"));
         assertEquals(1, result.size());
-        verify(repo).findByUsername("admin");
+        verify(repo).findByUsernameIgnoreCase("admin");
         verify(encoder).matches("wrongpw", "hashed");
     }
 
@@ -80,20 +83,22 @@ class AdminLoginServiceTest {
         when(req.getPassword()).thenReturn("pw");
 
         Admin admin = new Admin();
+        admin.setId(1L);
         admin.setUsername("admin");
         admin.setPasswordHash("hashed");
         admin.setRoot(false);
 
-        when(repo.findByUsername("admin")).thenReturn(Optional.of(admin));
+        when(repo.findByUsernameIgnoreCase("admin")).thenReturn(Optional.of(admin));
         when(encoder.matches("pw", "hashed")).thenReturn(true);
 
         Map<String, Object> result = service.login(req);
 
         assertEquals(true, result.get("ok"));
         assertEquals("admin", result.get("username"));
+        assertEquals(1L, result.get("id"));
         assertEquals(false, result.get("root"));
 
-        verify(repo).findByUsername("admin");
+        verify(repo).findByUsernameIgnoreCase("admin");
         verify(encoder).matches("pw", "hashed");
     }
 
@@ -108,7 +113,7 @@ class AdminLoginServiceTest {
         // only stub what is needed for this path
         when(req.getUsername()).thenReturn("   ");
 
-        Map<String, Object> result = service.register(req);
+        Map<String, Object> result = service.register(req, 1L, "testAdmin");
 
         assertEquals(false, result.get("ok"));
         assertEquals("All fields are required", result.get("message"));
@@ -127,14 +132,14 @@ class AdminLoginServiceTest {
         when(req.getEmail()).thenReturn("admin@test.com");
         when(req.getPhone()).thenReturn("07700 900001");
 
-        when(repo.findByUsername("admin")).thenReturn(Optional.of(new Admin()));
+        when(repo.findByUsernameIgnoreCase("admin")).thenReturn(Optional.of(new Admin()));
 
-        Map<String, Object> result = service.register(req);
+        Map<String, Object> result = service.register(req, 1L, "testAdmin");
 
         assertEquals(false, result.get("ok"));
         assertEquals("Username already exists", result.get("message"));
 
-        verify(repo).findByUsername("admin");
+        verify(repo).findByUsernameIgnoreCase("admin");
         verify(repo, never()).save(any(Admin.class));
         verifyNoInteractions(encoder);
     }
@@ -149,10 +154,10 @@ class AdminLoginServiceTest {
         when(req.getEmail()).thenReturn(" admin@test.com ");
         when(req.getPhone()).thenReturn(" 07700 900001 ");
 
-        when(repo.findByUsername("admin")).thenReturn(Optional.empty());
+        when(repo.findByUsernameIgnoreCase("admin")).thenReturn(Optional.empty());
         when(encoder.encode("pw")).thenReturn("hashedPw");
 
-        Map<String, Object> result = service.register(req);
+        Map<String, Object> result = service.register(req, 1L, "testAdmin");
 
         assertEquals(true, result.get("ok"));
         assertEquals("admin", result.get("username"));
@@ -169,7 +174,7 @@ class AdminLoginServiceTest {
         assertEquals("admin@test.com", saved.getEmail());
         assertEquals("07700 900001", saved.getPhone());
 
-        verify(repo).findByUsername("admin");
+        verify(repo).findByUsernameIgnoreCase("admin");
         verify(encoder).encode("pw");
     }
 }

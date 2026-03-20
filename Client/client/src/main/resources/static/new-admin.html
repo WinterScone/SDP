@@ -3,17 +3,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Admin Sign Up</title>
+    <title>New Admin</title>
     <link rel="stylesheet" href="/css/common.css">
-    <link rel="stylesheet" href="/css/form.css">
-    <style>
-        h2 {
-            font-size: 28px;
-        }
-        #su-message {
-            font-size: 15px;
-        }
-    </style>
 </head>
 
 <body>
@@ -21,10 +12,10 @@
 
     <div class="topbar">
         <h2>New Admin</h2>
-        <button class="btn" onclick="window.location.href='/dashboard-advanced.html'">← Back</button>
+        <button class="btn" onclick="window.location.href='/advanced.html'">← Back</button>
     </div>
 
-    <form id="signupForm" novalidate>
+    <form id="signupForm" class="form-long" novalidate>
 
         <label for="su-firstname">First Name</label>
         <input id="su-firstname" type="text" autocomplete="given-name" />
@@ -46,11 +37,11 @@
 
         <div class="row">
             <button type="submit">Sign Up</button>
-            <span id="su-message"></span>
+            <div id="su-message" class="msg"></div>
         </div>
     </form>
 </section>
 
-<script src="/admin-signup.js"></script>
+<script src="/new-admin.js"></script>
 </body>
 </html>

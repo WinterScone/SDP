@@ -1,164 +1,890 @@
-/* Common styles for all pages */
+/* Common styles for all pages - GitHub-inspired design */
 
 * {
     -webkit-tap-highlight-color: transparent;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    box-sizing: border-box;
 }
+
+/* ========================================
+   BASE STYLES
+   ======================================== */
 
 body {
     margin: 0;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    background: #f3f4f6;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    background: #f6f8fa;
     padding: 24px;
     -webkit-text-size-adjust: 100%;
+    color: #24292f;
 }
 
-.card {
-    max-width: 600px;
-    margin: 0 auto;
-    background: #fff;
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, .08);
-}
+/* ========================================
+   TYPOGRAPHY
+   ======================================== */
 
-.card.wide {
-    max-width: 1100px;
+h1 {
+    font-size: 32px;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+    line-height: 1.25;
+    color: #24292f;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #d0d7de;
+    display: block;
+    width: 100%;
 }
 
 h2 {
-    margin-top: 0;
+    font-size: 24px;
+    font-weight: 600;
+    margin: 24px 0 16px 0;
+    line-height: 1.25;
+    color: #24292f;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #d0d7de;
+    display: block;
+    width: 100%;
 }
+
+h3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 24px 0 16px 0;
+    line-height: 1.25;
+    color: #24292f;
+    display: block;
+    width: 100%;
+}
+
+h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 24px 0 16px 0;
+    line-height: 1.25;
+    color: #24292f;
+}
+
+p {
+    margin: 0 0 16px 0;
+}
+
+a {
+    color: #0969da;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+code {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    font-size: 12px;
+    padding: 3px 6px;
+    background: rgba(175, 184, 193, 0.2);
+    border-radius: 6px;
+}
+
+/* ========================================
+   CARD LAYOUT
+   ======================================== */
+
+.card {
+    max-width: 800px;
+    margin: 0 auto 16px;
+    background: #ffffff;
+    border-radius: 6px;
+    padding: 16px;
+    border: 1px solid #d0d7de;
+}
+
+.card.wide {
+    max-width: 1000px;
+}
+
+.card.extra-wide {
+    max-width: 1280px;
+}
+
+/* ========================================
+   LOGO
+   ======================================== */
+
+.logo {
+    display: block;
+    max-width: min(180px, 40vw);
+    width: 100%;
+    height: auto;
+    margin: 0 auto 16px;
+    object-fit: contain;
+}
+
+/* ========================================
+   TOPBAR
+   ======================================== */
 
 .topbar {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #d0d7de;
 }
+
+.topbar h2 {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.topbar-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* ========================================
+   BUTTONS
+   ======================================== */
 
 button,
 .btn {
-    padding: 10px 14px;
-    font-size: 16px;
-    border-radius: 12px;
-    border: 2px solid #e5e7eb;
-    background: #fff;
+    padding: 5px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    height: 32px;
+    min-height: 32px;
+    border-radius: 6px;
+    border: 1px solid #d0d7de;
+    background: #f6f8fa;
+    color: #24292f;
     cursor: pointer;
-    color: #000;
     text-decoration: none;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
     font-family: inherit;
+    transition: background-color 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+    white-space: nowrap;
+    box-sizing: border-box;
 }
 
 button:hover,
 .btn:hover {
-    background: #f9fafb;
+    background: #f3f4f6;
+    border-color: #d0d7de;
+    transition-duration: 0.1s;
 }
 
 button:active,
 .btn:active {
-    background: #f3f4f6;
+    background: #ebecf0;
+    border-color: #d0d7de;
 }
+
+button:disabled,
+.btn:disabled {
+    color: #8c959f;
+    background: #f6f8fa;
+    border-color: #d0d7de;
+    cursor: not-allowed;
+}
+
+/* Primary button */
+.btn-primary {
+    background: #2da44e;
+    color: #ffffff;
+    border-color: rgba(27, 31, 36, 0.15);
+}
+
+.btn-primary:hover {
+    background: #2c974b;
+}
+
+.btn-primary:active {
+    background: #298e46;
+}
+
+/* Danger button */
+.danger-btn {
+    background: #cf222e;
+    color: #ffffff;
+    border-color: rgba(27, 31, 36, 0.15);
+}
+
+.danger-btn:hover {
+    background: #a40e26;
+}
+
+.danger-btn:active {
+    background: #8e1a26;
+}
+
+/* ========================================
+   FORM ELEMENTS
+   ======================================== */
 
 input,
-select {
-    padding: 8px;
+select,
+textarea {
+    padding: 5px 12px;
     font-size: 14px;
-    border: 2px solid #e5e7eb;
-    border-radius: 10px;
-    background: #fff;
+    line-height: 20px;
+    height: 32px;
+    min-height: 32px;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #24292f;
     outline: none;
+    font-family: inherit;
+    transition: border-color 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+    box-sizing: border-box;
 }
 
-input:focus {
-    border-color: #cbd5e1;
+input[type="number"] {
+    width: 110px;
 }
 
-/* Table wrapper for consistent scrolling behavior */
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #0969da;
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #57606a;
+}
+
+select {
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill="%23586069" d="M4.427 7.427l3.396 3.396a.25.25 0 00.354 0l3.396-3.396A.25.25 0 0011.396 7H4.604a.25.25 0 00-.177.427z"></path></svg>');
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 32px;
+}
+
+textarea {
+    height: auto;
+    min-height: 100px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+/* ========================================
+   FORM LAYOUTS
+   ======================================== */
+
+/* Long Form - for patient/admin signup, longer inputs */
+.form-long label {
+    font-weight: 600;
+    font-size: 14px;
+    display: block;
+    margin-bottom: 8px;
+    color: #24292f;
+}
+
+.form-long label:not(:first-child) {
+    margin-top: 16px;
+}
+
+.form-long input[type="text"],
+.form-long input[type="email"],
+.form-long input[type="tel"],
+.form-long input[type="password"],
+.form-long input[type="date"],
+.form-long input[type="number"],
+.form-long select,
+.form-long textarea {
+    width: 100%;
+    max-width: 440px;
+}
+
+.form-long .row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+/* Short Form - for quick entries like add prescription */
+.form-short {
+    margin-top: 16px;
+}
+
+.form-short label {
+    font-weight: 600;
+    font-size: 14px;
+    display: block;
+    margin-bottom: 8px;
+    color: #24292f;
+}
+
+.form-short label:not(:first-child) {
+    margin-top: 16px;
+}
+
+.form-short input[type="text"],
+.form-short input[type="email"],
+.form-short input[type="tel"],
+.form-short input[type="number"],
+.form-short select {
+    width: 100%;
+    max-width: 320px;
+}
+
+.form-short .row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+/* Log Form - for inline multi-field forms like intake history */
+.log-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    margin-top: 16px;
+}
+
+.log-form .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.log-form label {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.log-form input[type="text"] {
+    min-width: 200px;
+}
+
+#logMessage {
+    font-size: 14px;
+    margin-top: 8px;
+}
+
+/* Search row - for search input + button layout */
+.search-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.search-row input {
+    flex: 1;
+}
+
+/* ========================================
+   TABLES - Content-Based Responsive Layout
+   ======================================== */
+
 .table-wrapper {
     width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    margin-top: 10px;
+    margin-top: 16px;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
 }
 
+/* Base table with auto layout for content-based sizing */
 table {
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
-    margin-top: 10px;
-    min-width: 600px;
+    background: #ffffff;
+    table-layout: auto;
 }
 
+/* Default cell styling */
 th,
 td {
-    padding: 10px;
-    border-bottom: 1px solid #e5e7eb;
+    padding: 8px 16px;
     text-align: left;
     vertical-align: middle;
+    border-bottom: 1px solid #d0d7de;
     white-space: nowrap;
 }
 
 th {
-    background: #f9fafb;
+    background: #f6f8fa;
     font-weight: 600;
+    font-size: 12px;
+    color: #57606a;
+    border-bottom: 1px solid #d0d7de;
     position: sticky;
     top: 0;
     z-index: 10;
 }
 
+tbody tr:last-child th,
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+tbody tr:hover {
+    background: #f6f8fa;
+}
+
+/* ========================================
+   COLUMN MINIMUM WIDTH THRESHOLDS
+   ======================================== */
+
+/* Short metadata columns - minimum widths to prevent unreadable narrowness */
+col.col-id { min-width: 60px; }
+col.col-status { min-width: 80px; }
+col.col-date { min-width: 110px; }
+col.col-datetime { min-width: 150px; }
+col.col-time { min-width: 80px; }
+col.col-number { min-width: 80px; }
+
+/* Text columns - minimum widths for readability */
+col.col-name { min-width: 120px; }
+col.col-email { min-width: 140px; }
+col.col-phone { min-width: 100px; }
+col.col-description { min-width: 150px; }
+
+/* Action columns - minimum width for buttons */
+col.col-actions { min-width: 150px; }
+
+/* Generic size thresholds */
+col.col-small { min-width: 80px; }
+col.col-medium { min-width: 120px; }
+col.col-large { min-width: 180px; }
+
+/* ========================================
+   CELL BEHAVIOR MODIFIERS
+   ======================================== */
+
+/* Allow text wrapping for longer content */
+td.wrap,
+th.wrap {
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Force nowrap (default behavior, but explicit) */
+td.nowrap,
+th.nowrap {
+    white-space: nowrap;
+}
+
+/* Center-aligned cells */
+td.center,
+th.center {
+    text-align: center;
+}
+
+/* Right-aligned cells (for numbers) */
+td.right,
+th.right {
+    text-align: right;
+}
+
+/* Buttons inside tables */
+table button {
+    height: 28px;
+    min-height: 28px;
+    padding: 4px 12px;
+    font-size: 12px;
+}
+
+/* Action column with multiple buttons */
+td.actions {
+    white-space: nowrap;
+}
+
+td.actions button {
+    margin-right: 6px;
+}
+
+td.actions button:last-child {
+    margin-right: 0;
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+/* Section title */
+.section-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 24px 0 16px 0;
+    color: #24292f;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #d0d7de;
+    display: block;
+    width: 100%;
+}
+
+.section-title:first-child {
+    margin-top: 0;
+}
+
+/* Messages */
 .msg {
     font-size: 14px;
-    color: #6b7280;
+    color: #57606a;
+    margin: 8px 0;
 }
 
+.success {
+    color: #1a7f37;
+}
+
+.error {
+    color: #cf222e;
+}
+
+.center-message {
+    text-align: center;
+    padding: 48px 24px;
+    color: #57606a;
+    font-size: 14px;
+}
+
+/* Message boxes */
+.message-box {
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.6;
+    border: 1px solid;
+}
+
+.message-box.success {
+    background: #dafbe1;
+    color: #1a7f37;
+    border-color: #4ac26b;
+}
+
+.message-box.error {
+    background: #ffebe9;
+    color: #cf222e;
+    border-color: #ff8182;
+}
+
+/* Activity type badges */
+.activity-type {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    line-height: 18px;
+}
+
+.type-medicine {
+    background: #ddf4ff;
+    color: #0969da;
+}
+
+.type-prescription {
+    background: #dafbe1;
+    color: #1a7f37;
+}
+
+.type-admin {
+    background: #fff8c5;
+    color: #9a6700;
+}
+
+.type-patient {
+    background: #fbefff;
+    color: #8250df;
+}
+
+.type-reset {
+    background: #ffebe9;
+    color: #cf222e;
+}
+
+/* Checkmark */
 .checkmark {
-    color: #000;
-    font-size: 18px;
+    color: #1a7f37;
+    font-size: 14px;
+    font-weight: 600;
 }
 
-/* Mobile-specific fixes */
+/* Helper text and links */
+.helper,
+.signup-link {
+    margin-top: 16px;
+    font-size: 14px;
+    color: #57606a;
+    line-height: 1.6;
+}
+
+.helper a,
+.signup-link a {
+    color: #0969da;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.helper a:hover,
+.signup-link a:hover {
+    text-decoration: underline;
+}
+
+/* ========================================
+   DANGER ZONE
+   ======================================== */
+
+.danger-zone {
+    margin-top: 32px;
+    padding: 16px;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    background: #ffffff;
+}
+
+.danger-zone h3 {
+    margin: 0 0 8px 0;
+    color: #cf222e;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.danger-zone p {
+    margin: 0 0 16px 0;
+    color: #57606a;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* ========================================
+   MOBILE RESPONSIVE
+   ======================================== */
+
 @media (max-width: 768px) {
     body {
         padding: 16px;
+        font-size: 14px;
     }
 
     .card {
         padding: 16px;
+        margin-bottom: 16px;
+        border-radius: 6px;
     }
 
-    button,
-    .btn {
-        min-height: 44px;
-        touch-action: manipulation;
-        user-select: none;
-        -webkit-user-select: none;
+    h1 {
+        font-size: 26px;
     }
 
-    table {
-        font-size: 13px;
-        min-width: auto;
-        display: block;
-        overflow-x: auto;
+    h2 {
+        font-size: 20px;
     }
 
-    th, td {
-        padding: 8px;
-        white-space: normal;
+    h3 {
+        font-size: 18px;
+    }
+
+    h4 {
+        font-size: 16px;
+    }
+
+    .logo {
+        max-width: min(140px, 35vw);
+        margin-bottom: 16px;
     }
 
     .topbar {
         flex-wrap: wrap;
         gap: 8px;
+        margin-bottom: 16px;
+        padding-bottom: 16px;
     }
 
-    .topbar h2 {
+    button,
+    .btn {
+        min-height: 32px;
+        height: 32px;
+        font-size: 14px;
+        padding: 5px 16px;
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+
+    input,
+    select,
+    textarea {
+        min-height: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+
+    .form-long input[type="text"],
+    .form-long input[type="email"],
+    .form-long input[type="tel"],
+    .form-long input[type="password"],
+    .form-long input[type="date"],
+    .form-long input[type="number"],
+    .form-long select,
+    .form-long textarea,
+    .form-short input[type="text"],
+    .form-short input[type="email"],
+    .form-short input[type="tel"],
+    .form-short input[type="number"],
+    .form-short select {
+        max-width: 100%;
+    }
+
+    .form-long .row,
+    .form-short .row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .form-long .row button,
+    .form-long .row .btn,
+    .form-short .row button,
+    .form-short .row .btn {
+        width: 100%;
+    }
+
+    .log-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .log-form .field {
+        width: 100%;
+    }
+
+    .log-form select,
+    .log-form input[type="date"],
+    .log-form input[type="time"],
+    .log-form input[type="text"] {
+        width: 100%;
+        font-size: 16px;
+    }
+
+    .log-form button {
+        width: 100%;
+    }
+
+    .table-wrapper {
+        margin-top: 16px;
+        border-radius: 6px;
+    }
+
+    table {
+        font-size: 13px;
+    }
+
+    th,
+    td {
+        padding: 8px 12px;
+    }
+
+    th {
+        font-size: 12px;
+    }
+
+    /* On mobile, allow wrapping by default for better readability */
+    td:not(.nowrap),
+    th:not(.nowrap) {
+        white-space: normal;
+    }
+
+    /* Reduce minimum widths on mobile for better space utilization */
+    col.col-name { min-width: 100px; }
+    col.col-email { min-width: 120px; }
+    col.col-description { min-width: 120px; }
+    col.col-actions { min-width: 130px; }
+    col.col-large { min-width: 140px; }
+
+    .section-title {
+        font-size: 16px;
+        margin: 20px 0 16px 0;
+    }
+
+    .center-message {
+        padding: 32px 16px;
+    }
+
+    .danger-zone {
+        padding: 16px;
+    }
+}
+
+/* Extra small mobile screens */
+@media (max-width: 480px) {
+    body {
+        padding: 12px;
+    }
+
+    .card {
+        padding: 12px;
+    }
+
+    h1 {
         font-size: 24px;
+    }
+
+    h2 {
+        font-size: 18px;
+    }
+
+    .logo {
+        max-width: min(120px, 32vw);
+    }
+
+    button,
+    .btn {
+        padding: 8px 12px;
+    }
+
+    th,
+    td {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+}
+
+/* Large desktop screens */
+@media (min-width: 1200px) {
+    body {
+        padding: 32px;
+    }
+
+    .logo {
+        max-width: 200px;
+        margin-bottom: 24px;
+    }
+
+    .card {
+        padding: 24px;
     }
 }

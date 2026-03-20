@@ -35,6 +35,11 @@ public class AdminVerificationController {
             return ResponseEntity.status(400).body(res);
         }
 
+        Cookie idCookie = new Cookie("adminId", String.valueOf(res.get("id")));
+        idCookie.setHttpOnly(true);
+        idCookie.setPath("/");
+        response.addCookie(idCookie);
+
         Cookie usernameCookie = new Cookie("adminUsername", (String) res.get("username"));
         usernameCookie.setHttpOnly(true);
         usernameCookie.setPath("/");
@@ -49,6 +54,12 @@ public class AdminVerificationController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletResponse response) {
+        Cookie idCookie = new Cookie("adminId", "");
+        idCookie.setHttpOnly(true);
+        idCookie.setPath("/");
+        idCookie.setMaxAge(0);
+        response.addCookie(idCookie);
+
         Cookie usernameCookie = new Cookie("adminUsername", "");
         usernameCookie.setHttpOnly(true);
         usernameCookie.setPath("/");
@@ -93,7 +104,10 @@ public class AdminVerificationController {
             return ResponseEntity.status(403).body(Map.of("ok", false, "message", "Only root admin can register new admins"));
         }
 
-        var res = service.register(req);
+        Long creatorAdminId = caller.get().getId();
+        String creatorAdminUsername = caller.get().getUsername();
+
+        var res = service.register(req, creatorAdminId, creatorAdminUsername);
         if (!Boolean.TRUE.equals(res.get("ok"))) {
             return ResponseEntity.status(400).body(res);
         }

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Medicine</title>
+    <link rel="stylesheet" href="/css/common.css">
+</head>
+
+<body>
+<section class="card wide">
+    <div class="topbar">
+        <h2>Medicine</h2>
+        <div class="topbar-actions">
+            <div id="message" class="msg"></div>
+            <button class="btn" onclick="window.location.href='/dashboard.html'">← Back</button>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Shape</th>
+                <th>Colour</th>
+                <th>Dosage</th>
+                <th>Quantity</th>
+                <th>Modify</th>
+                <th>Updated</th>
+            </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+        </table>
+    </div>
+</section>
+
+<script src="/medicine.js"></script>
+</body>
+</html>

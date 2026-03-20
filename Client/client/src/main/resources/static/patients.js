@@ -10,19 +10,59 @@
     const qInput = document.getElementById("q");
     const searchBtn = document.getElementById("searchBtn");
 
-    // Load whole database by default
-    loadAllPatients();
+    // Check if there's a search query in URL
+    const params = new URLSearchParams(window.location.search);
+    const searchQuery = params.get("q");
 
-    // Redirect when searching
-    searchBtn.addEventListener("click", goSearch);
+    if (searchQuery) {
+        qInput.value = searchQuery;
+        searchPatients(searchQuery);
+    } else {
+        loadAllPatients();
+    }
+
+    // Handle search button and enter key
+    searchBtn.addEventListener("click", performSearch);
     qInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") goSearch();
+        if (e.key === "Enter") performSearch();
     });
 
-    function goSearch() {
+    function performSearch() {
         const q = qInput.value.trim();
-        if (!q) return; // stay on page showing all patients
-        window.location.href = `/patient-results.html?q=${encodeURIComponent(q)}`;
+        if (!q) {
+            // If search is empty, reload all patients
+            window.location.href = "/patients.html";
+            return;
+        }
+        // Update URL and search
+        window.history.pushState({}, "", `/patients.html?q=${encodeURIComponent(q)}`);
+        searchPatients(q);
+    }
+
+    async function searchPatients(q) {
+        msg.textContent = "Searching patients...";
+
+        try {
+            const res = await fetch(`/api/admin/patients/search?q=${encodeURIComponent(q)}`, {
+                credentials: "include",
+            });
+
+            if (!res.ok) {
+                const text = await res.text().catch(() => "");
+                msg.textContent = `Failed to search patients. (${res.status}) ${text}`;
+                return;
+            }
+
+            const patients = await res.json();
+            renderRows(patients);
+
+            msg.textContent = patients.length
+                ? `Found ${patients.length} patient(s).`
+                : "No patients found.";
+        } catch (err) {
+            console.error(err);
+            msg.textContent = "Network error while searching patients.";
+        }
     }
 
     async function loadAllPatients() {
@@ -60,18 +100,14 @@
         patients.forEach((p) => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
-          <td>${safe(p.id)}</td>
-          <td>${safe(p.firstName)}</td>
-          <td>${safe(p.lastName)}</td>
-          <td>${safe(p.dateOfBirth?.split("T")[0])}</td>
-          <td>${safe(p.email)}</td>
-          <td>${safe(p.phone)}</td>
-          <td style="display:flex; gap:6px;">
+          <td class="center">${safe(p.id)}</td>
+          <td>${safe(p.firstName)} ${safe(p.lastName)}</td>
+          <td class="actions">
             <button onclick="goPrescriptions(${safe(p.id)})">
-              Manage Prescriptions
+              Prescriptions
             </button>
             <button onclick="goIntakeHistory(${safe(p.id)})">
-              View Intake History
+              Intake History
             </button>
           </td>
         `;
