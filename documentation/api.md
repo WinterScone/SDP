@@ -380,6 +380,30 @@ GET /api/admin/patients
 ]
 ```
 
+### Get All Patient Images
+```
+GET /api/admin/patients/images
+```
+**Auth:** Root
+
+Returns every patient's username paired with their profile image (Base64 data URI). Patients without an image have `null` for `image` and `contentType`.
+
+**Response (200):**
+```json
+[
+  {
+    "username": "john",
+    "image": "data:image/png;base64,iVBORw0KGgo...",
+    "contentType": "image/png"
+  },
+  {
+    "username": "jane",
+    "image": null,
+    "contentType": null
+  }
+]
+```
+
 ### List All Admins
 ```
 GET /api/admin/admins
