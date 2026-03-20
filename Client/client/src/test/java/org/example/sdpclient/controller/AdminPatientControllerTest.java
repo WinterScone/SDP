@@ -12,10 +12,12 @@ import java.util.List;
 
 import org.example.sdpclient.configuration.WebMvcConfig;
 import org.example.sdpclient.dto.AdminDto;
+import org.example.sdpclient.dto.PatientImageDto;
 import org.example.sdpclient.dto.PatientRow;
 import org.example.sdpclient.service.AdminListService;
 import org.example.sdpclient.service.DatabaseResetService;
 import org.example.sdpclient.service.PatientAdminService;
+import org.example.sdpclient.service.PatientImageService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -47,6 +49,9 @@ class AdminPatientControllerTest {
 
     @MockitoBean
     private DatabaseResetService databaseResetService;
+
+    @MockitoBean
+    private PatientImageService patientImageService;
 
     @Test
     void getAllPatients_shouldReturn200_andList() throws Exception {
@@ -84,6 +89,34 @@ class AdminPatientControllerTest {
         verify(adminListService).getAllAdmins();
     }
 
+
+    @Test
+    void getAllPatientImages_shouldReturn200_andList() throws Exception {
+        PatientImageDto dto = new PatientImageDto("john", "data:image/png;base64,abc123", "image/png");
+        PatientImageDto dtoNoImage = new PatientImageDto("jane", null, null);
+        when(patientImageService.getAllPatientImages()).thenReturn(List.of(dto, dtoNoImage));
+
+        mockMvc.perform(get("/api/admin/patients/images")
+                        .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].username").value("john"))
+                .andExpect(jsonPath("$[0].image").value("data:image/png;base64,abc123"))
+                .andExpect(jsonPath("$[0].contentType").value("image/png"))
+                .andExpect(jsonPath("$[1].username").value("jane"))
+                .andExpect(jsonPath("$[1].image").isEmpty());
+
+        verify(patientImageService).getAllPatientImages();
+    }
+
+    @Test
+    void getAllPatientImages_shouldReturn403_whenNotRootAdmin() throws Exception {
+        mockMvc.perform(get("/api/admin/patients/images")
+                        .cookie(new jakarta.servlet.http.Cookie("adminRoot", "false")))
+                .andExpect(status().isForbidden());
+
+        verifyNoInteractions(patientImageService);
+    }
 
     @Test
     void linkAdminToPatient_shouldReturn400_whenAdminIdMissing() throws Exception {

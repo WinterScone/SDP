@@ -3,10 +3,12 @@ package org.example.sdpclient.controller;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.example.sdpclient.dto.AdminDto;
+import org.example.sdpclient.dto.PatientImageDto;
 import org.example.sdpclient.dto.PatientRow;
 import org.example.sdpclient.service.AdminListService;
 import org.example.sdpclient.service.DatabaseResetService;
 import org.example.sdpclient.service.PatientAdminService;
+import org.example.sdpclient.service.PatientImageService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,13 +24,16 @@ public class AdminPatientController {
     private final PatientAdminService service;
     private final AdminListService adminListService;
     private final DatabaseResetService resetService;
+    private final PatientImageService patientImageService;
 
     public AdminPatientController(PatientAdminService service,
                                   AdminListService adminListService,
-                                  DatabaseResetService resetService) {
+                                  DatabaseResetService resetService,
+                                  PatientImageService patientImageService) {
         this.service = service;
         this.adminListService = adminListService;
         this.resetService = resetService;
+        this.patientImageService = patientImageService;
     }
 
     @GetMapping("/patients")
@@ -38,6 +43,14 @@ public class AdminPatientController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only root admin can access this endpoint");
         }
         return ResponseEntity.ok(service.getAllPatientsSafe());
+    }
+
+    @GetMapping("/patients/images")
+    public ResponseEntity<List<PatientImageDto>> getAllPatientImages(HttpServletRequest request) {
+        if (!isRootAdmin(request)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only root admin can access this endpoint");
+        }
+        return ResponseEntity.ok(patientImageService.getAllPatientImages());
     }
 
     @GetMapping("/admins")

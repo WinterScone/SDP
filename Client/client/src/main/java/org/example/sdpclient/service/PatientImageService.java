@@ -1,12 +1,15 @@
 package org.example.sdpclient.service;
 
+import org.example.sdpclient.dto.PatientImageDto;
+import org.example.sdpclient.entity.Patient;
 import org.example.sdpclient.entity.PatientImage;
 import org.example.sdpclient.repository.PatientImageRepository;
 import org.example.sdpclient.repository.PatientRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class PatientImageService {
@@ -39,5 +42,22 @@ public class PatientImageService {
     public Optional<PatientImage> findImage(Long patientId, Long imageId) {
         return imageRepo.findByIdAndPatientId(imageId, patientId)
                 .filter(img -> ALLOWED_CONTENT_TYPES.contains(img.getContentType()));
+    }
+
+    public List<PatientImageDto> getAllPatientImages() {
+        List<Patient> patients = patientRepo.findAll();
+        Map<Long, PatientImage> imagesByPatientId = imageRepo.findAll().stream()
+                .collect(Collectors.toMap(PatientImage::getPatientId, Function.identity()));
+
+        return patients.stream().map(patient -> {
+            PatientImage img = imagesByPatientId.get(patient.getId());
+            String image = null;
+            String contentType = null;
+            if (img != null && ALLOWED_CONTENT_TYPES.contains(img.getContentType())) {
+                contentType = img.getContentType();
+                image = "data:" + contentType + ";base64," + Base64.getEncoder().encodeToString(img.getData());
+            }
+            return new PatientImageDto(patient.getUsername(), image, contentType);
+        }).toList();
     }
 }
