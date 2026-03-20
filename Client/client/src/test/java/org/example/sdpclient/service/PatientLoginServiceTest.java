@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.Optional;
 
@@ -173,11 +174,10 @@ class PatientLoginServiceTest {
         assertEquals("hashedPw", toSave.getPasswordHash());
         assertEquals("John", toSave.getFirstName());
         assertEquals("Doe", toSave.getLastName());
-        assertEquals("2000-01-02", toSave.getDateOfBirth());
+        assertEquals(LocalDate.parse("2000-01-02"), toSave.getDateOfBirth());
         assertNull(toSave.getEmail());
         assertNull(toSave.getPhone());
-        assertNull(toSave.getLinkedAdminId());
-        assertNull(toSave.getLinkedAdminName());
+        assertNull(toSave.getLinkedAdmin());
 
         verify(repo).existsByUsernameIgnoreCase("user");
         verify(encoder).encode("pw");

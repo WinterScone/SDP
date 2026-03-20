@@ -45,7 +45,7 @@ public class AdminPatientController {
                         p.getId(),
                         p.getFirstName(),
                         p.getLastName(),
-                        String.valueOf(p.getDateOfBirth()),
+                        p.getDateOfBirth(),
                         p.getEmail(),
                         p.getPhone()
                 ))

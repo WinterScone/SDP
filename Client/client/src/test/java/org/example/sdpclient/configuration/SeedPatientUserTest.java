@@ -8,6 +8,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,7 +40,7 @@ class SeedPatientUserTest {
         assertThat(saved.get(0).getUsername()).isEqualTo("testPatient1");
         assertThat(saved.get(0).getFirstName()).isEqualTo("Test");
         assertThat(saved.get(0).getLastName()).isEqualTo("Patient One");
-        assertThat(saved.get(0).getDateOfBirth()).isEqualTo("1990-01-01");
+        assertThat(saved.get(0).getDateOfBirth()).isEqualTo(LocalDate.of(1990, 1, 1));
 
         String hash1 = saved.get(0).getPasswordHash();
         assertThat(hash1).isNotBlank();
@@ -49,7 +50,7 @@ class SeedPatientUserTest {
         assertThat(saved.get(1).getUsername()).isEqualTo("testPatient2");
         assertThat(saved.get(1).getFirstName()).isEqualTo("Test");
         assertThat(saved.get(1).getLastName()).isEqualTo("Patient Two");
-        assertThat(saved.get(1).getDateOfBirth()).isEqualTo("1990-01-02");
+        assertThat(saved.get(1).getDateOfBirth()).isEqualTo(LocalDate.of(1990, 1, 2));
     }
 
     @Test
@@ -96,7 +97,7 @@ class SeedPatientUserTest {
             String passwordHash,
             String firstName,
             String lastName,
-            String dob
+            LocalDate dob
     ) {
         assertThat(p.getUsername()).isEqualTo(username);
         assertThat(p.getPasswordHash()).isEqualTo(passwordHash);

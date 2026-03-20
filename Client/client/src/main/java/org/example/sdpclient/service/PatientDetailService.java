@@ -29,7 +29,7 @@ public class PatientDetailService {
         if (isRoot) {
             return patientRepo.findAll(Sort.by("id"));
         } else {
-            return patientRepo.findByLinkedAdminId(adminId);
+            return patientRepo.findByLinkedAdmin_Id(adminId);
         }
     }
 

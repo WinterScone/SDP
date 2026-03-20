@@ -63,7 +63,7 @@ class AdminPatientControllerTest {
         p.setId(1L);
         p.setFirstName("John");
         p.setLastName("Doe");
-        p.setDateOfBirth(LocalDate.of(2000, 1, 1).toString());
+        p.setDateOfBirth(LocalDate.of(2000, 1, 1));
         p.setEmail("john@example.com");
         p.setPhone("123");
 
@@ -88,10 +88,10 @@ class AdminPatientControllerTest {
                 1L,
                 "John",
                 "Doe",
-                LocalDate.of(2000, 1, 1).toString(),
+                LocalDate.of(2000, 1, 1),
                 "john@example.com",
                 "123",
-                LocalDateTime.of(2024, 1, 1, 10, 0).toString(),
+                LocalDateTime.of(2024, 1, 1, 10, 0),
                 null,
                 null
         );
@@ -113,7 +113,7 @@ class AdminPatientControllerTest {
     @Test
     void searchPatients_shouldReturn200_andDelegateToService() throws Exception {
         PatientViewDto dto = new PatientViewDto(
-                1L, "John", "Doe", "2000-01-01", "j@e.com", "123", List.of()
+                1L, "John", "Doe", LocalDate.of(2000, 1, 1), "j@e.com", "123", List.of()
         );
 
         when(adminManageService.searchPatients(anyString(), anyLong(), anyBoolean())).thenReturn(List.of(dto));

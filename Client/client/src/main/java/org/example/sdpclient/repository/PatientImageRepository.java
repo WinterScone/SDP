@@ -14,5 +14,5 @@ public interface PatientImageRepository extends JpaRepository<PatientImage, Long
      * preventing IDOR — callers cannot access images belonging to other patients
      * by guessing an imageId.
      */
-    Optional<PatientImage> findByIdAndPatientId(Long id, Long patientId);
+    Optional<PatientImage> findByIdAndPatient_Id(Long id, Long patientId);
 }

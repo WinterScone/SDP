@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 
@@ -13,17 +11,19 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "patient_image")
+@Table(name = "patient_image", indexes = {
+    @Index(name = "idx_patient_image_patient", columnList = "patient_id")
+})
 public class PatientImage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "patient_id", nullable = false)
-    private Long patientId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "patient_id", nullable = false)
+    private Patient patient;
 
-    @JdbcTypeCode(SqlTypes.VARBINARY)
     @Column(name = "data", nullable = false)
     private byte[] data;
 
@@ -31,10 +31,10 @@ public class PatientImage {
     private String contentType;
 
     @Column(name = "uploaded_at")
-    private String uploadedAt;
+    private LocalDateTime uploadedAt;
 
     @PrePersist
     protected void onCreate() {
-        uploadedAt = LocalDateTime.now().toString();
+        uploadedAt = LocalDateTime.now();
     }
 }

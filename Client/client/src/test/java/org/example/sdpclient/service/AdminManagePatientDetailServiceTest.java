@@ -70,7 +70,7 @@ class AdminManagePatientDetailServiceTest {
         p1.setId(10L);
         p1.setFirstName("Jane");
         p1.setLastName("Doe");
-        p1.setDateOfBirth(LocalDate.of(2000, 1, 2).toString());
+        p1.setDateOfBirth(LocalDate.of(2000, 1, 2));
         p1.setEmail("jane@example.com");
         p1.setPhone("123");
 
@@ -78,7 +78,7 @@ class AdminManagePatientDetailServiceTest {
         p2.setId(11L);
         p2.setFirstName("John");
         p2.setLastName("Smith");
-        p2.setDateOfBirth(LocalDate.of(1999, 5, 6).toString());
+        p2.setDateOfBirth(LocalDate.of(1999, 5, 6));
         p2.setEmail("john@example.com");
         p2.setPhone("456");
 

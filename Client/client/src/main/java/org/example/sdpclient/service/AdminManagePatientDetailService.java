@@ -63,7 +63,9 @@ public class AdminManagePatientDetailService {
             return true;
         }
         Optional<Patient> patient = patientRepository.findById(patientId);
-        return patient.isPresent() && adminId.equals(patient.get().getLinkedAdminId());
+        return patient.isPresent()
+                && patient.get().getLinkedAdmin() != null
+                && adminId.equals(patient.get().getLinkedAdmin().getId());
     }
 
     public Optional<Patient> findPatient(Long id) {
