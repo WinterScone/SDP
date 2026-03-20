@@ -20,14 +20,14 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(
-        controllers = PatientVerificationController.class,
+        controllers = PatientAuthController.class,
         excludeFilters = @ComponentScan.Filter(
                 type = FilterType.ASSIGNABLE_TYPE,
                 classes = WebMvcConfig.class
         )
 )
 @AutoConfigureMockMvc(addFilters = false)
-class PatientVerificationControllerTest {
+class PatientAuthControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -36,14 +36,14 @@ class PatientVerificationControllerTest {
     private PatientLoginService service;
 
     // -------------------------
-    // POST /api/patient/login
+    // POST /api/auth/patients/login
     // -------------------------
 
     @Test
     void login_shouldReturn400_whenOkFalse() throws Exception {
         when(service.login(any())).thenReturn(Map.of("ok", false));
 
-        mockMvc.perform(post("/api/patient/login")
+        mockMvc.perform(post("/api/auth/patients/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"u\",\"password\":\"p\"}"))
                 .andExpect(status().isBadRequest())
@@ -60,7 +60,7 @@ class PatientVerificationControllerTest {
                 "patientId", 10
         ));
 
-        mockMvc.perform(post("/api/patient/login")
+        mockMvc.perform(post("/api/auth/patients/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"u\",\"password\":\"p\"}"))
                 .andExpect(status().isOk())
@@ -72,7 +72,7 @@ class PatientVerificationControllerTest {
     }
 
     // -------------------------
-    // POST /api/patient/signup
+    // POST /api/auth/patients/signup
     // -------------------------
 
     @Test
@@ -82,7 +82,7 @@ class PatientVerificationControllerTest {
                 "error", "Username already taken"
         ));
 
-        mockMvc.perform(post("/api/patient/signup")
+        mockMvc.perform(post("/api/auth/patients/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -107,7 +107,7 @@ class PatientVerificationControllerTest {
                 "error", "Missing required fields"
         ));
 
-        mockMvc.perform(post("/api/patient/signup")
+        mockMvc.perform(post("/api/auth/patients/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -133,7 +133,7 @@ class PatientVerificationControllerTest {
                 "username", "u"
         ));
 
-        mockMvc.perform(post("/api/patient/signup")
+        mockMvc.perform(post("/api/auth/patients/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -152,4 +152,3 @@ class PatientVerificationControllerTest {
         verify(service).signup(any());
     }
 }
-

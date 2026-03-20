@@ -24,7 +24,7 @@ Include these cookies in subsequent requests. Endpoints marked **Root** require 
 
 ### Login
 ```
-POST /api/verify/login
+POST /api/auth/admins/login
 ```
 
 **Request Body:**
@@ -55,14 +55,14 @@ POST /api/verify/login
 
 ### Logout
 ```
-POST /api/verify/logout
+POST /api/auth/admins/logout
 ```
 
 **Response (200):** Clears all admin cookies.
 
 ### Get Current Admin
 ```
-GET /api/verify/me
+GET /api/auth/admins/me
 ```
 **Auth:** Admin
 
@@ -76,7 +76,7 @@ GET /api/verify/me
 
 ### Register New Admin
 ```
-POST /api/verify/register
+POST /api/auth/admins/register
 ```
 **Auth:** Root
 
@@ -105,7 +105,7 @@ POST /api/verify/register
 
 ### Patient Login
 ```
-POST /api/patient/login
+POST /api/auth/patients/login
 ```
 
 **Request Body:**
@@ -125,9 +125,16 @@ POST /api/patient/login
 }
 ```
 
+### Patient Logout
+```
+POST /api/auth/patients/logout
+```
+
+**Response (200):** Clears patient cookie.
+
 ### Patient Signup
 ```
-POST /api/patient/signup
+POST /api/auth/patients/signup
 ```
 
 **Request Body:**
@@ -230,29 +237,9 @@ Reduces stock quantity by medicine name. Returns error if insufficient stock.
 
 ## 4. Patient Details
 
-### Get All Patients (Summary)
-```
-GET /api/patient/getAllPatients
-```
-**Auth:** Admin (scoped to linked patients; root sees all)
-
-**Response (200):**
-```json
-[
-  {
-    "id": 1,
-    "firstName": "John",
-    "lastName": "Doe",
-    "dateOfBirth": "1990-01-01",
-    "email": "john@example.com",
-    "phone": "1234567890"
-  }
-]
-```
-
 ### Get Patient Prescriptions
 ```
-GET /api/patient/{patientId}/prescriptions
+GET /api/patients/{patientId}/prescriptions
 ```
 
 **Response (200):**
@@ -272,7 +259,7 @@ GET /api/patient/{patientId}/prescriptions
 
 ### Log Medicine Intake
 ```
-POST /api/patient/{patientId}/intake
+POST /api/patients/{patientId}/intake
 ```
 
 **Request Body:**
@@ -294,7 +281,7 @@ POST /api/patient/{patientId}/intake
 
 ### Get Intake History
 ```
-GET /api/patient/{patientId}/intake
+GET /api/patients/{patientId}/intake
 ```
 
 **Response (200):**
@@ -305,9 +292,60 @@ GET /api/patient/{patientId}/intake
 }
 ```
 
+### Get Patient Image
+```
+GET /api/patients/{patientId}/images/{imageId}
+```
+**Auth:** Admin or Patient (own images only)
+
+**Response (200):** Binary image data with appropriate Content-Type header.
+
 ---
 
 ## 5. Admin Patient Management
+
+### Get All Patients (Summary)
+```
+GET /api/admin/patients
+```
+**Auth:** Admin (scoped to linked patients; root sees all)
+
+**Response (200):**
+```json
+[
+  {
+    "id": 1,
+    "firstName": "John",
+    "lastName": "Doe",
+    "dateOfBirth": "1990-01-01",
+    "email": "john@example.com",
+    "phone": "1234567890"
+  }
+]
+```
+
+### List All Patients (for Assignment)
+```
+GET /api/admin/patients/assignments
+```
+**Auth:** Root
+
+**Response (200):**
+```json
+[
+  {
+    "id": 1,
+    "firstName": "John",
+    "lastName": "Doe",
+    "dateOfBirth": "1990-01-01",
+    "email": "john@example.com",
+    "phone": "1234567890",
+    "createdAt": "2026-01-15T10:30:00",
+    "linkedAdminId": 2,
+    "linkedAdminName": "Dr. Smith"
+  }
+]
+```
 
 ### Search Patients
 ```
@@ -357,29 +395,6 @@ GET /api/admin/patients/{id}
 }
 ```
 
-### List All Patients (for Assignment)
-```
-GET /api/admin/patients
-```
-**Auth:** Root
-
-**Response (200):**
-```json
-[
-  {
-    "id": 1,
-    "firstName": "John",
-    "lastName": "Doe",
-    "dateOfBirth": "1990-01-01",
-    "email": "john@example.com",
-    "phone": "1234567890",
-    "createdAt": "2026-01-15T10:30:00",
-    "linkedAdminId": 2,
-    "linkedAdminName": "Dr. Smith"
-  }
-]
-```
-
 ### Get All Patient Images
 ```
 GET /api/admin/patients/images
@@ -404,26 +419,6 @@ Returns every patient's username paired with their profile image (Base64 data UR
 ]
 ```
 
-### List All Admins
-```
-GET /api/admin/admins
-```
-**Auth:** Admin
-
-**Response (200):**
-```json
-[
-  {
-    "id": 1,
-    "firstName": "Admin",
-    "lastName": "User",
-    "username": "admin",
-    "email": "admin@example.com",
-    "root": true
-  }
-]
-```
-
 ### Link Patient to Admin
 ```
 PUT /api/admin/patients/{patientId}/link-admin
@@ -442,6 +437,26 @@ PUT /api/admin/patients/{patientId}/link-admin
 {
   "ok": true
 }
+```
+
+### List All Admins
+```
+GET /api/admin/admins
+```
+**Auth:** Admin
+
+**Response (200):**
+```json
+[
+  {
+    "id": 1,
+    "firstName": "Admin",
+    "lastName": "User",
+    "username": "admin",
+    "email": "admin@example.com",
+    "root": true
+  }
+]
 ```
 
 ### Reset Database
@@ -553,7 +568,33 @@ GET /api/admin/activity-logs
 
 ---
 
-## 8. Health Check
+## 8. SMS Testing
+
+### Send Test SMS
+```
+POST /api/admin/sms/test
+```
+**Auth:** Admin
+
+**Request Body:**
+```json
+{
+  "to": "+441234567890",
+  "message": "Test message"
+}
+```
+
+**Response (200):**
+```json
+{
+  "ok": true,
+  "message": "SMS sent to +441234567890"
+}
+```
+
+---
+
+## 9. Health Check
 
 ```
 GET /api/admin/ping    →  "pong"
@@ -632,7 +673,7 @@ const meds = await fetch('https://www.sdpgroup16.com/api/medicines')
   .then(r => r.json());
 
 // Patient login
-const login = await fetch('https://www.sdpgroup16.com/api/patient/login', {
+const login = await fetch('https://www.sdpgroup16.com/api/auth/patients/login', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ username: 'patient123', password: 'password' })
@@ -653,7 +694,7 @@ await fetch('https://www.sdpgroup16.com/api/medicines/reduce', {
 curl https://www.sdpgroup16.com/api/medicines
 
 # Patient login
-curl -X POST https://www.sdpgroup16.com/api/patient/login \
+curl -X POST https://www.sdpgroup16.com/api/auth/patients/login \
   -H "Content-Type: application/json" \
   -d '{"username":"patient123","password":"password"}'
 

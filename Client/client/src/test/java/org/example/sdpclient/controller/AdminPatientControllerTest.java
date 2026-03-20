@@ -1,7 +1,7 @@
 package org.example.sdpclient.controller;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -9,14 +9,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.example.sdpclient.configuration.WebMvcConfig;
-import org.example.sdpclient.dto.AdminDto;
-import org.example.sdpclient.dto.PatientImageDto;
-import org.example.sdpclient.dto.PatientRow;
-import org.example.sdpclient.service.AdminListService;
-import org.example.sdpclient.service.DatabaseResetService;
+import org.example.sdpclient.dto.*;
+import org.example.sdpclient.entity.Patient;
+import org.example.sdpclient.service.AdminManagePatientDetailService;
 import org.example.sdpclient.service.PatientAdminService;
+import org.example.sdpclient.service.PatientDetailService;
 import org.example.sdpclient.service.PatientImageService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,19 +42,48 @@ class AdminPatientControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private PatientAdminService service;
+    private PatientAdminService patientAdminService;
 
     @MockitoBean
-    private AdminListService adminListService;
+    private PatientDetailService patientDetailService;
 
     @MockitoBean
-    private DatabaseResetService databaseResetService;
+    private AdminManagePatientDetailService adminManageService;
 
     @MockitoBean
     private PatientImageService patientImageService;
 
+    // -------------------------
+    // GET /api/admin/patients (getAllPatients)
+    // -------------------------
+
     @Test
     void getAllPatients_shouldReturn200_andList() throws Exception {
+        Patient p = new Patient();
+        p.setId(1L);
+        p.setFirstName("John");
+        p.setLastName("Doe");
+        p.setDateOfBirth(LocalDate.of(2000, 1, 1).toString());
+        p.setEmail("john@example.com");
+        p.setPhone("123");
+
+        when(patientDetailService.getAllPatientsForAdmin(anyLong(), anyBoolean())).thenReturn(List.of(p));
+
+        mockMvc.perform(get("/api/admin/patients")
+                        .cookie(new jakarta.servlet.http.Cookie("adminId", "1"))
+                        .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)));
+
+        verify(patientDetailService).getAllPatientsForAdmin(anyLong(), anyBoolean());
+    }
+
+    // -------------------------
+    // GET /api/admin/patients/assignments (root only)
+    // -------------------------
+
+    @Test
+    void getPatientAssignments_shouldReturn200_andList() throws Exception {
         PatientRow row = new PatientRow(
                 1L,
                 "John",
@@ -67,28 +96,58 @@ class AdminPatientControllerTest {
                 null
         );
 
-        when(service.getAllPatientsSafe()).thenReturn(List.of(row));
+        when(patientAdminService.getAllPatientsSafe()).thenReturn(List.of(row));
 
-        mockMvc.perform(get("/api/admin/patients")
+        mockMvc.perform(get("/api/admin/patients/assignments")
                         .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)));
 
-        verify(service).getAllPatientsSafe();
+        verify(patientAdminService).getAllPatientsSafe();
     }
 
-    @Test
-    void getAllAdmins_shouldReturn200_andList() throws Exception {
-        AdminDto dto = new AdminDto(1L, "admin1", "Admin", "One", "admin1@admin.com", "07700 900101", false);
-        when(adminListService.getAllAdmins()).thenReturn(List.of(dto));
+    // -------------------------
+    // GET /api/admin/patients/search
+    // -------------------------
 
-        mockMvc.perform(get("/api/admin/admins"))
+    @Test
+    void searchPatients_shouldReturn200_andDelegateToService() throws Exception {
+        PatientViewDto dto = new PatientViewDto(
+                1L, "John", "Doe", "2000-01-01", "j@e.com", "123", List.of()
+        );
+
+        when(adminManageService.searchPatients(anyString(), anyLong(), anyBoolean())).thenReturn(List.of(dto));
+
+        mockMvc.perform(get("/api/admin/patients/search").param("q", "abc")
+                        .cookie(new jakarta.servlet.http.Cookie("adminId", "1"))
+                        .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)));
 
-        verify(adminListService).getAllAdmins();
+        verify(adminManageService).searchPatients(anyString(), anyLong(), anyBoolean());
     }
 
+    // -------------------------
+    // GET /api/admin/patients/{id}
+    // -------------------------
+
+    @Test
+    void getPatient_shouldReturn404_whenPatientNotFound() throws Exception {
+        when(adminManageService.canAdminAccessPatient(anyLong(), anyLong(), anyBoolean())).thenReturn(true);
+        when(adminManageService.findPatient(10L)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/admin/patients/10")
+                        .cookie(new jakarta.servlet.http.Cookie("adminId", "1"))
+                        .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true")))
+                .andExpect(status().isNotFound());
+
+        verify(adminManageService).findPatient(10L);
+        verify(adminManageService, never()).getPrescriptionViews(anyLong());
+    }
+
+    // -------------------------
+    // GET /api/admin/patients/images
+    // -------------------------
 
     @Test
     void getAllPatientImages_shouldReturn200_andList() throws Exception {
@@ -118,6 +177,10 @@ class AdminPatientControllerTest {
         verifyNoInteractions(patientImageService);
     }
 
+    // -------------------------
+    // PUT /api/admin/patients/{id}/link-admin
+    // -------------------------
+
     @Test
     void linkAdminToPatient_shouldReturn400_whenAdminIdMissing() throws Exception {
         String body = "{}";
@@ -131,7 +194,7 @@ class AdminPatientControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("adminId is required"));
 
-        verifyNoInteractions(service);
+        verifyNoInteractions(patientAdminService);
     }
 
     @Test
@@ -149,7 +212,6 @@ class AdminPatientControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ok").value(true));
 
-        verify(service).linkAdminToPatient(eq(10L), eq(7L), any(), any());
+        verify(patientAdminService).linkAdminToPatient(eq(10L), eq(7L), any(), any());
     }
 }
-

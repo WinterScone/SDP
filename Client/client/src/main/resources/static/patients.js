@@ -1,5 +1,5 @@
 (async () => {
-    const res = await fetch("/api/verify/me");
+    const res = await fetch("/api/auth/admins/me");
     if (!res.ok) {
         window.location.href = "/admin-login.html";
         return;
@@ -69,7 +69,7 @@
         msg.textContent = "Loading patients...";
 
         try {
-            const res = await fetch("/api/patient/getAllPatients");
+            const res = await fetch("/api/admin/patients");
 
             const contentType = res.headers.get("content-type") || "";
             const text = await res.text();

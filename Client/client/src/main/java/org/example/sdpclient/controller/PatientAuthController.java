@@ -13,12 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequestMapping("/api/patient")
-public class PatientVerificationController {
+@RequestMapping("/api/auth/patients")
+public class PatientAuthController {
 
     private final PatientLoginService service;
 
-    public PatientVerificationController(PatientLoginService service) {
+    public PatientAuthController(PatientLoginService service) {
         this.service = service;
     }
 
@@ -63,6 +63,3 @@ public class PatientVerificationController {
         return ResponseEntity.ok(res);
     }
 }
-
-
-

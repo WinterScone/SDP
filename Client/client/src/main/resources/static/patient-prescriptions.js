@@ -36,7 +36,7 @@ async function loadPrescriptions() {
     setMessage("Loading...");
 
     try {
-        const res = await fetch(`/api/patient/${patientId}/prescriptions`);
+        const res = await fetch(`/api/patients/${patientId}/prescriptions`);
         const data = await res.json().catch(() => null);
 
         if (!res.ok || !data) {

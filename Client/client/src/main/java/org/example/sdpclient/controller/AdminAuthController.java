@@ -8,6 +8,7 @@ import org.example.sdpclient.dto.AdminLogin;
 import org.example.sdpclient.dto.AdminRegisterRequest;
 import org.example.sdpclient.repository.AdminRepository;
 import org.example.sdpclient.service.AdminLoginService;
+import org.example.sdpclient.util.CookieUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,13 +18,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequestMapping("/api/verify")
-public class AdminVerificationController {
+@RequestMapping("/api/auth/admins")
+public class AdminAuthController {
 
     private final AdminLoginService service;
     private final AdminRepository adminRepo;
 
-    public AdminVerificationController(AdminLoginService service, AdminRepository adminRepo) {
+    public AdminAuthController(AdminLoginService service, AdminRepository adminRepo) {
         this.service = service;
         this.adminRepo = adminRepo;
     }
@@ -76,25 +77,16 @@ public class AdminVerificationController {
 
     @GetMapping("/me")
     public ResponseEntity<?> me(HttpServletRequest request) {
-        String username = getCookieValue(request, "adminUsername");
+        String username = CookieUtils.getCookieValue(request, "adminUsername");
         if (username == null || username.isBlank()) {
             return ResponseEntity.status(401).body(Map.of("ok", false, "message", "Unauthorized"));
         }
         return ResponseEntity.ok(Map.of("ok", true, "username", username));
     }
 
-    private String getCookieValue(HttpServletRequest request, String name) {
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) return null;
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(name)) return cookie.getValue();
-        }
-        return null;
-    }
-
     @PostMapping("/register")
     public ResponseEntity<?> register(HttpServletRequest request, @RequestBody AdminRegisterRequest req) {
-        String username = getCookieValue(request, "adminUsername");
+        String username = CookieUtils.getCookieValue(request, "adminUsername");
         if (username == null || username.isBlank()) {
             return ResponseEntity.status(401).body(Map.of("ok", false, "message", "Unauthorized"));
         }
@@ -114,4 +106,3 @@ public class AdminVerificationController {
         return ResponseEntity.ok(res);
     }
 }
-
