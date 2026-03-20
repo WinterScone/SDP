@@ -34,8 +34,10 @@ public class MedicineService {
         return repo.existsById(id);
     }
 
+    @Transactional
     public void updateQuantity(MedicineType id, int quantity, Long adminId, String adminUsername) {
-        Medicine medicine = repo.findById(id).orElseThrow();
+        Medicine medicine = repo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Medicine not found: " + id));
         int oldQuantity = medicine.getQuantity();
         medicine.setQuantity(quantity);
         repo.save(medicine);

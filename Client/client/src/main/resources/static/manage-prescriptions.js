@@ -1,5 +1,5 @@
 (async () => {
-    const authRes = await fetch("/api/verify/me");
+    const authRes = await fetch("/api/auth/admins/me");
     if (!authRes.ok) {
         window.location.href = "/admin-login.html";
         return;

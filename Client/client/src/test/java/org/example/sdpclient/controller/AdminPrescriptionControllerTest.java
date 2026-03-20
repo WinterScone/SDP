@@ -1,11 +1,7 @@
 package org.example.sdpclient.controller;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -31,51 +27,20 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(
-        controllers = AdminManagePatientDetailController.class,
+        controllers = AdminPrescriptionController.class,
         excludeFilters = @ComponentScan.Filter(
                 type = FilterType.ASSIGNABLE_TYPE,
                 classes = WebMvcConfig.class
         )
 )
-@AutoConfigureMockMvc(addFilters = false) // also disables Spring Security filters (if any)
-class AdminManagePatientDetailControllerTest {
+@AutoConfigureMockMvc(addFilters = false)
+class AdminPrescriptionControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
     private AdminManagePatientDetailService service;
-
-    @Test
-    void searchPatients_shouldReturn200_andDelegateToService() throws Exception {
-        PatientViewDto dto = new PatientViewDto(
-                1L, "John", "Doe", "2000-01-01", "j@e.com", "123", List.of()
-        );
-
-        when(service.searchPatients(anyString(), anyLong(), anyBoolean())).thenReturn(List.of(dto));
-
-        mockMvc.perform(get("/api/admin/patients/search").param("q", "abc")
-                        .cookie(new jakarta.servlet.http.Cookie("adminId", "1"))
-                        .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true")))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)));
-
-        verify(service).searchPatients(anyString(), anyLong(), anyBoolean());
-    }
-
-    @Test
-    void getPatient_shouldReturn404_whenPatientNotFound() throws Exception {
-        when(service.canAdminAccessPatient(anyLong(), anyLong(), anyBoolean())).thenReturn(true);
-        when(service.findPatient(10L)).thenReturn(Optional.empty());
-
-        mockMvc.perform(get("/api/admin/patients/10")
-                        .cookie(new jakarta.servlet.http.Cookie("adminId", "1"))
-                        .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true")))
-                .andExpect(status().isNotFound());
-
-        verify(service).findPatient(10L);
-        verify(service, never()).getPrescriptionViews(anyLong());
-    }
 
     @Test
     void listMedicines_shouldReturn200_andDelegateToService() throws Exception {
@@ -95,12 +60,14 @@ class AdminManagePatientDetailControllerTest {
                 {"medicineId":"VTM01","dosage":"  ","frequency":""}
                 """;
 
+        when(service.canAdminAccessPatient(anyLong(), anyLong(), anyBoolean())).thenReturn(true);
+
         mockMvc.perform(post("/api/admin/patients/10/prescriptions")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+                        .content(body)
+                        .cookie(new jakarta.servlet.http.Cookie("adminId", "1"))
+                        .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true")))
                 .andExpect(status().isBadRequest());
-
-        verifyNoInteractions(service);
     }
 
     @Test
@@ -128,7 +95,7 @@ class AdminManagePatientDetailControllerTest {
                         .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true")))
                 .andExpect(status().isCreated());
 
-        verify(service).createPrescription(eq(patient), eq(med), any(PrescriptionCreateDto.class));
+        verify(service).createPrescription(eq(patient), eq(med), any(PrescriptionCreateDto.class), any(), any());
     }
 
     @Test
@@ -174,6 +141,6 @@ class AdminManagePatientDetailControllerTest {
                         .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true")))
                 .andExpect(status().isNoContent());
 
-        verify(service).deletePrescription(5L);
+        verify(service).deletePrescription(eq(5L), any(), any());
     }
 }

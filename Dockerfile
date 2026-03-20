@@ -24,9 +24,6 @@ FROM eclipse-temurin:21-jre-alpine
 # Set working directory
 WORKDIR /app
 
-# Create directory for SQLite database
-RUN mkdir -p /app/Client/client/data
-
 # Copy the JAR from build stage
 COPY --from=build /app/target/*.jar app.jar
 

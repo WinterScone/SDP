@@ -1,13 +1,11 @@
 package org.example.sdpclient.configuration;
 
-import org.example.sdpclient.controller.AdminManagePatientDetailController;
+import org.example.sdpclient.controller.AdminAuthController;
+import org.example.sdpclient.controller.AdminController;
 import org.example.sdpclient.controller.AdminPatientController;
-import org.example.sdpclient.controller.AdminVerificationController;
+import org.example.sdpclient.controller.AdminPrescriptionController;
 import org.example.sdpclient.repository.AdminRepository;
-import org.example.sdpclient.service.AdminListService;
-import org.example.sdpclient.service.AdminLoginService;
-import org.example.sdpclient.service.AdminManagePatientDetailService;
-import org.example.sdpclient.service.PatientAdminService;
+import org.example.sdpclient.service.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -20,8 +18,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = {
         AdminPatientController.class,
-        AdminManagePatientDetailController.class,
-        AdminVerificationController.class
+        AdminPrescriptionController.class,
+        AdminController.class,
+        AdminAuthController.class
 })
 class CookieTest {
 
@@ -29,10 +28,15 @@ class CookieTest {
     private MockMvc mockMvc;
 
     @MockitoBean private PatientAdminService patientAdminService;
-    @MockitoBean private AdminListService adminListService;
+    @MockitoBean private PatientDetailService patientDetailService;
     @MockitoBean private AdminManagePatientDetailService adminManagePatientDetailService;
     @MockitoBean private AdminLoginService adminLoginService;
     @MockitoBean private AdminRepository adminRepository;
+    @MockitoBean private DatabaseResetService databaseResetService;
+    @MockitoBean private PatientImageService patientImageService;
+    @MockitoBean private AdminListService adminListService;
+    @MockitoBean private ActivityLogService activityLogService;
+    @MockitoBean private SmsService smsService;
 
     @Test
     void noCookie_getPatients_returns401() throws Exception {
@@ -106,7 +110,9 @@ class CookieTest {
     @Test
     void withCookie_getPatients_passes() throws Exception {
         mockMvc.perform(get("/api/admin/patients")
-                        .cookie(new MockCookie("adminUsername", "admin1")))
+                        .cookie(new MockCookie("adminUsername", "admin1"))
+                        .cookie(new MockCookie("adminId", "1"))
+                        .cookie(new MockCookie("adminRoot", "true")))
                 .andExpect(status().isOk());
     }
 
@@ -120,7 +126,9 @@ class CookieTest {
     @Test
     void withCookie_searchPatients_passes() throws Exception {
         mockMvc.perform(get("/api/admin/patients/search").param("q", "test")
-                        .cookie(new MockCookie("adminUsername", "admin1")))
+                        .cookie(new MockCookie("adminUsername", "admin1"))
+                        .cookie(new MockCookie("adminId", "1"))
+                        .cookie(new MockCookie("adminRoot", "false")))
                 .andExpect(status().isOk());
     }
 
@@ -132,15 +140,15 @@ class CookieTest {
     }
 
     @Test
-    void noCookie_verifyMe_returns401() throws Exception {
-        mockMvc.perform(get("/api/verify/me"))
+    void noCookie_authMe_returns401() throws Exception {
+        mockMvc.perform(get("/api/auth/admins/me"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.ok").value(false));
     }
 
     @Test
-    void withCookie_verifyMe_returns200WithUsername() throws Exception {
-        mockMvc.perform(get("/api/verify/me")
+    void withCookie_authMe_returns200WithUsername() throws Exception {
+        mockMvc.perform(get("/api/auth/admins/me")
                         .cookie(new MockCookie("adminUsername", "admin1")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ok").value(true))
@@ -149,7 +157,7 @@ class CookieTest {
 
     @Test
     void noCookie_register_returns401() throws Exception {
-        mockMvc.perform(post("/api/verify/register")
+        mockMvc.perform(post("/api/auth/admins/register")
                         .contentType("application/json")
                         .content("{\"username\":\"newadmin\",\"password\":\"pass123\",\"firstName\":\"New\",\"lastName\":\"Admin\"}"))
                 .andExpect(status().isUnauthorized())
@@ -165,7 +173,7 @@ class CookieTest {
         org.mockito.Mockito.when(adminRepository.findByUsername("admin1"))
                 .thenReturn(java.util.Optional.of(nonRoot));
 
-        mockMvc.perform(post("/api/verify/register")
+        mockMvc.perform(post("/api/auth/admins/register")
                         .contentType("application/json")
                         .content("{\"username\":\"newadmin\",\"password\":\"pass123\",\"firstName\":\"New\",\"lastName\":\"Admin\"}")
                         .cookie(new MockCookie("adminUsername", "admin1")))
@@ -181,10 +189,10 @@ class CookieTest {
 
         org.mockito.Mockito.when(adminRepository.findByUsername("root"))
                 .thenReturn(java.util.Optional.of(root));
-        org.mockito.Mockito.when(adminLoginService.register(org.mockito.Mockito.any()))
+        org.mockito.Mockito.when(adminLoginService.register(org.mockito.Mockito.any(), org.mockito.Mockito.any(), org.mockito.Mockito.any()))
                 .thenReturn(java.util.Map.of("ok", true, "username", "newadmin"));
 
-        mockMvc.perform(post("/api/verify/register")
+        mockMvc.perform(post("/api/auth/admins/register")
                         .contentType("application/json")
                         .content("{\"username\":\"newadmin\",\"password\":\"pass123\",\"firstName\":\"New\",\"lastName\":\"Admin\"}")
                         .cookie(new MockCookie("adminUsername", "root")))

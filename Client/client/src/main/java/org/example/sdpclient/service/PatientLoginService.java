@@ -7,6 +7,8 @@ import org.example.sdpclient.repository.PatientRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Map;
 
 @Service
@@ -69,13 +71,20 @@ public class PatientLoginService {
             );
         }
 
+        LocalDate dob;
+        try {
+            dob = LocalDate.parse(req.getDateOfBirth().trim());
+        } catch (DateTimeParseException e) {
+            return Map.of("ok", false, "error", "Invalid date format for dateOfBirth");
+        }
+
         Patient patient = new Patient();
         patient.setUsername(username);
         patient.setPasswordHash(encoder.encode(req.getPassword()));
 
         patient.setFirstName(req.getFirstName().trim());
         patient.setLastName(req.getLastName().trim());
-        patient.setDateOfBirth(req.getDateOfBirth().trim());
+        patient.setDateOfBirth(dob);
 
         if (req.getEmail() == null || req.getEmail().isBlank()) {
             patient.setEmail(null);
@@ -103,5 +112,3 @@ public class PatientLoginService {
         );
     }
 }
-
-

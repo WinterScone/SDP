@@ -19,7 +19,7 @@ form.addEventListener("submit", async (e) => {
     message.textContent = "Checking...";
 
     try {
-        const res = await fetch("/api/verify/login", {
+        const res = await fetch("/api/auth/admins/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password })

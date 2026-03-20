@@ -26,14 +26,14 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @WebMvcTest(
-        controllers = AdminVerificationController.class,
+        controllers = AdminAuthController.class,
         excludeFilters = @ComponentScan.Filter(
                 type = FilterType.ASSIGNABLE_TYPE,
                 classes = WebMvcConfig.class
         )
 )
 @AutoConfigureMockMvc(addFilters = false)
-class AdminVerificationControllerTest {
+class AdminAuthControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -45,14 +45,14 @@ class AdminVerificationControllerTest {
     private AdminRepository adminRepo;
 
     // -------------------------
-    // POST /api/verify/login
+    // POST /api/auth/admins/login
     // -------------------------
 
     @Test
     void login_shouldReturn400_whenServiceOkFalse() throws Exception {
         when(service.login(any())).thenReturn(Map.of("ok", false));
 
-        mockMvc.perform(post("/api/verify/login")
+        mockMvc.perform(post("/api/auth/admins/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"x\",\"password\":\"y\"}"))
                 .andExpect(status().isBadRequest())
@@ -69,7 +69,7 @@ class AdminVerificationControllerTest {
                 "root", true
         ));
 
-        mockMvc.perform(post("/api/verify/login")
+        mockMvc.perform(post("/api/auth/admins/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"admin1\",\"password\":\"pw\"}"))
                 .andExpect(status().isOk())
@@ -77,7 +77,6 @@ class AdminVerificationControllerTest {
                 .andExpect(result -> {
                     var setCookies = result.getResponse().getHeaders("Set-Cookie");
 
-                    // Must contain BOTH cookies somewhere in the Set-Cookie headers
                     assertTrue(setCookies.stream().anyMatch(h -> h.contains("adminUsername=admin1")),
                             "Expected Set-Cookie to contain adminUsername=admin1 but was: " + setCookies);
 
@@ -90,12 +89,12 @@ class AdminVerificationControllerTest {
 
 
     // -------------------------
-    // POST /api/verify/logout
+    // POST /api/auth/admins/logout
     // -------------------------
 
     @Test
     void logout_shouldReturn200_andClearCookies() throws Exception {
-        mockMvc.perform(post("/api/verify/logout"))
+        mockMvc.perform(post("/api/auth/admins/logout"))
                 .andExpect(status().isOk())
                 .andExpect(result -> {
                     var setCookies = result.getResponse().getHeaders("Set-Cookie");
@@ -110,12 +109,12 @@ class AdminVerificationControllerTest {
 
 
     // -------------------------
-    // GET /api/verify/me
+    // GET /api/auth/admins/me
     // -------------------------
 
     @Test
     void me_shouldReturn401_whenNoCookie() throws Exception {
-        mockMvc.perform(get("/api/verify/me"))
+        mockMvc.perform(get("/api/auth/admins/me"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.ok").value(false))
                 .andExpect(jsonPath("$.message").value("Unauthorized"));
@@ -123,7 +122,7 @@ class AdminVerificationControllerTest {
 
     @Test
     void me_shouldReturn200_whenCookiePresent() throws Exception {
-        mockMvc.perform(get("/api/verify/me")
+        mockMvc.perform(get("/api/auth/admins/me")
                         .cookie(new Cookie("adminUsername", "admin1")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ok").value(true))
@@ -131,12 +130,12 @@ class AdminVerificationControllerTest {
     }
 
     // -------------------------
-    // POST /api/verify/register
+    // POST /api/auth/admins/register
     // -------------------------
 
     @Test
     void register_shouldReturn401_whenNotLoggedIn() throws Exception {
-        mockMvc.perform(post("/api/verify/register")
+        mockMvc.perform(post("/api/auth/admins/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"new\",\"password\":\"pw\",\"firstName\":\"a\",\"lastName\":\"b\"}"))
                 .andExpect(status().isUnauthorized())
@@ -144,7 +143,7 @@ class AdminVerificationControllerTest {
                 .andExpect(jsonPath("$.message").value("Unauthorized"));
 
         verifyNoInteractions(adminRepo);
-        verify(service, never()).register(any());
+        verify(service, never()).register(any(), any(), any());
     }
 
     @Test
@@ -155,7 +154,7 @@ class AdminVerificationControllerTest {
 
         when(adminRepo.findByUsername("admin1")).thenReturn(Optional.of(caller));
 
-        mockMvc.perform(post("/api/verify/register")
+        mockMvc.perform(post("/api/auth/admins/register")
                         .cookie(new Cookie("adminUsername", "admin1"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"new\",\"password\":\"pw\",\"firstName\":\"a\",\"lastName\":\"b\"}"))
@@ -164,7 +163,7 @@ class AdminVerificationControllerTest {
                 .andExpect(jsonPath("$.message").value("Only root admin can register new admins"));
 
         verify(adminRepo).findByUsername("admin1");
-        verify(service, never()).register(any());
+        verify(service, never()).register(any(), any(), any());
     }
 
     @Test
@@ -174,9 +173,9 @@ class AdminVerificationControllerTest {
         caller.setRoot(true);
 
         when(adminRepo.findByUsername("root")).thenReturn(Optional.of(caller));
-        when(service.register(any())).thenReturn(Map.of("ok", false, "message", "bad"));
+        when(service.register(any(), any(), any())).thenReturn(Map.of("ok", false, "message", "bad"));
 
-        mockMvc.perform(post("/api/verify/register")
+        mockMvc.perform(post("/api/auth/admins/register")
                         .cookie(new Cookie("adminUsername", "root"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"new\",\"password\":\"pw\",\"firstName\":\"a\",\"lastName\":\"b\"}"))
@@ -184,7 +183,7 @@ class AdminVerificationControllerTest {
                 .andExpect(jsonPath("$.ok").value(false));
 
         verify(adminRepo).findByUsername("root");
-        verify(service).register(any());
+        verify(service).register(any(), any(), any());
     }
 
     @Test
@@ -194,9 +193,9 @@ class AdminVerificationControllerTest {
         caller.setRoot(true);
 
         when(adminRepo.findByUsername("root")).thenReturn(Optional.of(caller));
-        when(service.register(any())).thenReturn(Map.of("ok", true, "username", "new"));
+        when(service.register(any(), any(), any())).thenReturn(Map.of("ok", true, "username", "new"));
 
-        mockMvc.perform(post("/api/verify/register")
+        mockMvc.perform(post("/api/auth/admins/register")
                         .cookie(new Cookie("adminUsername", "root"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\":\"new\",\"password\":\"pw\",\"firstName\":\"a\",\"lastName\":\"b\"}"))
@@ -205,6 +204,6 @@ class AdminVerificationControllerTest {
                 .andExpect(jsonPath("$.username").value("new"));
 
         verify(adminRepo).findByUsername("root");
-        verify(service).register(any());
+        verify(service).register(any(), any(), any());
     }
 }

@@ -2,14 +2,17 @@ package org.example.sdpclient.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 @Entity
+@Table(name = "intake_history")
 @Getter
 @Setter
+@NoArgsConstructor
 public class IntakeHistory {
 
     @Id
