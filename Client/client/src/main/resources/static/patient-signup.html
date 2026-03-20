@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Patient Sign Up</title>
+    <link rel="stylesheet" href="/css/common.css">
+</head>
+
+<body>
+<section class="card">
+    <div class="topbar">
+        <h2>New Patient</h2>
+        <button class="btn" onclick="window.location.href='/patient-login.html'">← Back</button>
+    </div>
+
+    <form id="signupForm" class="form-long" novalidate>
+        <label for="username">Username</label>
+        <input id="username" type="text" autocomplete="username" required />
+
+        <label for="password">Password</label>
+        <input id="password" type="password" autocomplete="new-password" required />
+
+        <label for="firstName">First name</label>
+        <input id="firstName" type="text" autocomplete="given-name" required />
+
+        <label for="lastName">Last name</label>
+        <input id="lastName" type="text" autocomplete="family-name" required />
+
+        <label for="dateOfBirth">Date of birth</label>
+        <input id="dateOfBirth" type="date" required />
+
+        <label for="email">Email</label>
+        <input id="email" type="email" autocomplete="email" />
+
+        <label for="phone">Phone</label>
+        <input id="phone" type="tel" autocomplete="tel" />
+
+        <div class="row">
+            <button class="btn" type="submit">Sign up</button>
+            <div id="message" class="msg"></div>
+        </div>
+    </form>
+
+    <p class="helper">
+        Existing patient? <a href="/patient-login.html">Log in</a>
+    </p>
+</section>
+
+<script src="/patient-signup.js"></script>
+</body>
+</html>

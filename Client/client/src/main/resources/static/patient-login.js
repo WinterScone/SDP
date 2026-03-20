@@ -1,40 +1,45 @@
 const form = document.getElementById("loginForm");
-const btn = document.getElementById("loginBtn");
-const message = document.getElementById("message");
+const messageEl = document.getElementById("message");
+
+function setMessage(text, ok = false) {
+    messageEl.textContent = text;
+    messageEl.style.color = ok ? "green" : "crimson";
+}
 
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    setMessage("");
 
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value;
 
     if (!username || !password) {
-        message.textContent = "Please enter username and password.";
+        setMessage("Please enter username and password.");
         return;
     }
 
-    btn.disabled = true;
-    message.textContent = "Checking...";
-
     try {
-        const res = await fetch("/api/patient/login", {
+        const res = await fetch("/api/auth/patients/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ username, password }),
         });
 
-        if (res.ok) {
-            message.textContent = "Login success";
-            // window.location.href = "/patient-dashboard.html";
-        } else if (res.status === 401) {
-            message.textContent = "Invalid username or password";
-        } else {
-            message.textContent = `Server error (${res.status})`;
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok || !data || data.ok !== true) {
+            setMessage(data?.message || "Invalid username or password.");
+            return;
         }
+
+        // store patientId for next page
+        localStorage.setItem("patientId", data.patientId);
+        localStorage.setItem("patientUsername", data.username);
+
+        setMessage("Login successful!", true);
+
+        window.location.href = "/patient-dashboard.html";
     } catch (err) {
-        console.error(err);
-        message.textContent = "Cannot connect to server.";
-    } finally {
-        btn.disabled = false;
+        setMessage("Network error. Please try again.");
     }
 });

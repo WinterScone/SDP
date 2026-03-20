@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Patient Dashboard</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+
+<body>
+
+<section class="card">
+    <div class="topbar">
+        <h2 id="title">Patient Dashboard</h2>
+        <button class="btn" id="logoutBtn">Logout</button>
+    </div>
+
+    <div class="menu">
+        <button class="btn" onclick="window.location.href='/patient-prescriptions.html'">
+            My Prescriptions
+        </button>
+
+        <button class="btn" onclick="window.location.href='/patient-intake-history.html'">
+            Intake History
+        </button>
+    </div>
+</section>
+
+<script src="/patient-dashboard.js"></script>
+</body>
+</html>

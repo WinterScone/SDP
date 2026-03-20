@@ -1,6 +1,5 @@
 package org.example.sdpclient.configuration;
 
-
 import org.example.sdpclient.entity.Medicine;
 import org.example.sdpclient.enums.MedicineType;
 import org.example.sdpclient.repository.MedicineRepository;
@@ -19,14 +18,26 @@ public class Medicines16Rows implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        for (MedicineType type : MedicineType.values()) {
-            String number = type.name().replace("MEDICINE_ID", ""); // "1".."16"
-            String name = "MEDICINE_NAME" + number;
+        for (MedicineType t : MedicineType.values()) {
 
-            repository.findById(type).orElseGet(() ->
-                    repository.save(new Medicine(type, name, null, null, null, 0))
-            );
+            // avoid duplicates (since id is already the enum)
+            if (repository.existsById(t)) continue;
+
+            Medicine m = new Medicine();
+            m.setMedicineId(t);
+
+            String name = t.getName();
+            if (name == null || name.isBlank()) name = t.name();  // fallback
+
+            m.setMedicineName(name);
+            m.setShape(t.getShape());
+            m.setColour(t.getColour());
+            m.setDosagePerForm(t.getDosage());
+            m.setQuantity(0);
+
+            repository.save(m);
         }
     }
+
 
 }

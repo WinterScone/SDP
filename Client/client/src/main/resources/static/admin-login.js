@@ -19,7 +19,7 @@ form.addEventListener("submit", async (e) => {
     message.textContent = "Checking...";
 
     try {
-        const res = await fetch("/api/verify/login", {
+        const res = await fetch("/api/auth/admins/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password })
@@ -29,15 +29,16 @@ form.addEventListener("submit", async (e) => {
             const data = await res.json();
             console.log("Login success:", data);
 
+            localStorage.setItem("adminUsername", data.username);
             message.textContent = "Login success, redirecting...";
-
 
             setTimeout(() => {
                 window.location.href = "/dashboard.html";
             }, 800);
 
-        } else if (res.status === 401) {
-            message.textContent = "Invalid username or password";
+        } else if (res.status === 400 || res.status === 401) {
+            const data = await res.json();
+            message.textContent = data.message || "Invalid username or password";
         } else {
             message.textContent = `Server error (${res.status})`;
         }

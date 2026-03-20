@@ -11,13 +11,11 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
         </processorPath>
         <module name="SDP-Client" />
-        <module name="SDP-16-PillWheel" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="SDP-16-PillWheel" options="-parameters" />
       <module name="SDP-Client" options="-parameters" />
     </option>
   </component>

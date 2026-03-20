@@ -1,9 +1,11 @@
 package org.example.sdpclient.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
+import org.example.sdpclient.dto.ReduceMedicineRequest;
 import org.example.sdpclient.entity.Medicine;
 import org.example.sdpclient.enums.MedicineType;
-import org.example.sdpclient.repository.MedicineRepository;
-import org.springframework.data.domain.Sort;
+import org.example.sdpclient.service.MedicineService;
+import org.example.sdpclient.util.CookieUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,36 +16,66 @@ import java.util.Map;
 @RequestMapping("/api/medicines")
 public class MedicineController {
 
-    private final MedicineRepository repo;
+    private final MedicineService service;
 
-    public MedicineController(MedicineRepository repo) {
-        this.repo = repo;
+    public MedicineController(MedicineService service) {
+        this.service = service;
     }
 
     @GetMapping
-    public List<Medicine> getAll() {
-        return repo.findAll(Sort.by("medicineId"));
+    public List<Medicine> getAllMedicines() {
+        return service.getAll();
     }
 
     @PatchMapping("/{id}/quantity")
-    public ResponseEntity<?> updateQuantity(@PathVariable MedicineType id,
-                                            @RequestBody Map<String, Integer> body) {
+    public ResponseEntity<?> updateQuantity(@PathVariable MedicineType id, @RequestBody Map<String, Integer> body,
+                                           HttpServletRequest request) {
 
         Integer quantity = body.get("quantity");
         if (quantity == null || quantity < 0) {
             return ResponseEntity.badRequest()
-                    .body(Map.of("ok", false, "message", "Quantity must be >= 0"));
+                    .body(Map.of(
+                            "ok",
+                            false,
+                            "message",
+                            "Quantity must be >= 0")
+                    );
         }
 
-        Medicine med = repo.findById(id).orElse(null);
-        if (med == null) {
-            return ResponseEntity.status(404).body(Map.of("ok", false, "message", "Not found"));
+        if (!service.exists(id)) {
+            return ResponseEntity.status(400)
+                    .body(Map.of(
+                            "ok",
+                            false,
+                            "message",
+                            "Not found")
+                    );
         }
 
-        med.setQuantity(quantity);
-        repo.save(med);
+        Long adminId = CookieUtils.getAdminIdOrNull(request);
+        String adminUsername = CookieUtils.getCookieValue(request, "adminUsername");
+
+        service.updateQuantity(id, quantity, adminId, adminUsername);
         return ResponseEntity.ok(Map.of("ok", true));
     }
+
+    @PostMapping("/reduce")
+    public ResponseEntity<?> reduceMedicine(@RequestBody ReduceMedicineRequest request) {
+
+        if (request.getMedicineName() == null || request.getQuantity() == null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("ok", false, "message", "Medicine name and quantity required"));
+        }
+
+        try {
+            service.reduceQuantityByName(
+                    request.getMedicineName(),
+                    request.getQuantity()
+            );
+            return ResponseEntity.ok(Map.of("ok", true));
+        } catch (RuntimeException ex) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("ok", false, "message", ex.getMessage()));
+        }
+    }
 }
-
-
