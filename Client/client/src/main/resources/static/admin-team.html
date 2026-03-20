@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin Team</title>
+    <link rel="stylesheet" href="/css/common.css">
+</head>
+
+<body>
+<section class="card wide">
+    <div class="topbar">
+        <h2>Admin Team</h2>
+        <div class="topbar-actions">
+            <div id="message" class="msg"></div>
+            <button class="btn" onclick="window.location.href='/dashboard.html'">← Back</button>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+            <tr>
+                <th>Admin Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Root</th>
+            </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+        </table>
+    </div>
+</section>
+
+<script src="/admin-team.js"></script>
+</body>
+</html>

@@ -19,7 +19,7 @@ form.addEventListener("submit", async (e) => {
     }
 
     try {
-        const res = await fetch("/api/patient/login", {
+        const res = await fetch("/api/auth/patients/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password }),
@@ -28,7 +28,7 @@ form.addEventListener("submit", async (e) => {
         const data = await res.json().catch(() => null);
 
         if (!res.ok || !data || data.ok !== true) {
-            setMessage("Invalid username or password.");
+            setMessage(data?.message || "Invalid username or password.");
             return;
         }
 

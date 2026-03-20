@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Intake History</title>
+    <link rel="stylesheet" href="/css/common.css">
+</head>
+<body>
+
+<section class="card wide">
+    <div class="topbar">
+        <h2 id="title">Intake History</h2>
+        <div class="topbar-actions">
+            <button class="btn" id="backBtn" onclick="window.location.href='/patient-dashboard.html'">← Back</button>
+            <button class="btn" id="logoutBtn">Logout</button>
+        </div>
+    </div>
+
+    <h3 class="section-title">Log New Intake</h3>
+    <div class="log-form">
+        <div class="field">
+            <label for="medicineSelect">Medicine</label>
+            <select id="medicineSelect">
+                <option value="">— select —</option>
+            </select>
+        </div>
+        <div class="field">
+            <label for="takenDate">Date</label>
+            <input type="date" id="takenDate" />
+        </div>
+        <div class="field">
+            <label for="takenTime">Time</label>
+            <input type="time" id="takenTime" />
+        </div>
+        <div class="field">
+            <label for="notesInput">Notes (optional)</label>
+            <input type="text" id="notesInput" placeholder="e.g. taken with food" maxlength="200" />
+        </div>
+        <div class="field">
+            <label>&nbsp;</label>
+            <button class="btn" id="logBtn">Log</button>
+        </div>
+    </div>
+    <div id="logMessage"></div>
+</section>
+
+<section class="card wide">
+    <h3 class="section-title">History</h3>
+    <div id="message" class="msg"></div>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+            <tr>
+                <th>Medicine ID</th>
+                <th>Medicine Name</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Notes</th>
+            </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+        </table>
+    </div>
+</section>
+
+<script src="/intake-history.js"></script>
+</body>
+</html>

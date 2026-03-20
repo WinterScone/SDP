@@ -2,16 +2,19 @@ package org.example.sdpclient.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
 @Entity
+@Table(name = "prescription")
 @Getter
 @Setter
+@NoArgsConstructor
 public class Prescription {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(optional = false)

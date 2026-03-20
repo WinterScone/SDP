@@ -17,7 +17,7 @@ public class SeedPrescription {
                            MedicineRepository medicineRepo,
                            PrescriptionRepository prescriptionRepo) {
         return args -> {
-            var patientOptional = patientRepo.findByUsername("patient1");
+            var patientOptional = patientRepo.findByUsername("testPatient1");
             if (patientOptional.isEmpty()) return;
             var patient = patientOptional.get();
 
@@ -35,9 +35,9 @@ public class SeedPrescription {
                 prescriptionRepo.save(p);
             };
 
-            addIfMissing.accept(MedicineType.MEDICINE_ID1, new String[]{"500mg", "Twice a day"});
-            addIfMissing.accept(MedicineType.MEDICINE_ID2, new String[]{"10mg", "Once a day"});
-            addIfMissing.accept(MedicineType.MEDICINE_ID3, new String[]{"20mg", "Three times a day"});
+            addIfMissing.accept(MedicineType.VTM01, new String[]{String.valueOf(1000), "Twice a day"});
+            addIfMissing.accept(MedicineType.VTM02, new String[]{String.valueOf(268), "Once a day"});
+            addIfMissing.accept(MedicineType.VTM03, new String[]{String.valueOf(100), "Three times a day"});
         };
     }
 }

@@ -7,6 +7,8 @@ import org.example.sdpclient.repository.PatientRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Map;
 
 @Service
@@ -21,7 +23,7 @@ public class PatientLoginService {
     }
 
     public Map<String, Object> login(PatientLogin req) {
-        var userOptional = repo.findByUsername(req.getUsername());
+        var userOptional = repo.findByUsernameIgnoreCase(req.getUsername());
         if (userOptional.isEmpty()) {
             return Map.of(
                     "ok",
@@ -60,7 +62,7 @@ public class PatientLoginService {
 
         String username = req.getUsername().trim();
 
-        if (repo.existsByUsername(username)) {
+        if (repo.existsByUsernameIgnoreCase(username)) {
             return Map.of(
                     "ok",
                     false,
@@ -69,13 +71,20 @@ public class PatientLoginService {
             );
         }
 
+        LocalDate dob;
+        try {
+            dob = LocalDate.parse(req.getDateOfBirth().trim());
+        } catch (DateTimeParseException e) {
+            return Map.of("ok", false, "error", "Invalid date format for dateOfBirth");
+        }
+
         Patient patient = new Patient();
         patient.setUsername(username);
         patient.setPasswordHash(encoder.encode(req.getPassword()));
 
         patient.setFirstName(req.getFirstName().trim());
         patient.setLastName(req.getLastName().trim());
-        patient.setDateOfBirth(req.getDateOfBirth().trim());
+        patient.setDateOfBirth(dob);
 
         if (req.getEmail() == null || req.getEmail().isBlank()) {
             patient.setEmail(null);
@@ -89,8 +98,7 @@ public class PatientLoginService {
             patient.setPhone(req.getPhone().trim());
         }
 
-        patient.setLinkedAdminId(null);
-        patient.setLinkedAdminName(null);
+        patient.setLinkedAdmin(null);
 
         Patient saved = repo.save(patient);
 
@@ -102,5 +110,3 @@ public class PatientLoginService {
         );
     }
 }
-
-

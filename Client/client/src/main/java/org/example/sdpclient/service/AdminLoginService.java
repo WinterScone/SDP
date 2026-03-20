@@ -15,14 +15,17 @@ public class AdminLoginService {
 
     private final AdminRepository repo;
     private final PasswordEncoder encoder;
+    private final ActivityLogService activityLogService;
 
-    public AdminLoginService(AdminRepository repo, PasswordEncoder encoder) {
+    public AdminLoginService(AdminRepository repo, PasswordEncoder encoder,
+                            ActivityLogService activityLogService) {
         this.repo = repo;
         this.encoder = encoder;
+        this.activityLogService = activityLogService;
     }
 
     public Map<String, Object> login(AdminLogin req) {
-        var userOptional = repo.findByUsername(req.getUsername());
+        var userOptional = repo.findByUsernameIgnoreCase(req.getUsername());
 
         if (userOptional.isEmpty()) {
             return Map.of("ok", false);
@@ -35,15 +38,20 @@ public class AdminLoginService {
 
         return Map.of(
                 "ok", true,
-                "username", user.getUsername()
+                "id", user.getId(),
+                "username", user.getUsername(),
+                "root", user.isRoot()
         );
     }
 
-    public Map<String, Object> register(AdminRegisterRequest req) {
+    public Map<String, Object> register(AdminRegisterRequest req, Long creatorAdminId,
+                                       String creatorAdminUsername) {
         if (req.getUsername() == null || req.getUsername().trim().isEmpty()
                 || req.getPassword() == null || req.getPassword().isEmpty()
                 || req.getFirstName() == null || req.getFirstName().trim().isEmpty()
-                || req.getLastName() == null || req.getLastName().trim().isEmpty()) {
+                || req.getLastName() == null || req.getLastName().trim().isEmpty()
+                || req.getEmail() == null || req.getEmail().trim().isEmpty()
+                || req.getPhone() == null || req.getPhone().trim().isEmpty()) {
             return Map.of(
                     "ok", false,
                     "message", "All fields are required"
@@ -51,8 +59,9 @@ public class AdminLoginService {
         }
 
         var username = req.getUsername().trim();
+        var email = req.getEmail().trim();
 
-        if (repo.findByUsername(username).isPresent()) {
+        if (repo.findByUsernameIgnoreCase(username).isPresent()) {
             return Map.of(
                     "ok", false,
                     "message", "Username already exists"
@@ -64,8 +73,19 @@ public class AdminLoginService {
         admin.setPasswordHash(encoder.encode(req.getPassword()));
         admin.setFirstName(req.getFirstName().trim());
         admin.setLastName(req.getLastName().trim());
+        admin.setEmail(email);
+        admin.setPhone(req.getPhone().trim());
 
         repo.save(admin);
+
+        // Log the activity
+        String newAdminFullName = admin.getFirstName() + " " + admin.getLastName();
+        activityLogService.logAdminCreated(
+                admin.getUsername(),
+                newAdminFullName,
+                creatorAdminId,
+                creatorAdminUsername
+        );
 
         return Map.of(
                 "ok", true,

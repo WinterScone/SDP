@@ -18,14 +18,26 @@ public class Medicines16Rows implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        for (MedicineType medicineType : MedicineType.values()) {
-            String number = medicineType.name().replace("MEDICINE_ID", "");
-            String name = "MEDICINE_NAME" + number;
+        for (MedicineType t : MedicineType.values()) {
 
-            repository.findById(medicineType).orElseGet(() ->
-                    repository.save(new Medicine(medicineType, name, null, null, null, 0))
-            );
+            // avoid duplicates (since id is already the enum)
+            if (repository.existsById(t)) continue;
+
+            Medicine m = new Medicine();
+            m.setMedicineId(t);
+
+            String name = t.getName();
+            if (name == null || name.isBlank()) name = t.name();  // fallback
+
+            m.setMedicineName(name);
+            m.setShape(t.getShape());
+            m.setColour(t.getColour());
+            m.setDosagePerForm(t.getDosage());
+            m.setQuantity(0);
+
+            repository.save(m);
         }
     }
+
 
 }

@@ -1,19 +1,15 @@
-const rowsEl = document.getElementById("rows");
-const messageEl = document.getElementById("message");
-const titleEl = document.getElementById("title");
+const titleEl   = document.getElementById("title");
 const logoutBtn = document.getElementById("logoutBtn");
 
-function setMessage(text) {
-    messageEl.textContent = text || "";
+const patientId = localStorage.getItem("patientId");
+const username  = localStorage.getItem("patientUsername");
+
+if (!patientId) {
+    window.location.href = "/patient-login.html";
 }
 
-function escapeHtml(str) {
-    return String(str ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+if (username) {
+    titleEl.textContent = `Welcome, ${username}`;
 }
 
 logoutBtn.addEventListener("click", () => {
@@ -21,49 +17,3 @@ logoutBtn.addEventListener("click", () => {
     localStorage.removeItem("patientUsername");
     window.location.href = "/patient-login.html";
 });
-
-async function loadPrescriptions() {
-    const patientId = localStorage.getItem("patientId");
-    const username = localStorage.getItem("patientUsername");
-
-    if (!patientId) {
-        window.location.href = "/patient-login.html";
-        return;
-    }
-
-    if (username) titleEl.textContent = `Prescriptions for ${username}`;
-
-    setMessage("Loading...");
-
-    try {
-        const res = await fetch(`/api/patient/${patientId}/prescriptions`);
-        const data = await res.json().catch(() => null);
-
-        if (!res.ok || !data) {
-            setMessage("Could not load prescriptions.");
-            return;
-        }
-
-        const list = data.prescriptions || [];
-        if (list.length === 0) {
-            rowsEl.innerHTML = "";
-            setMessage("No prescriptions found.");
-            return;
-        }
-
-        rowsEl.innerHTML = list.map(p => `
-      <tr>
-        <td>${escapeHtml(p.medicineId)}</td>
-        <td>${escapeHtml(p.medicineName)}</td>
-        <td>${escapeHtml(p.dosage)}</td>
-        <td>${escapeHtml(p.frequency)}</td>
-      </tr>
-    `).join("");
-
-        setMessage("");
-    } catch (e) {
-        setMessage("Network error while loading prescriptions.");
-    }
-}
-
-loadPrescriptions();

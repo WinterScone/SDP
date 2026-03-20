@@ -1,8 +1,11 @@
 package org.example.sdpclient.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
+import org.example.sdpclient.dto.ReduceMedicineRequest;
 import org.example.sdpclient.entity.Medicine;
 import org.example.sdpclient.enums.MedicineType;
 import org.example.sdpclient.service.MedicineService;
+import org.example.sdpclient.util.CookieUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,12 +23,13 @@ public class MedicineController {
     }
 
     @GetMapping
-    public List<Medicine> getAll() {
+    public List<Medicine> getAllMedicines() {
         return service.getAll();
     }
 
     @PatchMapping("/{id}/quantity")
-    public ResponseEntity<?> updateQuantity(@PathVariable MedicineType id, @RequestBody Map<String, Integer> body) {
+    public ResponseEntity<?> updateQuantity(@PathVariable MedicineType id, @RequestBody Map<String, Integer> body,
+                                           HttpServletRequest request) {
 
         Integer quantity = body.get("quantity");
         if (quantity == null || quantity < 0) {
@@ -48,10 +52,30 @@ public class MedicineController {
                     );
         }
 
-        service.updateQuantity(id, quantity);
+        Long adminId = CookieUtils.getAdminIdOrNull(request);
+        String adminUsername = CookieUtils.getCookieValue(request, "adminUsername");
+
+        service.updateQuantity(id, quantity, adminId, adminUsername);
         return ResponseEntity.ok(Map.of("ok", true));
     }
+
+    @PostMapping("/reduce")
+    public ResponseEntity<?> reduceMedicine(@RequestBody ReduceMedicineRequest request) {
+
+        if (request.getMedicineName() == null || request.getQuantity() == null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("ok", false, "message", "Medicine name and quantity required"));
+        }
+
+        try {
+            service.reduceQuantityByName(
+                    request.getMedicineName(),
+                    request.getQuantity()
+            );
+            return ResponseEntity.ok(Map.of("ok", true));
+        } catch (RuntimeException ex) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("ok", false, "message", ex.getMessage()));
+        }
+    }
 }
-
-
-

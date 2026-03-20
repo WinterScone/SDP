@@ -4,96 +4,27 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Patient Dashboard</title>
-
-    <style>
-        body{
-            margin:0;
-            font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-            background:#f3f4f6;
-            padding:24px;
-        }
-
-        .card{
-            max-width:900px;
-            margin:0 auto;
-            background:#fff;
-            border-radius:16px;
-            padding:24px;
-            box-shadow:0 10px 25px rgba(0,0,0,.08);
-        }
-
-        h2{
-            margin:0 0 12px 0;
-            font-size:28px;
-        }
-
-        .top{
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            gap:12px;
-            margin-bottom:16px;
-        }
-
-        .btn{
-            padding:10px 16px;
-            font-size:14px;
-            border-radius:10px;
-            border:2px solid #e5e7eb;
-            background:#fff;
-            cursor:pointer;
-        }
-
-        .btn:hover{
-            background:#f9fafb;
-        }
-
-        table{
-            width:100%;
-            border-collapse:collapse;
-            margin-top:12px;
-        }
-
-        th, td{
-            padding:12px;
-            border-bottom:1px solid #e5e7eb;
-            text-align:left;
-            font-size:15px;
-        }
-
-        th{
-            font-weight:700;
-            background:#fafafa;
-        }
-
-        #message{
-            font-size:14px;
-            color:#6b7280;
-            margin-top:8px;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
 </head>
+
 <body>
+
 <section class="card">
-    <div class="top">
-        <div>
-            <h2 id="title">Your Prescriptions</h2>
-            <div id="message"></div>
-        </div>
+    <div class="topbar">
+        <h2 id="title">Patient Dashboard</h2>
         <button class="btn" id="logoutBtn">Logout</button>
     </div>
 
-    <table>
-        <thead>
-        <tr>
-            <th>Medicine ID</th>
-            <th>Medicine name</th>
-            <th>Dosage</th>
-            <th>Frequency</th>
-        </tr>
-        </thead>
-        <tbody id="rows"></tbody>
-    </table>
+    <div class="menu">
+        <button class="btn" onclick="window.location.href='/patient-prescriptions.html'">
+            My Prescriptions
+        </button>
+
+        <button class="btn" onclick="window.location.href='/patient-intake-history.html'">
+            Intake History
+        </button>
+    </div>
 </section>
 
 <script src="/patient-dashboard.js"></script>

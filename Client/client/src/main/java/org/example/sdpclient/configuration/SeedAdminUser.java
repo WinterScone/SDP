@@ -13,9 +13,9 @@ public class SeedAdminUser {
     @Bean
     CommandLineRunner seedAdmins(AdminRepository repo, PasswordEncoder encoder) {
         return args -> {
-            seed(repo, encoder, "admin1", "admin123", "Admin", "One");
-            seed(repo, encoder, "admin2", "admin123", "Admin", "Two");
-            seed(repo, encoder, "admin3", "admin123", "Admin", "Three");
+            seed(repo, encoder, "root",       "root",       "Root",  "Admin",     "root@sdp.com",       "07700 900000", true);
+            seed(repo, encoder, "testAdmin1", "testAdmin1", "Test",  "Admin One", "testadmin1@sdp.com", "07700 900001", false);
+            seed(repo, encoder, "testAdmin2", "testAdmin2", "Test",  "Admin Two", "testadmin2@sdp.com", "07700 900002", false);
         };
     }
 
@@ -24,7 +24,10 @@ public class SeedAdminUser {
                       String username,
                       String rawPassword,
                       String firstName,
-                      String lastName) {
+                      String lastName,
+                      String email,
+                      String phone,
+                      boolean root) {
 
         if (repo.findByUsername(username).isPresent()) return;
 
@@ -33,6 +36,9 @@ public class SeedAdminUser {
         admin.setPasswordHash(encoder.encode(rawPassword));
         admin.setFirstName(firstName);
         admin.setLastName(lastName);
+        admin.setEmail(email);
+        admin.setPhone(phone);
+        admin.setRoot(root);
 
         repo.save(admin);
     }

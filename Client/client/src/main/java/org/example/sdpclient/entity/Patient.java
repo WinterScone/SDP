@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Table(name = "patient", indexes = {
+    @Index(name = "idx_patient_linked_admin", columnList = "linked_admin_id")
+})
 public class Patient {
 
     @Id
@@ -24,35 +28,36 @@ public class Patient {
     @Column(unique = true, nullable = false)
     private String username;
 
-    @Column(name = "password", nullable = false)
+    @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
-    @Column(nullable = false)
+    @Column(name = "first_name", nullable = false)
     private String firstName;
 
-    @Column(nullable = false)
+    @Column(name = "last_name", nullable = false)
     private String lastName;
 
-    @Column(nullable = false)
-    private String dateOfBirth;
+    @Column(name = "date_of_birth", nullable = false)
+    private LocalDate dateOfBirth;
 
     private String email;
     private String phone;
 
-    @Column(name="created_at")
-    private String createdAt;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
-    @Column(name = "linked_admin_id")
-    private Long linkedAdminId;
-
-    @Column(name = "linked_admin_name")
-    private String linkedAdminName;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "linked_admin_id")
+    private Admin linkedAdmin;
 
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Prescription> prescriptions = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now().toString();
+        createdAt = LocalDateTime.now();
     }
+
+    @Column(name = "face_data")
+    private byte[] faceData;
 }

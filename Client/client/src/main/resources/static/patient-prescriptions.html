@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Patient Dashboard</title>
+    <link rel="stylesheet" href="/css/common.css">
+</head>
+<body>
+<section class="card wide">
+    <div class="topbar">
+        <h2 id="title">Your Prescriptions</h2>
+        <div class="topbar-actions">
+            <button class="btn" onclick="window.location.href='/patient-dashboard.html'">← Back</button>
+            <button class="btn" id="logoutBtn">Logout</button>
+        </div>
+    </div>
+    <div id="message" class="msg"></div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+            <tr>
+                <th>Medicine ID</th>
+                <th>Medicine name</th>
+                <th>Dosage</th>
+                <th>Frequency</th>
+            </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+        </table>
+    </div>
+</section>
+
+<script src="/patient-prescriptions.js"></script>
+</body>
+</html>

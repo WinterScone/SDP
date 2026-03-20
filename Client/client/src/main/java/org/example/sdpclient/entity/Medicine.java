@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.example.sdpclient.enums.MedicineType;
 
 @Entity
+@Table(name = "medicine")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -24,7 +25,7 @@ public class Medicine {
 
     private String shape;
     private String colour;
-    private String dosagePerForm;
+    private Integer dosagePerForm;
     private int quantity;
 
 }

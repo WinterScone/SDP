@@ -19,23 +19,33 @@ public class AdminManagePatientDetailService {
     private final PatientRepository patientRepository;
     private final PrescriptionRepository prescriptionRepository;
     private final MedicineRepository medicineRepository;
+    private final ActivityLogService activityLogService;
 
     public AdminManagePatientDetailService(PatientRepository patientRepository,
                                            PrescriptionRepository prescriptionRepository,
-                                           MedicineRepository medicineRepository) {
+                                           MedicineRepository medicineRepository,
+                                           ActivityLogService activityLogService) {
         this.patientRepository = patientRepository;
         this.prescriptionRepository = prescriptionRepository;
         this.medicineRepository = medicineRepository;
+        this.activityLogService = activityLogService;
     }
 
 
-    public List<PatientViewDto> searchPatients(String q) {
+    public List<PatientViewDto> searchPatients(String q, Long adminId, boolean isRoot) {
         String keyword = q == null ? "" : q.trim();
         if (keyword.isEmpty()) {
             return List.of();
         }
 
-        return patientRepository.searchByKeyword(keyword).stream()
+        List<Patient> patients;
+        if (isRoot) {
+            patients = patientRepository.searchByKeyword(keyword);
+        } else {
+            patients = patientRepository.searchByKeywordAndLinkedAdmin(keyword, adminId);
+        }
+
+        return patients.stream()
                 .map(p -> new PatientViewDto(
                         p.getId(),
                         p.getFirstName(),
@@ -46,6 +56,16 @@ public class AdminManagePatientDetailService {
                         List.of()
                 ))
                 .toList();
+    }
+
+    public boolean canAdminAccessPatient(Long patientId, Long adminId, boolean isRoot) {
+        if (isRoot) {
+            return true;
+        }
+        Optional<Patient> patient = patientRepository.findById(patientId);
+        return patient.isPresent()
+                && patient.get().getLinkedAdmin() != null
+                && adminId.equals(patient.get().getLinkedAdmin().getId());
     }
 
     public Optional<Patient> findPatient(Long id) {
@@ -73,7 +93,8 @@ public class AdminManagePatientDetailService {
         return prescriptionRepository.findById(id);
     }
 
-    public void createPrescription(Patient patient, Medicine medicine, PrescriptionCreateDto dto) {
+    public void createPrescription(Patient patient, Medicine medicine, PrescriptionCreateDto dto,
+                                  Long adminId, String adminUsername) {
 
         Prescription rx = new Prescription();
         rx.setPatient(patient);
@@ -82,6 +103,18 @@ public class AdminManagePatientDetailService {
         rx.setFrequency(dto.getFrequency().trim());
 
         prescriptionRepository.save(rx);
+
+        // Log the activity
+        String patientName = patient.getFirstName() + " " + patient.getLastName();
+        activityLogService.logPrescriptionCreated(
+                patient.getId(),
+                patientName,
+                medicine.getMedicineName(),
+                dto.getDosage().trim(),
+                dto.getFrequency().trim(),
+                adminId,
+                adminUsername
+        );
     }
 
     public void updatePrescription(Prescription rx, PrescriptionUpdateDto dto) {
@@ -94,7 +127,26 @@ public class AdminManagePatientDetailService {
         return prescriptionRepository.existsById(id);
     }
 
-    public void deletePrescription(Long id) {
+    public void deletePrescription(Long id, Long adminId, String adminUsername) {
+        // Get prescription details before deleting for logging
+        Optional<Prescription> rxOpt = prescriptionRepository.findById(id);
+        if (rxOpt.isPresent()) {
+            Prescription rx = rxOpt.get();
+            Patient patient = rx.getPatient();
+            String patientName = patient.getFirstName() + " " + patient.getLastName();
+
+            // Log the activity before deletion
+            activityLogService.logPrescriptionDeleted(
+                    patient.getId(),
+                    patientName,
+                    rx.getMedicine().getMedicineName(),
+                    rx.getDosage(),
+                    rx.getFrequency(),
+                    adminId,
+                    adminUsername
+            );
+        }
+
         prescriptionRepository.deleteById(id);
     }
 
