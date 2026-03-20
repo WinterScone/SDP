@@ -55,5 +55,12 @@ jobs:
     needs: build-and-push
 
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
       - name: Trigger Railway redeploy
-        run: curl -X POST "${{ secrets.RAILWAY_WEBHOOK_URL }}" --fail --silent --show-error
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway redeploy --yes
