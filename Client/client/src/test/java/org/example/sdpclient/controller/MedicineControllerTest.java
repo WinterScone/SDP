@@ -98,7 +98,7 @@ class MedicineControllerTest {
                 .andExpect(jsonPath("$.message").value("Not found"));
 
         verify(service).exists(MedicineType.VTM01);
-        verify(service, never()).updateQuantity(any(), anyInt());
+        verify(service, never()).updateQuantity(any(), anyInt(), any(), any());
     }
 
     @Test
@@ -112,7 +112,7 @@ class MedicineControllerTest {
                 .andExpect(jsonPath("$.ok").value(true));
 
         verify(service).exists(MedicineType.VTM01);
-        verify(service).updateQuantity(MedicineType.VTM01, 20);
+        verify(service).updateQuantity(eq(MedicineType.VTM01), eq(20), any(), any());
     }
 }
 

@@ -7,6 +7,7 @@ import org.example.sdpclient.repository.AdminRepository;
 import org.example.sdpclient.service.AdminListService;
 import org.example.sdpclient.service.AdminLoginService;
 import org.example.sdpclient.service.AdminManagePatientDetailService;
+import org.example.sdpclient.service.DatabaseResetService;
 import org.example.sdpclient.service.PatientAdminService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ class CookieTest {
     @MockitoBean private AdminManagePatientDetailService adminManagePatientDetailService;
     @MockitoBean private AdminLoginService adminLoginService;
     @MockitoBean private AdminRepository adminRepository;
+    @MockitoBean private DatabaseResetService databaseResetService;
 
     @Test
     void noCookie_getPatients_returns401() throws Exception {
@@ -106,7 +108,8 @@ class CookieTest {
     @Test
     void withCookie_getPatients_passes() throws Exception {
         mockMvc.perform(get("/api/admin/patients")
-                        .cookie(new MockCookie("adminUsername", "admin1")))
+                        .cookie(new MockCookie("adminUsername", "admin1"))
+                        .cookie(new MockCookie("adminRoot", "true")))
                 .andExpect(status().isOk());
     }
 
@@ -120,7 +123,9 @@ class CookieTest {
     @Test
     void withCookie_searchPatients_passes() throws Exception {
         mockMvc.perform(get("/api/admin/patients/search").param("q", "test")
-                        .cookie(new MockCookie("adminUsername", "admin1")))
+                        .cookie(new MockCookie("adminUsername", "admin1"))
+                        .cookie(new MockCookie("adminId", "1"))
+                        .cookie(new MockCookie("adminRoot", "false")))
                 .andExpect(status().isOk());
     }
 
@@ -181,7 +186,7 @@ class CookieTest {
 
         org.mockito.Mockito.when(adminRepository.findByUsername("root"))
                 .thenReturn(java.util.Optional.of(root));
-        org.mockito.Mockito.when(adminLoginService.register(org.mockito.Mockito.any()))
+        org.mockito.Mockito.when(adminLoginService.register(org.mockito.Mockito.any(), org.mockito.Mockito.any(), org.mockito.Mockito.any()))
                 .thenReturn(java.util.Map.of("ok", true, "username", "newadmin"));
 
         mockMvc.perform(post("/api/verify/register")

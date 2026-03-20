@@ -95,12 +95,14 @@ class AdminManagePatientDetailControllerTest {
                 {"medicineId":"VTM01","dosage":"  ","frequency":""}
                 """;
 
+        when(service.canAdminAccessPatient(anyLong(), anyLong(), anyBoolean())).thenReturn(true);
+
         mockMvc.perform(post("/api/admin/patients/10/prescriptions")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+                        .content(body)
+                        .cookie(new jakarta.servlet.http.Cookie("adminId", "1"))
+                        .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true")))
                 .andExpect(status().isBadRequest());
-
-        verifyNoInteractions(service);
     }
 
     @Test
@@ -128,7 +130,7 @@ class AdminManagePatientDetailControllerTest {
                         .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true")))
                 .andExpect(status().isCreated());
 
-        verify(service).createPrescription(eq(patient), eq(med), any(PrescriptionCreateDto.class));
+        verify(service).createPrescription(eq(patient), eq(med), any(PrescriptionCreateDto.class), any(), any());
     }
 
     @Test
@@ -174,6 +176,6 @@ class AdminManagePatientDetailControllerTest {
                         .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true")))
                 .andExpect(status().isNoContent());
 
-        verify(service).deletePrescription(5L);
+        verify(service).deletePrescription(eq(5L), any(), any());
     }
 }

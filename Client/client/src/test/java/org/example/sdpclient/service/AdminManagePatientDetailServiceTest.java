@@ -36,6 +36,9 @@ class AdminManagePatientDetailServiceTest {
     @Mock
     private MedicineRepository medicineRepository;
 
+    @Mock
+    private ActivityLogService activityLogService;
+
     @InjectMocks
     private AdminManagePatientDetailService service;
 
@@ -181,7 +184,7 @@ class AdminManagePatientDetailServiceTest {
 
     @Test
     void deletePrescription_shouldDelegateToRepository() {
-        service.deletePrescription(77L);
+        service.deletePrescription(77L, 1L, "testAdmin");
         verify(prescriptionRepository).deleteById(77L);
     }
 
@@ -202,7 +205,7 @@ class AdminManagePatientDetailServiceTest {
         when(dto.getDosage()).thenReturn(" 10mg ");
         when(dto.getFrequency()).thenReturn(" daily ");
 
-        service.createPrescription(patient, medicine, dto);
+        service.createPrescription(patient, medicine, dto, 1L, "testAdmin");
 
         ArgumentCaptor<Prescription> captor = ArgumentCaptor.forClass(Prescription.class);
         verify(prescriptionRepository).save(captor.capture());
