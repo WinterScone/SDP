@@ -1,5 +1,5 @@
 (async () => {
-    const res = await fetch("/api/auth/admins/me");
+    const res = await fetch("/api/verify/me");
     if (!res.ok) {
         window.location.href = "/admin-login.html";
         return;
@@ -9,7 +9,7 @@
     const advancedBtn = document.getElementById("advancedBtn");
 
     logoutBtn.addEventListener("click", async () => {
-        await fetch("/api/auth/admins/logout", { method: "POST" });
+        await fetch("/api/verify/logout", { method: "POST" });
         window.location.href = "/admin-login.html";
     });
 

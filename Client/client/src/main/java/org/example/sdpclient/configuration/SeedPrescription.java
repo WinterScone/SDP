@@ -17,7 +17,7 @@ public class SeedPrescription {
                            MedicineRepository medicineRepo,
                            PrescriptionRepository prescriptionRepo) {
         return args -> {
-            var patientOptional = patientRepo.findByUsername("testPatient1");
+            var patientOptional = patientRepo.findByUsername("patient1");
             if (patientOptional.isEmpty()) return;
             var patient = patientOptional.get();
 

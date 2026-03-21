@@ -1,5 +1,5 @@
 (async () => {
-    const authRes = await fetch("/api/auth/admins/me");
+    const authRes = await fetch("/api/verify/me");
     if (!authRes.ok) {
         window.location.href = "/admin-login.html";
         return;
@@ -46,7 +46,7 @@
         try {
             await loadAdmins();
 
-            const res = await fetch("/api/admin/patients/assignments");
+            const res = await fetch("/api/admin/patients");
             if (!res.ok) throw new Error("Failed to load patients: " + res.status);
 
             const patients = await res.json();

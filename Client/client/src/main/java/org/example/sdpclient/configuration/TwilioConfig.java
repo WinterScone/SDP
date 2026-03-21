@@ -1,15 +1,11 @@
 package org.example.sdpclient.configuration;
 
-import com.twilio.Twilio;
-import jakarta.annotation.PostConstruct;
-import lombok.Getter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
-@Configuration
-@Getter
+@Component
+@ConditionalOnProperty(name = "twilio.enabled", havingValue = "true")
 public class TwilioConfig {
 
     @Value("${twilio.account-sid}")
@@ -21,14 +17,15 @@ public class TwilioConfig {
     @Value("${twilio.phone-number}")
     private String phoneNumber;
 
-    private static final Logger log = LoggerFactory.getLogger(TwilioConfig.class);
+    public String getAccountSid() {
+        return accountSid;
+    }
 
-    @PostConstruct
-    public void init() {
-        log.info("Twilio config — phone-number: {}", phoneNumber);
-        if (accountSid != null && !accountSid.isBlank()
-                && authToken != null && !authToken.isBlank()) {
-            Twilio.init(accountSid, authToken);
-        }
+    public String getAuthToken() {
+        return authToken;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 }

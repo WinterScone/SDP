@@ -1,15 +1,22 @@
 package org.example.sdpclient.service;
 
-import org.example.sdpclient.dto.*;
+import org.example.sdpclient.dto.MedicineViewDto;
+import org.example.sdpclient.dto.PatientViewDto;
+import org.example.sdpclient.dto.PrescriptionCreateDto;
+import org.example.sdpclient.dto.PrescriptionUpdateDto;
+import org.example.sdpclient.dto.PrescriptionViewDto;
 import org.example.sdpclient.entity.Medicine;
 import org.example.sdpclient.entity.Patient;
 import org.example.sdpclient.entity.Prescription;
+import org.example.sdpclient.entity.PrescriptionReminderTime;
 import org.example.sdpclient.enums.MedicineType;
 import org.example.sdpclient.repository.MedicineRepository;
 import org.example.sdpclient.repository.PatientRepository;
 import org.example.sdpclient.repository.PrescriptionRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,16 +28,17 @@ public class AdminManagePatientDetailService {
     private final MedicineRepository medicineRepository;
     private final ActivityLogService activityLogService;
 
-    public AdminManagePatientDetailService(PatientRepository patientRepository,
-                                           PrescriptionRepository prescriptionRepository,
-                                           MedicineRepository medicineRepository,
-                                           ActivityLogService activityLogService) {
+    public AdminManagePatientDetailService(
+            PatientRepository patientRepository,
+            PrescriptionRepository prescriptionRepository,
+            MedicineRepository medicineRepository,
+            ActivityLogService activityLogService
+    ) {
         this.patientRepository = patientRepository;
         this.prescriptionRepository = prescriptionRepository;
         this.medicineRepository = medicineRepository;
         this.activityLogService = activityLogService;
     }
-
 
     public List<PatientViewDto> searchPatients(String q, Long adminId, boolean isRoot) {
         String keyword = q == null ? "" : q.trim();
@@ -50,7 +58,7 @@ public class AdminManagePatientDetailService {
                         p.getId(),
                         p.getFirstName(),
                         p.getLastName(),
-                        p.getDateOfBirth(),
+                        p.getDateOfBirth().toString(),
                         p.getEmail(),
                         p.getPhone(),
                         List.of()
@@ -62,25 +70,26 @@ public class AdminManagePatientDetailService {
         if (isRoot) {
             return true;
         }
+
         Optional<Patient> patient = patientRepository.findById(patientId);
-        return patient.isPresent()
-                && patient.get().getLinkedAdmin() != null
-                && adminId.equals(patient.get().getLinkedAdmin().getId());
+        return patient.isPresent() && adminId.equals(patient.get().getLinkedAdminId());
     }
 
     public Optional<Patient> findPatient(Long id) {
         return patientRepository.findById(id);
     }
 
-
     public List<PrescriptionViewDto> getPrescriptionViews(Long patientId) {
         return prescriptionRepository.findByPatientId(patientId).stream()
                 .map(rx -> new PrescriptionViewDto(
                         rx.getId(),
-                        rx.getMedicine().getMedicineId(),
+                        rx.getMedicine().getMedicineId().getId(),
                         rx.getMedicine().getMedicineName(),
                         rx.getDosage(),
-                        rx.getFrequency()
+                        rx.getFrequency(),
+                        rx.getReminderTimes().stream()
+                                .map(rt -> rt.getReminderTime().toString())
+                                .toList()
                 ))
                 .toList();
     }
@@ -93,18 +102,33 @@ public class AdminManagePatientDetailService {
         return prescriptionRepository.findById(id);
     }
 
-    public void createPrescription(Patient patient, Medicine medicine, PrescriptionCreateDto dto,
-                                  Long adminId, String adminUsername) {
-
+    public void createPrescription(Patient patient, Medicine medicine, PrescriptionCreateDto dto, Long adminId, String adminUsername) {
         Prescription rx = new Prescription();
         rx.setPatient(patient);
         rx.setMedicine(medicine);
         rx.setDosage(dto.getDosage().trim());
         rx.setFrequency(dto.getFrequency().trim());
 
+        if (!isBlank(dto.getStartDate())) {
+            rx.setStartDate(java.time.LocalDate.parse(dto.getStartDate().trim()));
+        } else {
+            rx.setStartDate(java.time.LocalDate.now());
+        }
+
+        if (!isBlank(dto.getEndDate())) {
+            rx.setEndDate(java.time.LocalDate.parse(dto.getEndDate().trim()));
+        } else {
+            rx.setEndDate(java.time.LocalDate.now().plusYears(1));
+        }
+
+        List<String> times = dto.getScheduledTimes();
+        if (times == null || times.isEmpty()) {
+            times = dto.getReminderTimes();
+        }
+
+        applyScheduledTimes(rx, times);
         prescriptionRepository.save(rx);
 
-        // Log the activity
         String patientName = patient.getFirstName() + " " + patient.getLastName();
         activityLogService.logPrescriptionCreated(
                 patient.getId(),
@@ -120,6 +144,7 @@ public class AdminManagePatientDetailService {
     public void updatePrescription(Prescription rx, PrescriptionUpdateDto dto) {
         rx.setDosage(dto.getDosage().trim());
         rx.setFrequency(dto.getFrequency().trim());
+        applyScheduledTimes(rx, dto.getScheduledTimes());
         prescriptionRepository.save(rx);
     }
 
@@ -128,14 +153,12 @@ public class AdminManagePatientDetailService {
     }
 
     public void deletePrescription(Long id, Long adminId, String adminUsername) {
-        // Get prescription details before deleting for logging
         Optional<Prescription> rxOpt = prescriptionRepository.findById(id);
         if (rxOpt.isPresent()) {
             Prescription rx = rxOpt.get();
             Patient patient = rx.getPatient();
             String patientName = patient.getFirstName() + " " + patient.getLastName();
 
-            // Log the activity before deletion
             activityLogService.logPrescriptionDeleted(
                     patient.getId(),
                     patientName,
@@ -149,7 +172,6 @@ public class AdminManagePatientDetailService {
 
         prescriptionRepository.deleteById(id);
     }
-
 
     public List<MedicineViewDto> listMedicines() {
         return medicineRepository.findAll().stream()
@@ -166,5 +188,27 @@ public class AdminManagePatientDetailService {
 
     public static boolean isBlank(String s) {
         return s == null || s.trim().isEmpty();
+    }
+
+    private void applyScheduledTimes(Prescription rx, List<String> scheduledTimes) {
+        rx.getReminderTimes().clear();
+
+        if (scheduledTimes == null) {
+            return;
+        }
+
+        List<PrescriptionReminderTime> reminderTimes = new ArrayList<>();
+        for (String timeStr : scheduledTimes) {
+            if (timeStr == null || timeStr.isBlank()) {
+                continue;
+            }
+
+            PrescriptionReminderTime rt = new PrescriptionReminderTime();
+            rt.setPrescription(rx);
+            rt.setReminderTime(LocalTime.parse(timeStr.trim()));
+            reminderTimes.add(rt);
+        }
+
+        rx.getReminderTimes().addAll(reminderTimes);
     }
 }

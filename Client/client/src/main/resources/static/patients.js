@@ -1,6 +1,9 @@
 (async () => {
-    const res = await fetch("/api/auth/admins/me");
-    if (!res.ok) {
+    const verifyRes = await fetch("/api/verify/me", {
+        credentials: "include"
+    });
+
+    if (!verifyRes.ok) {
         window.location.href = "/admin-login.html";
         return;
     }
@@ -10,7 +13,6 @@
     const qInput = document.getElementById("q");
     const searchBtn = document.getElementById("searchBtn");
 
-    // Check if there's a search query in URL
     const params = new URLSearchParams(window.location.search);
     const searchQuery = params.get("q");
 
@@ -21,7 +23,6 @@
         loadAllPatients();
     }
 
-    // Handle search button and enter key
     searchBtn.addEventListener("click", performSearch);
     qInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter") performSearch();
@@ -30,11 +31,10 @@
     function performSearch() {
         const q = qInput.value.trim();
         if (!q) {
-            // If search is empty, reload all patients
             window.location.href = "/patients.html";
             return;
         }
-        // Update URL and search
+
         window.history.pushState({}, "", `/patients.html?q=${encodeURIComponent(q)}`);
         searchPatients(q);
     }
@@ -69,7 +69,9 @@
         msg.textContent = "Loading patients...";
 
         try {
-            const res = await fetch("/api/admin/patients");
+            const res = await fetch("/api/patient/getAllPatients", {
+                credentials: "include"
+            });
 
             const contentType = res.headers.get("content-type") || "";
             const text = await res.text();
@@ -100,17 +102,20 @@
         patients.forEach((p) => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
-          <td class="center">${safe(p.id)}</td>
-          <td>${safe(p.firstName)} ${safe(p.lastName)}</td>
-          <td class="actions">
-            <button onclick="goPrescriptions(${safe(p.id)})">
-              Prescriptions
-            </button>
-            <button onclick="goIntakeHistory(${safe(p.id)})">
-              Intake History
-            </button>
-          </td>
-        `;
+                <td class="center">${safe(p.id)}</td>
+                <td>${safe(p.firstName)} ${safe(p.lastName)}</td>
+                <td class="actions">
+                    <button class="btn" onclick="goPrescriptions(${Number(p.id)})">
+                        Prescriptions
+                    </button>
+                    <button class="btn" onclick="goIntakeHistory(${Number(p.id)})">
+                        Intake History
+                    </button>
+                    <button class="btn" onclick="goDetails(${Number(p.id)})">
+                        View Details
+                    </button>
+                </td>
+            `;
             rows.appendChild(tr);
         });
     }
@@ -123,7 +128,16 @@
         window.location.href = `/intake-history.html?patientId=${patientId}`;
     };
 
+    window.goDetails = function(patientId) {
+        window.location.href = `/patient-detail.html?patientId=${patientId}`;
+    };
+
     function safe(v) {
-        return v == null ? "" : String(v);
+        return v == null ? "" : String(v)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
     }
 })();

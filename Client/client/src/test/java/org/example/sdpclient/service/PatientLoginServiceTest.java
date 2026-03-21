@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import java.time.LocalDate;
 import java.util.Map;
 import java.util.Optional;
 
@@ -41,14 +40,14 @@ class PatientLoginServiceTest {
         PatientLogin req = mock(PatientLogin.class);
         when(req.getUsername()).thenReturn("missing");
 
-        when(repo.findByUsernameIgnoreCase("missing")).thenReturn(Optional.empty());
+        when(repo.findByUsername("missing")).thenReturn(Optional.empty());
 
         Map<String, Object> result = service.login(req);
 
         assertEquals(false, result.get("ok"));
         assertEquals(1, result.size());
 
-        verify(repo).findByUsernameIgnoreCase("missing");
+        verify(repo).findByUsername("missing");
         verifyNoInteractions(encoder);
     }
 
@@ -63,7 +62,7 @@ class PatientLoginServiceTest {
         patient.setUsername("user");
         patient.setPasswordHash("hashed");
 
-        when(repo.findByUsernameIgnoreCase("user")).thenReturn(Optional.of(patient));
+        when(repo.findByUsername("user")).thenReturn(Optional.of(patient));
         when(encoder.matches("wrong", "hashed")).thenReturn(false);
 
         Map<String, Object> result = service.login(req);
@@ -71,7 +70,7 @@ class PatientLoginServiceTest {
         assertEquals(false, result.get("ok"));
         assertEquals(1, result.size());
 
-        verify(repo).findByUsernameIgnoreCase("user");
+        verify(repo).findByUsername("user");
         verify(encoder).matches("wrong", "hashed");
     }
 
@@ -86,7 +85,7 @@ class PatientLoginServiceTest {
         patient.setUsername("user");
         patient.setPasswordHash("hashed");
 
-        when(repo.findByUsernameIgnoreCase("user")).thenReturn(Optional.of(patient));
+        when(repo.findByUsername("user")).thenReturn(Optional.of(patient));
         when(encoder.matches("pw", "hashed")).thenReturn(true);
 
         Map<String, Object> result = service.login(req);
@@ -95,7 +94,7 @@ class PatientLoginServiceTest {
         assertEquals("user", result.get("username"));
         assertEquals(42L, result.get("patientId"));
 
-        verify(repo).findByUsernameIgnoreCase("user");
+        verify(repo).findByUsername("user");
         verify(encoder).matches("pw", "hashed");
     }
 
@@ -127,14 +126,14 @@ class PatientLoginServiceTest {
         when(req.getLastName()).thenReturn("Doe");
         when(req.getDateOfBirth()).thenReturn("2000-01-02");
 
-        when(repo.existsByUsernameIgnoreCase("user")).thenReturn(true);
+        when(repo.existsByUsername("user")).thenReturn(true);
 
         Map<String, Object> result = service.signup(req);
 
         assertEquals(false, result.get("ok"));
         assertEquals("Username already taken", result.get("error"));
 
-        verify(repo).existsByUsernameIgnoreCase("user");
+        verify(repo).existsByUsername("user");
         verify(repo, never()).save(any());
         verifyNoInteractions(encoder);
     }
@@ -150,7 +149,7 @@ class PatientLoginServiceTest {
         when(req.getEmail()).thenReturn("   "); // blank -> null
         when(req.getPhone()).thenReturn(null);  // null -> null
 
-        when(repo.existsByUsernameIgnoreCase("user")).thenReturn(false);
+        when(repo.existsByUsername("user")).thenReturn(false);
         when(encoder.encode("pw")).thenReturn("hashedPw");
 
         // Return a "saved" patient with an id
@@ -174,12 +173,13 @@ class PatientLoginServiceTest {
         assertEquals("hashedPw", toSave.getPasswordHash());
         assertEquals("John", toSave.getFirstName());
         assertEquals("Doe", toSave.getLastName());
-        assertEquals(LocalDate.parse("2000-01-02"), toSave.getDateOfBirth());
+        assertEquals("2000-01-02", toSave.getDateOfBirth());
         assertNull(toSave.getEmail());
         assertNull(toSave.getPhone());
-        assertNull(toSave.getLinkedAdmin());
+        assertNull(toSave.getLinkedAdminId());
+        assertNull(toSave.getLinkedAdminName());
 
-        verify(repo).existsByUsernameIgnoreCase("user");
+        verify(repo).existsByUsername("user");
         verify(encoder).encode("pw");
     }
 
@@ -194,7 +194,7 @@ class PatientLoginServiceTest {
         when(req.getEmail()).thenReturn("  a@b.com  ");
         when(req.getPhone()).thenReturn("  123  ");
 
-        when(repo.existsByUsernameIgnoreCase("user")).thenReturn(false);
+        when(repo.existsByUsername("user")).thenReturn(false);
         when(encoder.encode("pw")).thenReturn("hashedPw");
 
         Patient saved = new Patient();

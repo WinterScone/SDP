@@ -13,6 +13,7 @@ import java.util.Optional;
 public interface PatientRepository extends JpaRepository<Patient, Long> {
 
     Optional<Patient> findByUsername(String username);
+
     boolean existsByUsername(String username);
 
     @Query("SELECT p FROM Patient p WHERE LOWER(p.username) = LOWER(:username)")
@@ -24,22 +25,23 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     @Query("""
         select p from Patient p
         where lower(p.firstName) like lower(concat('%', :q, '%'))
-           or lower(p.lastName)  like lower(concat('%', :q, '%'))
-           or lower(p.email)     like lower(concat('%', :q, '%'))
-           or p.phone            like concat('%', :q, '%')
-    """)
+           or lower(p.lastName) like lower(concat('%', :q, '%'))
+           or lower(p.email) like lower(concat('%', :q, '%'))
+           or p.phone like concat('%', :q, '%')
+        """)
     List<Patient> searchByKeyword(@Param("q") String q);
 
     @Query("""
         select p from Patient p
-        where p.linkedAdmin.id = :adminId
-        and (lower(p.firstName) like lower(concat('%', :q, '%'))
-           or lower(p.lastName)  like lower(concat('%', :q, '%'))
-           or lower(p.email)     like lower(concat('%', :q, '%'))
-           or p.phone            like concat('%', :q, '%'))
-    """)
+        where p.linkedAdminId = :adminId
+          and (lower(p.firstName) like lower(concat('%', :q, '%'))
+           or lower(p.lastName) like lower(concat('%', :q, '%'))
+           or lower(p.email) like lower(concat('%', :q, '%'))
+           or p.phone like concat('%', :q, '%'))
+        """)
     List<Patient> searchByKeywordAndLinkedAdmin(@Param("q") String q, @Param("adminId") Long adminId);
 
-    List<Patient> findByLinkedAdmin_Id(Long linkedAdminId);
-}
+    List<Patient> findByLinkedAdminId(Long linkedAdminId);
 
+    List<Patient> findByFaceActiveTrueAndFaceDataIsNotNull();
+}

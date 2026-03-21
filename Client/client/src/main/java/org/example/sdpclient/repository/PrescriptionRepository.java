@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface PrescriptionRepository extends JpaRepository<Prescription, Long> {
     List<Prescription> findByPatientId(Long patientId);
-
+    List<Prescription> findByPatientIdAndActiveTrue(Long patientId);
     boolean existsByPatientIdAndMedicine_MedicineId(Long id, MedicineType medType);
 }
 

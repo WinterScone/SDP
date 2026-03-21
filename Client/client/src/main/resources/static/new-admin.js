@@ -1,5 +1,5 @@
 (async () => {
-    const authRes = await fetch("/api/auth/admins/me");
+    const authRes = await fetch("/api/verify/me");
     if (!authRes.ok) {
         window.location.href = "/admin-login.html";
         return;
@@ -39,7 +39,7 @@
         msg.textContent = "Registering...";
 
         try {
-            const res = await fetch("/api/auth/admins/register", {
+            const res = await fetch("/api/verify/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username, password, firstName, lastName, email, phone })

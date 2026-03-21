@@ -1,7 +1,6 @@
 package org.example.sdpclient.enums;
 
 public enum MedicineType {
-
     VTM01(1, "Vitamin C", "Tablet", "White", 1000),
     VTM02(2, "Vitamin E", "Capsule", "Green", 268),
     VTM03(3, "Vitamin B6", "Tablet", "Pale Yellow", 100),
@@ -14,10 +13,7 @@ public enum MedicineType {
     SUP03(10, "Turmeric", "Capsule", "Yellow", 500),
     SUP04(11, "CoQ10", "Capsule", "Yellow", 100),
     SUP05(12, "Ashwagandha", "Capsule", "Green", 500),
-    MINK(13, "Potassium", "Tablet", "Pale Yellow", 2500),
-    SUP06(14, "Ginkgo Biloba", "Capsule", "Brown", 100),
-    SUP07(15, "Milk Thistle", "Capsule", "White", 240),
-    SUP08(16, "L-Theanine", "Capsule", "White", 400);
+    MINK(13, "Potassium", "Tablet", "Pale Yellow", 2500);
 
     private final int id;
     private final String name;
@@ -33,12 +29,23 @@ public enum MedicineType {
         this.dosage = dosage;
     }
 
+    public int getId() {
+        return id;
+    }
 
-    public int getId() { return id; }
-    public String getName() { return name; }
-    public String getShape() { return shape; }
-    public String getColour() { return colour; }
-    public Integer getDosage() { return dosage; }
+    public String getName() {
+        return name;
+    }
 
+    public String getShape() {
+        return shape;
+    }
+
+    public String getColour() {
+        return colour;
+    }
+
+    public Integer getDosage() {
+        return dosage;
+    }
 }
-

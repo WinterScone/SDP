@@ -9,21 +9,21 @@ import java.util.List;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class PatientPrescriptionsResponse {
-
-    private Long patientId;
     private List<PrescriptionItem> prescriptions;
 
     @Getter
     @Setter
-    @NoArgsConstructor
     @AllArgsConstructor
+    @NoArgsConstructor
     public static class PrescriptionItem {
-        private String medicineId;
-        private String medicineName;
+        private Long prescriptionId;
+        private Integer medicineNumber;   // 1..13 for servo/slot mapping
+        private String medicineCode;      // e.g. VTM01
+        private String medicineName;      // e.g. Vitamin C
         private String dosage;
-        private String frequency;
+        private String scheduledTime;
     }
 }

@@ -9,7 +9,6 @@ import org.example.sdpclient.repository.IntakeHistoryRepository;
 import org.example.sdpclient.repository.MedicineRepository;
 import org.example.sdpclient.repository.PatientRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -17,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-@Transactional
 public class IntakeHistoryService {
 
     private final IntakeHistoryRepository intakeHistoryRepo;

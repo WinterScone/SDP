@@ -36,7 +36,20 @@
         <label for="phone">Phone</label>
         <input id="phone" type="tel" autocomplete="tel" />
 
-        <div class="row">
+        <div class="face-section" style="margin-top: 20px;">
+            <h3>Face Enrollment</h3>
+            <video id="camera" autoplay playsinline width="320" height="240" style="border:1px solid #ccc;"></video>
+            <canvas id="snapshot" width="320" height="240" style="display:none;"></canvas>
+
+            <div style="margin-top:10px;">
+                <button class="btn" type="button" id="startCameraBtn">Start Camera</button>
+                <button class="btn" type="button" id="captureFaceBtn">Capture Face</button>
+            </div>
+
+            <p id="faceStatus" style="margin-top:8px; color:#555;">No face captured yet.</p>
+        </div>
+
+        <div class="row" style="margin-top: 20px;">
             <button class="btn" type="submit">Sign up</button>
             <div id="message" class="msg"></div>
         </div>

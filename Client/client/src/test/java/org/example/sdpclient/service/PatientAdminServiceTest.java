@@ -32,27 +32,21 @@ class PatientAdminServiceTest {
     @Mock
     private AdminRepository adminRepo;
 
-    @Mock
-    private ActivityLogService activityLogService;
-
     @InjectMocks
     private PatientAdminService service;
 
     @Test
     void getAllPatientsSafe_shouldMapPatientsToRows() {
-        Admin admin9 = new Admin();
-        admin9.setId(9L);
-        admin9.setUsername("admin9");
-
         Patient p = new Patient();
         p.setId(1L);
         p.setFirstName("Jane");
         p.setLastName("Doe");
-        p.setDateOfBirth(LocalDate.of(2000, 1, 2));
+        p.setDateOfBirth(LocalDate.of(2000, 1, 2).toString());
         p.setEmail("jane@example.com");
         p.setPhone("123");
-        p.setCreatedAt(LocalDateTime.of(2024, 1, 1, 10, 0));
-        p.setLinkedAdmin(admin9);
+        p.setCreatedAt(LocalDateTime.of(2024, 1, 1, 10, 0).toString());
+        p.setLinkedAdminId(9L);
+        p.setLinkedAdminName("admin9");
 
         when(patientRepo.findAll()).thenReturn(List.of(p));
 
@@ -60,11 +54,21 @@ class PatientAdminServiceTest {
 
         assertEquals(1, result.size());
 
+        // If PatientRow is a record, use .id() etc.
+        // If PatientRow is a class, use getters.
+        //
+        // Example record assertions:
+        // assertEquals(1L, result.get(0).id());
+        // assertEquals("Jane", result.get(0).firstName());
+        // assertEquals("Doe", result.get(0).lastName());
+        // assertEquals(9L, result.get(0).linkedAdminId());
+        // assertEquals("admin9", result.get(0).linkedAdminName());
+
         verify(patientRepo).findAll();
     }
 
     @Test
-    void linkAdminToPatient_shouldSetLinkedAdmin_andSave() {
+    void linkAdminToPatient_shouldSetLinkedAdminFields_andSave() {
         Patient patient = new Patient();
         patient.setId(10L);
 
@@ -75,10 +79,10 @@ class PatientAdminServiceTest {
         when(patientRepo.findById(10L)).thenReturn(Optional.of(patient));
         when(adminRepo.findById(7L)).thenReturn(Optional.of(admin));
 
-        service.linkAdminToPatient(10L, 7L, 1L, "testAdmin");
+        service.linkAdminToPatient(10L, 7L);
 
-        assertEquals(7L, patient.getLinkedAdmin().getId());
-        assertEquals("rootAdmin", patient.getLinkedAdmin().getUsername());
+        assertEquals(7L, patient.getLinkedAdminId());
+        assertEquals("rootAdmin", patient.getLinkedAdminName());
 
         ArgumentCaptor<Patient> captor = ArgumentCaptor.forClass(Patient.class);
         verify(patientRepo).save(captor.capture());
@@ -94,7 +98,7 @@ class PatientAdminServiceTest {
 
         ResponseStatusException ex = assertThrows(
                 ResponseStatusException.class,
-                () -> service.linkAdminToPatient(10L, 7L, 1L, "testAdmin")
+                () -> service.linkAdminToPatient(10L, 7L)
         );
 
         assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
@@ -115,7 +119,7 @@ class PatientAdminServiceTest {
 
         ResponseStatusException ex = assertThrows(
                 ResponseStatusException.class,
-                () -> service.linkAdminToPatient(10L, 7L, 1L, "testAdmin")
+                () -> service.linkAdminToPatient(10L, 7L)
         );
 
         assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
@@ -133,3 +137,4 @@ class PatientAdminServiceTest {
         verify(patientRepo).findAll();
     }
 }
+

@@ -23,13 +23,13 @@ class SeedPrescriptionTest {
         MedicineRepository medicineRepo = mock(MedicineRepository.class);
         PrescriptionRepository prescriptionRepo = mock(PrescriptionRepository.class);
 
-        when(patientRepo.findByUsername("testPatient1")).thenReturn(Optional.empty());
+        when(patientRepo.findByUsername("patient1")).thenReturn(Optional.empty());
 
         var runner = new SeedPrescription().seed(patientRepo, medicineRepo, prescriptionRepo);
 
         runner.run();
 
-        verify(patientRepo).findByUsername("testPatient1");
+        verify(patientRepo).findByUsername("patient1");
         verifyNoInteractions(medicineRepo);
         verifyNoInteractions(prescriptionRepo);
     }
@@ -43,7 +43,7 @@ class SeedPrescriptionTest {
         Patient patient = new Patient();
         patient.setId(1L);
 
-        when(patientRepo.findByUsername("testPatient1")).thenReturn(Optional.of(patient));
+        when(patientRepo.findByUsername("patient1")).thenReturn(Optional.of(patient));
 
         when(prescriptionRepo.existsByPatientIdAndMedicine_MedicineId(1L, MedicineType.VTM01)).thenReturn(true);
         when(prescriptionRepo.existsByPatientIdAndMedicine_MedicineId(1L, MedicineType.VTM02)).thenReturn(true);
@@ -69,7 +69,7 @@ class SeedPrescriptionTest {
         Patient patient = new Patient();
         patient.setId(1L);
 
-        when(patientRepo.findByUsername("testPatient1")).thenReturn(Optional.of(patient));
+        when(patientRepo.findByUsername("patient1")).thenReturn(Optional.of(patient));
 
         when(prescriptionRepo.existsByPatientIdAndMedicine_MedicineId(eq(1L), any())).thenReturn(false);
 
@@ -122,7 +122,7 @@ class SeedPrescriptionTest {
         Patient patient = new Patient();
         patient.setId(1L);
 
-        when(patientRepo.findByUsername("testPatient1")).thenReturn(Optional.of(patient));
+        when(patientRepo.findByUsername("patient1")).thenReturn(Optional.of(patient));
         when(prescriptionRepo.existsByPatientIdAndMedicine_MedicineId(eq(1L), any())).thenReturn(false);
 
         when(medicineRepo.findById(any())).thenReturn(Optional.empty());

@@ -13,10 +13,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "activity_log", indexes = {
-    @Index(name = "idx_activity_log_timestamp", columnList = "timestamp"),
-    @Index(name = "idx_activity_log_admin", columnList = "admin_id")
-})
+@Table(name = "activity_log")
 public class ActivityLog {
 
     @Id
