@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Map;
 
 @Service
@@ -25,19 +26,22 @@ public class PatientLoginService {
         var userOptional = repo.findByUsernameIgnoreCase(req.getUsername());
         if (userOptional.isEmpty()) {
             return Map.of(
-                    "ok", false
+                    "ok",
+                    false
             );
         }
 
         var user = userOptional.get();
         if (!encoder.matches(req.getPassword(), user.getPasswordHash())) {
             return Map.of(
-                    "ok", false
+                    "ok",
+                    false
             );
         }
 
         return Map.of(
-                "ok", true,
+                "ok",
+                true,
                 "username", user.getUsername(),
                 "patientId", user.getId()
         );
@@ -45,14 +49,14 @@ public class PatientLoginService {
 
     public Map<String, Object> signup(PatientSignup req) {
 
-        if (req.getUsername() == null || req.getUsername().isBlank()
-                || req.getPassword() == null || req.getPassword().isBlank()
-                || req.getFirstName() == null || req.getFirstName().isBlank()
-                || req.getLastName() == null || req.getLastName().isBlank()
-                || req.getDateOfBirth() == null || req.getDateOfBirth().isBlank()) {
-            return Map.of(
-                    "ok", false,
-                    "error", "Missing required fields"
+        if (req.getUsername() == null || req.getUsername().isBlank() || req.getPassword() == null
+                || req.getPassword().isBlank() || req.getFirstName() == null || req.getFirstName().isBlank()
+                || req.getLastName() == null || req.getLastName().isBlank() || req.getDateOfBirth() == null
+                || req.getDateOfBirth().isBlank()) {
+            return Map.of("ok",
+                    false,
+                    "error",
+                    "Missing required fields"
             );
         }
 
@@ -60,17 +64,27 @@ public class PatientLoginService {
 
         if (repo.existsByUsernameIgnoreCase(username)) {
             return Map.of(
-                    "ok", false,
-                    "error", "Username already taken"
+                    "ok",
+                    false,
+                    "error",
+                    "Username already taken"
             );
+        }
+
+        LocalDate dob;
+        try {
+            dob = LocalDate.parse(req.getDateOfBirth().trim());
+        } catch (DateTimeParseException e) {
+            return Map.of("ok", false, "error", "Invalid date format for dateOfBirth");
         }
 
         Patient patient = new Patient();
         patient.setUsername(username);
         patient.setPasswordHash(encoder.encode(req.getPassword()));
+
         patient.setFirstName(req.getFirstName().trim());
         patient.setLastName(req.getLastName().trim());
-        patient.setDateOfBirth(LocalDate.parse(req.getDateOfBirth().trim()));
+        patient.setDateOfBirth(dob);
 
         if (req.getEmail() == null || req.getEmail().isBlank()) {
             patient.setEmail(null);
@@ -84,16 +98,15 @@ public class PatientLoginService {
             patient.setPhone(req.getPhone().trim());
         }
 
-        patient.setLinkedAdminId(null);
-        patient.setLinkedAdminName(null);
+        patient.setLinkedAdmin(null);
 
         Patient saved = repo.save(patient);
 
         return Map.of(
-                "ok", true,
-                "patientId", saved.getId(),
-                "username", saved.getUsername(),
-                "message", "Signup successful"
+                "ok",
+                true,
+                "id", saved.getId(),
+                "username", saved.getUsername()
         );
     }
 }

@@ -13,7 +13,7 @@
         <h2>Manage Prescriptions</h2>
         <div class="topbar-actions">
             <div id="message" class="msg"></div>
-            <button class="btn" type="button" onclick="window.location.href='/patients.html'">← Back</button>
+            <button class="btn" onclick="window.location.href='/patients.html'">← Back</button>
         </div>
     </div>
 
@@ -26,7 +26,7 @@
 
     <h3 class="section-title">Prescriptions</h3>
 
-    <button type="button" id="showFormBtn">+ Add Prescription</button>
+    <button id="showFormBtn">+ Add Prescription</button>
 
     <div class="form-short" id="prescriptionForm" style="display: none;">
         <label for="newMedicine">Medicine</label>
@@ -38,11 +38,8 @@
         <label for="newFrequency">Frequency</label>
         <input id="newFrequency" type="text" placeholder="e.g. 2/day" />
 
-        <label for="newScheduledTimes">Scheduled Times</label>
-        <input id="newScheduledTimes" type="text" placeholder="e.g. 08:00, 20:00" />
-
         <div class="row">
-            <button type="button" id="addBtn">Add</button>
+            <button id="addBtn">Add</button>
             <button type="button" id="cancelBtn">Cancel</button>
         </div>
     </div>
@@ -51,11 +48,9 @@
         <table>
             <thead>
             <tr>
-                <th>Medicine Code</th>
-                <th class="wrap">Medicine</th>
+                <th>Medicine</th>
                 <th>Dosage</th>
                 <th>Frequency</th>
-                <th>Scheduled Times</th>
                 <th>Updated</th>
                 <th>Delete</th>
             </tr>

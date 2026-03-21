@@ -32,6 +32,9 @@ build/
 ### VS Code ###
 .vscode/
 
+### Environment variables ###
+.env
+
 ### SQLite (local dev only) ###
 data/*.db
 data/*.db-journal

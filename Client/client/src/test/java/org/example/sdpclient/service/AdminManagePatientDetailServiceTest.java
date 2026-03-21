@@ -36,6 +36,9 @@ class AdminManagePatientDetailServiceTest {
     @Mock
     private MedicineRepository medicineRepository;
 
+    @Mock
+    private ActivityLogService activityLogService;
+
     @InjectMocks
     private AdminManagePatientDetailService service;
 
@@ -67,7 +70,7 @@ class AdminManagePatientDetailServiceTest {
         p1.setId(10L);
         p1.setFirstName("Jane");
         p1.setLastName("Doe");
-        p1.setDateOfBirth(LocalDate.of(2000, 1, 2).toString());
+        p1.setDateOfBirth(LocalDate.of(2000, 1, 2));
         p1.setEmail("jane@example.com");
         p1.setPhone("123");
 
@@ -75,7 +78,7 @@ class AdminManagePatientDetailServiceTest {
         p2.setId(11L);
         p2.setFirstName("John");
         p2.setLastName("Smith");
-        p2.setDateOfBirth(LocalDate.of(1999, 5, 6).toString());
+        p2.setDateOfBirth(LocalDate.of(1999, 5, 6));
         p2.setEmail("john@example.com");
         p2.setPhone("456");
 
@@ -181,7 +184,7 @@ class AdminManagePatientDetailServiceTest {
 
     @Test
     void deletePrescription_shouldDelegateToRepository() {
-        service.deletePrescription(77L);
+        service.deletePrescription(77L, 1L, "testAdmin");
         verify(prescriptionRepository).deleteById(77L);
     }
 
@@ -202,7 +205,7 @@ class AdminManagePatientDetailServiceTest {
         when(dto.getDosage()).thenReturn(" 10mg ");
         when(dto.getFrequency()).thenReturn(" daily ");
 
-        service.createPrescription(patient, medicine, dto);
+        service.createPrescription(patient, medicine, dto, 1L, "testAdmin");
 
         ArgumentCaptor<Prescription> captor = ArgumentCaptor.forClass(Prescription.class);
         verify(prescriptionRepository).save(captor.capture());

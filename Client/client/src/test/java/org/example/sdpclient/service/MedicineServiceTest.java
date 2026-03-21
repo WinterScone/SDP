@@ -24,6 +24,9 @@ class MedicineServiceTest {
     @Mock
     private MedicineRepository repo;
 
+    @Mock
+    private ActivityLogService activityLogService;
+
     @InjectMocks
     private MedicineService service;
 
@@ -56,7 +59,7 @@ class MedicineServiceTest {
 
         when(repo.findById(MedicineType.VTM01)).thenReturn(Optional.of(existing));
 
-        service.updateQuantity(MedicineType.VTM01, 42);
+        service.updateQuantity(MedicineType.VTM01, 42, 1L, "testAdmin");
 
         assertEquals(42, existing.getQuantity());
 
@@ -72,7 +75,7 @@ class MedicineServiceTest {
         when(repo.findById(MedicineType.VTM01)).thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class,
-                () -> service.updateQuantity(MedicineType.VTM01, 10));
+                () -> service.updateQuantity(MedicineType.VTM01, 10, 1L, "testAdmin"));
 
         verify(repo).findById(MedicineType.VTM01);
         verify(repo, never()).save(any());
