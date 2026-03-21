@@ -51,11 +51,6 @@ public class MedicineService {
                 adminUsername
         );
 
-        if (quantity < lowStockThreshold) {
-            notificationService.notifyRootAdmins(
-                    "Low stock alert: " + medicine.getMedicineName() + " has " + quantity + " units remaining."
-            );
-        }
     }
 
 
@@ -77,11 +72,6 @@ public class MedicineService {
         medicine.setQuantity(newQuantity);
         repo.save(medicine);
 
-        if (newQuantity < lowStockThreshold) {
-            notificationService.notifyRootAdmins(
-                    "Low stock alert: " + medicine.getMedicineName() + " has " + newQuantity + " units remaining."
-            );
-        }
     }
 
     public int checkLowStock() {
