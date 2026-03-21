@@ -5,19 +5,19 @@ import org.example.sdpclient.entity.Prescription;
 import org.example.sdpclient.enums.FrequencyType;
 import org.example.sdpclient.repository.IntakeHistoryRepository;
 import org.example.sdpclient.repository.PrescriptionRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class MissedIntakeNotificationService {
+
+    private static final Logger log = LoggerFactory.getLogger(MissedIntakeNotificationService.class);
 
     private final PrescriptionRepository prescriptionRepository;
     private final IntakeHistoryRepository intakeHistoryRepository;
@@ -31,68 +31,43 @@ public class MissedIntakeNotificationService {
         this.notificationService = notificationService;
     }
 
-    // Fires 30 minutes after each reminder slot: 08:30, 12:30, 14:30, 16:30, 20:30
-    @Scheduled(cron = "0 30 8,12,14,16,20 * * *")
+    @Scheduled(cron = "0 30 9,13,15,17,21 * * *")
     public void checkMissedIntakes() {
-        int reminderHour = LocalTime.now().getHour();
-        String reminderTimeLabel = String.format("%02d:00", reminderHour);
-        LocalTime windowStart = LocalTime.of(reminderHour, 0);
-        LocalTime windowEnd = LocalTime.now();
+        int currentHour = LocalTime.now().getHour();
+        int reminderHour = currentHour - 1; // check for the reminder that went out ~90 min ago
+        // Map 9->8, 13->12, 15->14, 17->16, 21->20
+        log.info("Checking missed intakes for reminder hour {}", reminderHour);
+
+        List<Prescription> activePrescriptions = prescriptionRepository.findByActiveTrue();
         LocalDate today = LocalDate.now();
 
-        List<FrequencyType> matchingFrequencies = Arrays.stream(FrequencyType.values())
-                .filter(f -> Arrays.asList(frequencyTimes(f)).contains(reminderTimeLabel))
-                .toList();
+        for (Prescription p : activePrescriptions) {
+            FrequencyType freq = FrequencyType.fromDisplayString(p.getFrequency());
+            if (freq == null) continue;
 
-        if (matchingFrequencies.isEmpty()) return;
+            if (!freq.getDefaultHours().contains(reminderHour)) continue;
 
-        List<Prescription> prescriptions = prescriptionRepository.findByFrequencyIn(matchingFrequencies);
+            Patient patient = p.getPatient();
+            LocalTime windowStart = LocalTime.of(reminderHour, 0);
+            LocalTime windowEnd = LocalTime.of(currentHour, 30);
 
-        Map<Long, List<Prescription>> byPatient = prescriptions.stream()
-                .collect(Collectors.groupingBy(rx -> rx.getPatient().getId()));
+            boolean taken = intakeHistoryRepository
+                    .existsByPatient_IdAndMedicine_MedicineIdAndTakenDateAndTakenTimeBetween(
+                            patient.getId(), p.getMedicine().getMedicineId(),
+                            today, windowStart, windowEnd);
 
-        byPatient.forEach((patientId, rxList) -> {
-            Patient patient = rxList.get(0).getPatient();
-            Long linkedAdminId = patient.getLinkedAdmin() != null ? patient.getLinkedAdmin().getId() : null;
+            if (!taken) {
+                String medicineName = p.getMedicine().getMedicineName();
+                notificationService.notifyPatient(patient.getId(),
+                        "SDP Alert: You missed your " + medicineName + " dose scheduled for "
+                                + windowStart + ". Please take it as soon as possible.");
 
-            List<String> missedMedicines = new ArrayList<>();
-            for (Prescription rx : rxList) {
-                boolean taken = intakeHistoryRepository
-                        .existsByPatientIdAndMedicine_MedicineIdAndTakenDateAndTakenTimeBetween(
-                                patientId,
-                                rx.getMedicine().getMedicineId(),
-                                today,
-                                windowStart,
-                                windowEnd
-                        );
-                if (!taken) {
-                    missedMedicines.add(rx.getMedicine().getMedicineName());
+                if (patient.getLinkedAdmin() != null) {
+                    notificationService.notifyAdmin(patient.getLinkedAdmin().getId(),
+                            "SDP Alert: Patient " + patient.getFirstName() + " " + patient.getLastName()
+                                    + " missed their " + medicineName + " dose scheduled for " + windowStart + ".");
                 }
             }
-
-            if (!missedMedicines.isEmpty()) {
-                String patientName = patient.getFirstName() + " " + patient.getLastName();
-                String missedList = String.join(", ", missedMedicines);
-
-                if (linkedAdminId != null) {
-                    notificationService.notifyAdmin(linkedAdminId,
-                            "Missed intake alert: " + patientName + " has not logged their "
-                            + missedList + " intake scheduled at " + reminderTimeLabel + ".");
-                }
-
-                notificationService.notifyPatient(patientId,
-                        "Hi " + patient.getFirstName() + ", you missed your "
-                        + missedList + " dose scheduled at " + reminderTimeLabel + ". Please take it as soon as possible.");
-            }
-        });
-    }
-
-    private static String[] frequencyTimes(FrequencyType frequency) {
-        return switch (frequency) {
-            case ONCE_A_DAY -> new String[]{"08:00"};
-            case TWICE_A_DAY -> new String[]{"08:00", "20:00"};
-            case THREE_TIMES_A_DAY -> new String[]{"08:00", "14:00", "20:00"};
-            case FOUR_TIMES_A_DAY -> new String[]{"08:00", "12:00", "16:00", "20:00"};
-        };
+        }
     }
 }

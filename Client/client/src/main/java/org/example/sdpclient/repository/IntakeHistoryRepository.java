@@ -1,8 +1,9 @@
 package org.example.sdpclient.repository;
 
 import org.example.sdpclient.entity.IntakeHistory;
-import org.example.sdpclient.enums.MedicineType;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import org.example.sdpclient.enums.MedicineType;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -12,7 +13,6 @@ public interface IntakeHistoryRepository extends JpaRepository<IntakeHistory, Lo
 
     List<IntakeHistory> findByPatientIdOrderByTakenDateDescTakenTimeDesc(Long patientId);
 
-    boolean existsByPatientIdAndMedicine_MedicineIdAndTakenDateAndTakenTimeBetween(
-            Long patientId, MedicineType medicineId, LocalDate takenDate,
-            LocalTime windowStart, LocalTime windowEnd);
+    boolean existsByPatient_IdAndMedicine_MedicineIdAndTakenDateAndTakenTimeBetween(
+            Long patientId, MedicineType medicineId, LocalDate date, LocalTime start, LocalTime end);
 }

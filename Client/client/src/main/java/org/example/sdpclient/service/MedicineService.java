@@ -42,6 +42,12 @@ public class MedicineService {
         medicine.setQuantity(quantity);
         repo.save(medicine);
 
+        if (quantity < lowStockThreshold) {
+            notificationService.notifyRootAdmins(
+                    "SDP Low Stock Alert: " + medicine.getMedicineName()
+                            + " is below threshold (" + quantity + " remaining).");
+        }
+
         // Log the activity
         activityLogService.logMedicineStockChange(
                 medicine.getMedicineName(),
@@ -50,7 +56,6 @@ public class MedicineService {
                 adminId,
                 adminUsername
         );
-
     }
 
 
@@ -72,22 +77,11 @@ public class MedicineService {
         medicine.setQuantity(newQuantity);
         repo.save(medicine);
 
-    }
-
-    public int checkLowStock() {
-        List<Medicine> lowStock = repo.findAll().stream()
-                .filter(m -> m.getQuantity() < lowStockThreshold)
-                .toList();
-
-        if (!lowStock.isEmpty()) {
-            StringBuilder sb = new StringBuilder("Low stock alert:");
-            for (Medicine m : lowStock) {
-                sb.append("\n- ").append(m.getMedicineName()).append(", ").append(m.getQuantity()).append(" unit(s) left");
-            }
-            notificationService.notifyRootAdmins(sb.toString());
+        if (newQuantity < lowStockThreshold) {
+            notificationService.notifyRootAdmins(
+                    "SDP Low Stock Alert: " + medicine.getMedicineName()
+                            + " is below threshold (" + newQuantity + " remaining).");
         }
-
-        return lowStock.size();
     }
 }
 

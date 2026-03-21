@@ -1,78 +1,76 @@
 package org.example.sdpclient.service;
 
+import org.example.sdpclient.entity.Admin;
+import org.example.sdpclient.entity.Patient;
 import org.example.sdpclient.repository.AdminRepository;
 import org.example.sdpclient.repository.PatientRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class NotificationService {
 
     private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
-    private static final long RATE_LIMIT_MS = 60_000;
+    private static final int RATE_LIMIT_MINUTES = 5;
 
+    private final SmsAsyncService smsAsyncService;
     private final PatientRepository patientRepository;
     private final AdminRepository adminRepository;
-    private final SmsAsyncService smsAsyncService;
 
-    private final ConcurrentHashMap<String, Long> rateLimitCache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, LocalDateTime> rateLimitMap = new ConcurrentHashMap<>();
 
-    public NotificationService(PatientRepository patientRepository,
-                               AdminRepository adminRepository,
-                               SmsAsyncService smsAsyncService) {
+    public NotificationService(SmsAsyncService smsAsyncService,
+                               PatientRepository patientRepository,
+                               AdminRepository adminRepository) {
+        this.smsAsyncService = smsAsyncService;
         this.patientRepository = patientRepository;
         this.adminRepository = adminRepository;
-        this.smsAsyncService = smsAsyncService;
     }
 
     public void notifyPatient(Long patientId, String message) {
-        patientRepository.findById(patientId).ifPresentOrElse(patient -> {
-            String phone = patient.getPhone();
-            if (phone == null || phone.isBlank()) {
-                log.warn("Patient {} has no phone number — skipping SMS", patientId);
-                return;
-            }
-            if (isRateLimited(phone, message)) return;
-            smsAsyncService.sendSms(phone, message);
-        }, () -> log.warn("Patient {} not found — skipping SMS", patientId));
+        Patient patient = patientRepository.findById(patientId).orElse(null);
+        if (patient == null || patient.getPhone() == null || patient.getPhone().isBlank()) {
+            log.debug("Cannot notify patient {} — no phone number", patientId);
+            return;
+        }
+        if (!patient.isSmsConsent()) {
+            log.debug("Patient {} has not consented to SMS", patientId);
+            return;
+        }
+        sendWithRateLimit("patient-" + patientId, patient.getPhone(), message);
     }
 
     public void notifyAdmin(Long adminId, String message) {
-        adminRepository.findById(adminId).ifPresentOrElse(admin -> {
-            String phone = admin.getPhone();
-            if (phone == null || phone.isBlank()) {
-                log.warn("Admin {} has no phone number — skipping SMS", adminId);
-                return;
-            }
-            if (isRateLimited(phone, message)) return;
-            smsAsyncService.sendSms(phone, message);
-        }, () -> log.warn("Admin {} not found — skipping SMS", adminId));
+        Admin admin = adminRepository.findById(adminId).orElse(null);
+        if (admin == null || admin.getPhone() == null || admin.getPhone().isBlank()) {
+            log.debug("Cannot notify admin {} — no phone number", adminId);
+            return;
+        }
+        sendWithRateLimit("admin-" + adminId, admin.getPhone(), message);
     }
 
     public void notifyRootAdmins(String message) {
-        adminRepository.findByRootTrue().forEach(admin -> {
-            String phone = admin.getPhone();
-            if (phone == null || phone.isBlank()) {
-                log.warn("Root admin {} has no phone number — skipping SMS", admin.getUsername());
-                return;
+        List<Admin> rootAdmins = adminRepository.findByRootTrue();
+        for (Admin admin : rootAdmins) {
+            if (admin.getPhone() != null && !admin.getPhone().isBlank()) {
+                sendWithRateLimit("admin-" + admin.getId(), admin.getPhone(), message);
             }
-            if (isRateLimited(phone, message)) return;
-            smsAsyncService.sendSms(phone, message);
-        });
+        }
     }
 
-    private boolean isRateLimited(String phone, String message) {
-        String key = phone + ":" + message;
-        long now = System.currentTimeMillis();
-        Long last = rateLimitCache.get(key);
-        if (last != null && now - last < RATE_LIMIT_MS) {
-            log.debug("Rate limited SMS to {} — duplicate within {}ms window", phone, RATE_LIMIT_MS);
-            return true;
+    private void sendWithRateLimit(String key, String phone, String message) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime lastSent = rateLimitMap.get(key);
+        if (lastSent != null && lastSent.plusMinutes(RATE_LIMIT_MINUTES).isAfter(now)) {
+            log.debug("Rate-limited SMS to {} (key={})", phone, key);
+            return;
         }
-        rateLimitCache.put(key, now);
-        return false;
+        rateLimitMap.put(key, now);
+        smsAsyncService.sendSmsAsync(phone, message);
     }
 }
