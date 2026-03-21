@@ -34,7 +34,7 @@ public class Prescription {
     @Column(nullable = false)
     private String frequency;
 
-    @Column(nullable = false)
+    @Column(columnDefinition = "boolean default true")
     private boolean active = true;
 
     @Column(name = "start_date")

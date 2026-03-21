@@ -67,9 +67,9 @@ public class Patient {
     @Column(name = "face_enrolled_at")
     private LocalDateTime faceEnrolledAt;
 
-    @Column(name = "face_active", nullable = false)
+    @Column(name = "face_active", columnDefinition = "boolean default false")
     private boolean faceActive = false;
 
-    @Column(name = "sms_consent", nullable = false)
+    @Column(name = "sms_consent", columnDefinition = "boolean default false")
     private boolean smsConsent = false;
 }
