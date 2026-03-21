@@ -57,6 +57,9 @@ public class AdminManagePatientDetailService {
                         p.getDateOfBirth(),
                         p.getEmail(),
                         p.getPhone(),
+                        p.isSmsConsent(),
+                        p.isFaceActive(),
+                        p.getLinkedAdmin() != null ? p.getLinkedAdmin().getUsername() : null,
                         List.of()
                 ))
                 .toList();

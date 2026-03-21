@@ -10,5 +10,8 @@ public record PatientViewDto(
         LocalDate dateOfBirth,
         String email,
         String phone,
+        boolean smsConsent,
+        boolean faceActive,
+        String linkedAdminName,
         List<PrescriptionViewDto> prescriptions
 ) {}

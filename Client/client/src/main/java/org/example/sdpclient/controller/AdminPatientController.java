@@ -47,7 +47,10 @@ public class AdminPatientController {
                         p.getLastName(),
                         p.getDateOfBirth(),
                         p.getEmail(),
-                        p.getPhone()
+                        p.getPhone(),
+                        p.isSmsConsent(),
+                        p.isFaceActive(),
+                        p.getLinkedAdmin() != null ? p.getLinkedAdmin().getUsername() : null
                 ))
                 .toList();
     }
@@ -88,6 +91,9 @@ public class AdminPatientController {
                 patient.getDateOfBirth(),
                 patient.getEmail(),
                 patient.getPhone(),
+                patient.isSmsConsent(),
+                patient.isFaceActive(),
+                patient.getLinkedAdmin() != null ? patient.getLinkedAdmin().getUsername() : null,
                 prescriptions
         );
     }

@@ -36,6 +36,25 @@
         <label for="phone">Phone</label>
         <input id="phone" type="tel" autocomplete="tel" />
 
+        <div class="checkbox-row" style="margin-top:1rem">
+            <input id="faceConsent" type="checkbox" />
+            <label for="faceConsent">Enable face recognition &amp; SMS notifications</label>
+        </div>
+        <p id="faceConsentHint" class="helper" style="margin:0.25rem 0 0.5rem">
+            If enabled, you can enroll your face for quick login and receive medication reminders via SMS.
+        </p>
+
+        <div id="faceSection" style="display:none; margin-bottom:1rem">
+            <label>Face Capture (optional)</label>
+            <video id="faceVideo" width="320" height="240" autoplay playsinline style="display:none; border:1px solid #ccc; border-radius:4px"></video>
+            <canvas id="faceCanvas" width="320" height="240" style="display:none"></canvas>
+            <div class="row" style="gap:0.5rem; margin-top:0.5rem">
+                <button type="button" id="startCameraBtn" class="btn">Start Camera</button>
+                <button type="button" id="captureFaceBtn" class="btn" style="display:none">Capture Face</button>
+            </div>
+            <div id="faceStatus" class="msg" style="margin-top:0.25rem"></div>
+        </div>
+
         <div class="row">
             <button class="btn" type="submit">Sign up</button>
             <div id="message" class="msg"></div>

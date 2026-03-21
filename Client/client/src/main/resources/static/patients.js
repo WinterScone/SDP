@@ -102,7 +102,13 @@
             tr.innerHTML = `
           <td class="center">${safe(p.id)}</td>
           <td>${safe(p.firstName)} ${safe(p.lastName)}</td>
+          <td>${safe(p.phone)}</td>
+          <td class="center">${p.faceActive ? "\u2705" : "\u274c"}</td>
+          <td class="center">${p.smsConsent ? "\u2705" : "\u274c"}</td>
           <td class="actions">
+            <button onclick="goPatientDetail(${safe(p.id)})">
+              View Details
+            </button>
             <button onclick="goPrescriptions(${safe(p.id)})">
               Prescriptions
             </button>
@@ -115,6 +121,10 @@
         });
     }
 
+    window.goPatientDetail = function(patientId) {
+        window.location.href = `/patient-detail.html?patientId=${patientId}`;
+    };
+
     window.goPrescriptions = function(patientId) {
         window.location.href = `/manage-prescriptions.html?patientId=${patientId}`;
     };
@@ -124,6 +134,12 @@
     };
 
     function safe(v) {
-        return v == null ? "" : String(v);
+        if (v == null) return "";
+        return String(v)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
     }
 })();

@@ -98,6 +98,7 @@ public class PatientLoginService {
             patient.setPhone(req.getPhone().trim());
         }
 
+        patient.setSmsConsent(req.isFaceRecognitionConsent());
         patient.setLinkedAdmin(null);
 
         Patient saved = repo.save(patient);
