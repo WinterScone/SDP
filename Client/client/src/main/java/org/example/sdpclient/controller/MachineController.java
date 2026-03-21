@@ -52,14 +52,8 @@ public class MachineController {
         if (!machineAuthService.isValid(apiKey)) {
             return ResponseEntity.status(401).body(
                     new MachineIdentifyResponse(
-                            false,
-                            false,
-                            null,
-                            null,
-                            null,
-                            null,
-                            List.of(),
-                            "Unauthorized machine request"
+                            false, false, null, null, null, null,
+                            List.of(), "Unauthorized machine request"
                     )
             );
         }
@@ -75,14 +69,8 @@ public class MachineController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(
                     new MachineIdentifyResponse(
-                            false,
-                            false,
-                            null,
-                            null,
-                            null,
-                            null,
-                            List.of(),
-                            e.getMessage()
+                            false, false, null, null, null, null,
+                            List.of(), e.getMessage()
                     )
             );
         }
@@ -96,14 +84,8 @@ public class MachineController {
         if (!machineAuthService.isValid(apiKey)) {
             return ResponseEntity.status(401).body(
                     new MachineIdentifyResponse(
-                            false,
-                            false,
-                            null,
-                            null,
-                            null,
-                            null,
-                            List.of(),
-                            "Unauthorized machine request"
+                            false, false, null, null, null, null,
+                            List.of(), "Unauthorized machine request"
                     )
             );
         }
@@ -112,14 +94,8 @@ public class MachineController {
             if (image == null || image.isEmpty()) {
                 return ResponseEntity.badRequest().body(
                         new MachineIdentifyResponse(
-                                false,
-                                false,
-                                null,
-                                null,
-                                null,
-                                null,
-                                List.of(),
-                                "Image file is required"
+                                false, false, null, null, null, null,
+                                List.of(), "Image file is required"
                         )
                 );
             }
@@ -130,14 +106,8 @@ public class MachineController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(
                     new MachineIdentifyResponse(
-                            false,
-                            false,
-                            null,
-                            null,
-                            null,
-                            null,
-                            List.of(),
-                            e.getMessage()
+                            false, false, null, null, null, null,
+                            List.of(), e.getMessage()
                     )
             );
         }

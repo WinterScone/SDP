@@ -2,7 +2,7 @@ package org.example.sdpclient.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
@@ -21,8 +21,11 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
+
 @Service
 @Primary
+@ConditionalOnExpression("!'${anthropic.api.key:}'.isEmpty()")
 public class ClaudeFaceRecognitionService implements FaceRecognitionService {
 
     private static final URI ANTHROPIC_MESSAGES_URI = URI.create("https://api.anthropic.com/v1/messages");
@@ -165,6 +168,8 @@ public class ClaudeFaceRecognitionService implements FaceRecognitionService {
             if (image == null) {
                 throw new IllegalArgumentException("Invalid image file");
             }
+        } catch (IllegalArgumentException e) {
+            throw e;
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid image file");
         }

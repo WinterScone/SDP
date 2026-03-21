@@ -31,7 +31,7 @@ async function loadPatient() {
     setMessage("Loading patient details...");
 
     try {
-        const res = await fetch(`/api/patient/${patientId}`, {
+        const res = await fetch(`/api/admin/patients/${patientId}`, {
             credentials: "include"
         });
 
@@ -56,13 +56,11 @@ async function loadPatient() {
 
         contentEl.innerHTML = `
             <p><strong>ID:</strong> ${escapeHtml(data.id)}</p>
-            <p><strong>Username:</strong> ${escapeHtml(data.username)}</p>
             <p><strong>First name:</strong> ${escapeHtml(data.firstName)}</p>
             <p><strong>Last name:</strong> ${escapeHtml(data.lastName)}</p>
             <p><strong>Date of birth:</strong> ${escapeHtml(data.dateOfBirth)}</p>
             <p><strong>Email:</strong> ${escapeHtml(data.email || "-")}</p>
             <p><strong>Phone:</strong> ${escapeHtml(data.phone || "-")}</p>
-            <p><strong>Linked admin:</strong> ${escapeHtml(data.linkedAdminName || "-")}</p>
         `;
 
         faceImg.src = `/api/patient-face/${patientId}/image`;

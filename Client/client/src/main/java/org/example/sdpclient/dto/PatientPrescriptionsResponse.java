@@ -25,5 +25,30 @@ public class PatientPrescriptionsResponse {
         private String medicineName;
         private String dosage;
         private String frequency;
+
+        // Extended fields used by machine/dispenser endpoints
+        private Long prescriptionId;
+        private Integer medicineNumber;
+        private String medicineCode;
+        private String scheduledTime;
+
+        // Constructor for existing usage (admin/patient views)
+        public PrescriptionItem(String medicineId, String medicineName, String dosage, String frequency) {
+            this.medicineId = medicineId;
+            this.medicineName = medicineName;
+            this.dosage = dosage;
+            this.frequency = frequency;
+        }
+
+        // Constructor for machine/dispenser usage
+        public PrescriptionItem(Long prescriptionId, Integer medicineNumber, String medicineCode,
+                                String medicineName, String dosage, String scheduledTime) {
+            this.prescriptionId = prescriptionId;
+            this.medicineNumber = medicineNumber;
+            this.medicineCode = medicineCode;
+            this.medicineName = medicineName;
+            this.dosage = dosage;
+            this.scheduledTime = scheduledTime;
+        }
     }
 }

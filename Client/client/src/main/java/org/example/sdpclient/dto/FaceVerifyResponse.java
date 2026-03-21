@@ -1,6 +1,5 @@
 package org.example.sdpclient.dto;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,5 +14,4 @@ public class FaceVerifyResponse {
     private boolean verified;
     private Long patientId;
     private String message;
-
 }

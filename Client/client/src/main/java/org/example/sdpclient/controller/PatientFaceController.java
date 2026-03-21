@@ -21,8 +21,8 @@ public class PatientFaceController {
     }
 
     @PostMapping(value = "/{patientId}/enroll", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity enrollFace(@PathVariable Long patientId,
-                                     @RequestParam("image") MultipartFile image) {
+    public ResponseEntity<?> enrollFace(@PathVariable Long patientId,
+                                        @RequestParam("image") MultipartFile image) {
         try {
             if (image == null || image.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of(
@@ -57,7 +57,7 @@ public class PatientFaceController {
     }
 
     @GetMapping("/{patientId}/image")
-    public ResponseEntity getPatientFace(@PathVariable Long patientId) {
+    public ResponseEntity<?> getPatientFace(@PathVariable Long patientId) {
         Patient patient = patientFaceService.getPatient(patientId);
 
         if (patient.getFaceData() == null || patient.getFaceData().length == 0) {
@@ -71,8 +71,8 @@ public class PatientFaceController {
     }
 
     @PostMapping(value = "/{patientId}/verify", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity verifyFace(@PathVariable Long patientId,
-                                     @RequestParam("image") MultipartFile image) {
+    public ResponseEntity<?> verifyFace(@PathVariable Long patientId,
+                                        @RequestParam("image") MultipartFile image) {
         try {
             if (image == null || image.isEmpty()) {
                 return ResponseEntity.badRequest().body(new FaceVerifyResponse(
@@ -96,7 +96,7 @@ public class PatientFaceController {
     }
 
     @PostMapping(value = "/identify", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity identifyFace(@RequestParam("image") MultipartFile image) {
+    public ResponseEntity<?> identifyFace(@RequestParam("image") MultipartFile image) {
         try {
             if (image == null || image.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of(
@@ -117,21 +117,16 @@ public class PatientFaceController {
             }
 
             var prescriptions = patient.getPrescriptions().stream()
-                    .map(p -> {
-                        var item = new java.util.LinkedHashMap<String, Object>();
-
-                        item.put("prescriptionId", p.getId());
-                        item.put("medicineId", p.getMedicine().getMedicineId().getId());
-                        item.put("medicineName", p.getMedicine().getMedicineName());
-                        item.put("instruction", p.getMedicine().getInstruction() == null ? "" : p.getMedicine().getInstruction());
-                        item.put("frequency", p.getFrequency());
-                        item.put("dosage", p.getDosage());
-                        item.put("scheduledTimes", p.getReminderTimes().stream()
-                                .map(rt -> rt.getReminderTime().toString())
-                                .toList());
-
-                        return item;
-                    })
+                    .map(p -> Map.of(
+                            "prescriptionId", p.getId(),
+                            "medicineId", p.getMedicine().getMedicineId().getId(),
+                            "medicineName", p.getMedicine().getMedicineName(),
+                            "dosage", p.getDosage(),
+                            "frequency", p.getFrequency(),
+                            "scheduledTimes", p.getReminderTimes().stream()
+                                    .map(rt -> rt.getReminderTime().toString())
+                                    .toList()
+                    ))
                     .toList();
 
             return ResponseEntity.ok(Map.of(
