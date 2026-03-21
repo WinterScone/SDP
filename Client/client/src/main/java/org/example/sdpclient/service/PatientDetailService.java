@@ -45,7 +45,7 @@ public class PatientDetailService {
                         prescription.getMedicine().getMedicineId().name(),
                         prescription.getMedicine().getMedicineName(),
                         prescription.getDosage(),
-                        prescription.getFrequency()
+                        prescription.getFrequency().name()
                 ))
                 .toList();
     }

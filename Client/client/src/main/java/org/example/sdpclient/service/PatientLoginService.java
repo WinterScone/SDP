@@ -99,8 +99,6 @@ public class PatientLoginService {
         }
 
         patient.setFaceRecognitionConsent(req.isFaceRecognitionConsent());
-        patient.setLinkedAdminId(null);
-        patient.setLinkedAdminName(null);
 
         Patient saved = repo.save(patient);
 

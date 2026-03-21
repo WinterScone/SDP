@@ -4,14 +4,17 @@ import org.example.sdpclient.dto.*;
 import org.example.sdpclient.entity.Medicine;
 import org.example.sdpclient.entity.Patient;
 import org.example.sdpclient.entity.Prescription;
+import org.example.sdpclient.enums.FrequencyType;
 import org.example.sdpclient.enums.MedicineType;
 import org.example.sdpclient.repository.MedicineRepository;
 import org.example.sdpclient.repository.PatientRepository;
 import org.example.sdpclient.repository.PrescriptionRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.SequencedSet;
 
 @Service
 public class AdminManagePatientDetailService {
@@ -20,15 +23,18 @@ public class AdminManagePatientDetailService {
     private final PrescriptionRepository prescriptionRepository;
     private final MedicineRepository medicineRepository;
     private final ActivityLogService activityLogService;
+    private final NotificationService notificationService;
 
     public AdminManagePatientDetailService(PatientRepository patientRepository,
                                            PrescriptionRepository prescriptionRepository,
                                            MedicineRepository medicineRepository,
-                                           ActivityLogService activityLogService) {
+                                           ActivityLogService activityLogService,
+                                           NotificationService notificationService) {
         this.patientRepository = patientRepository;
         this.prescriptionRepository = prescriptionRepository;
         this.medicineRepository = medicineRepository;
         this.activityLogService = activityLogService;
+        this.notificationService = notificationService;
     }
 
 
@@ -100,9 +106,11 @@ public class AdminManagePatientDetailService {
         rx.setPatient(patient);
         rx.setMedicine(medicine);
         rx.setDosage(dto.getDosage().trim());
-        rx.setFrequency(dto.getFrequency().trim());
+        rx.setFrequency(dto.getFrequency());
 
         prescriptionRepository.save(rx);
+
+        String frequencyLabel = dto.getFrequency().name().replace("_", " ").toLowerCase();
 
         // Log the activity
         String patientName = patient.getFirstName() + " " + patient.getLastName();
@@ -111,15 +119,19 @@ public class AdminManagePatientDetailService {
                 patientName,
                 medicine.getMedicineName(),
                 dto.getDosage().trim(),
-                dto.getFrequency().trim(),
+                frequencyLabel,
                 adminId,
                 adminUsername
         );
+
+        // Notify patient via SMS
+        List<Prescription> allRx = prescriptionRepository.findByPatientId(patient.getId());
+        notificationService.notifyPatient(patient.getId(), buildPrescriptionSms(patient.getFirstName(), allRx));
     }
 
     public void updatePrescription(Prescription rx, PrescriptionUpdateDto dto) {
         rx.setDosage(dto.getDosage().trim());
-        rx.setFrequency(dto.getFrequency().trim());
+        rx.setFrequency(dto.getFrequency());
         prescriptionRepository.save(rx);
     }
 
@@ -141,7 +153,7 @@ public class AdminManagePatientDetailService {
                     patientName,
                     rx.getMedicine().getMedicineName(),
                     rx.getDosage(),
-                    rx.getFrequency(),
+                    rx.getFrequency().name().replace("_", " ").toLowerCase(),
                     adminId,
                     adminUsername
             );
@@ -166,5 +178,44 @@ public class AdminManagePatientDetailService {
 
     public static boolean isBlank(String s) {
         return s == null || s.trim().isEmpty();
+    }
+
+    private String buildPrescriptionSms(String firstName, List<Prescription> prescriptions) {
+        SequencedSet<String> times = new LinkedHashSet<>();
+        for (Prescription rx : prescriptions) {
+            for (String t : frequencyTimes(rx.getFrequency())) {
+                times.add(t);
+            }
+        }
+        String reminderTimes = String.join(", ", times);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Hi ").append(firstName).append(", your medication at ")
+          .append(reminderTimes).append(" is ready to collect.");
+        for (Prescription rx : prescriptions) {
+            int tablets = calculateTablets(rx.getDosage(), rx.getMedicine().getDosagePerForm());
+            sb.append("\n- ").append(rx.getMedicine().getMedicineName())
+              .append(", ").append(rx.getDosage()).append("mg")
+              .append(", ").append(tablets).append(" tablet(s)");
+        }
+        return sb.toString();
+    }
+
+    private static String[] frequencyTimes(FrequencyType frequency) {
+        return switch (frequency) {
+            case ONCE_A_DAY -> new String[]{"08:00"};
+            case TWICE_A_DAY -> new String[]{"08:00", "20:00"};
+            case THREE_TIMES_A_DAY -> new String[]{"08:00", "14:00", "20:00"};
+            case FOUR_TIMES_A_DAY -> new String[]{"08:00", "12:00", "16:00", "20:00"};
+        };
+    }
+
+    private static int calculateTablets(String dosage, Integer dosagePerForm) {
+        if (dosagePerForm == null || dosagePerForm == 0) return 1;
+        try {
+            return (int) Math.ceil((double) Integer.parseInt(dosage) / dosagePerForm);
+        } catch (NumberFormatException e) {
+            return 1;
+        }
     }
 }

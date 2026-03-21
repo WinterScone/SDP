@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.example.sdpclient.enums.FrequencyType;
 
 @AllArgsConstructor
 @Getter
@@ -12,5 +13,5 @@ import lombok.Setter;
 @NoArgsConstructor
 public class PrescriptionUpdateDto{
     String dosage;
-    String frequency;
+    FrequencyType frequency;
 }

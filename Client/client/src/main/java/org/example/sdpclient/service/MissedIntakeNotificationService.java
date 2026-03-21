@@ -53,7 +53,7 @@ public class MissedIntakeNotificationService {
 
         byPatient.forEach((patientId, rxList) -> {
             Patient patient = rxList.get(0).getPatient();
-            Long linkedAdminId = patient.getLinkedAdminId();
+            Long linkedAdminId = patient.getLinkedAdmin() != null ? patient.getLinkedAdmin().getId() : null;
 
             List<String> missedMedicines = new ArrayList<>();
             for (Prescription rx : rxList) {

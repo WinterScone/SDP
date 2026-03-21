@@ -15,6 +15,11 @@ public class SeedPatientUser {
     @Bean
     CommandLineRunner seedPatients(PatientRepository repo, PasswordEncoder encoder) {
         return args -> {
+            seed(repo, encoder, "patient1", "patient1",
+                    "Testing", "Patient One",
+                    LocalDate.of(1990, 1, 1),
+                    "testpatient1@sdp.com", "07761 844142");
+
             seed(repo, encoder, "testPatient1", "testPatient1",
                     "Test", "Patient One",
                     LocalDate.of(1990, 1, 1),
