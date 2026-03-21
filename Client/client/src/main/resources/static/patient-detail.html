@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Patient Details</title>
+    <link rel="stylesheet" href="/css/common.css">
+</head>
+<body>
+
+<section class="card wide">
+    <div class="topbar">
+        <h2>Patient Details</h2>
+        <button class="btn" onclick="window.history.back()">← Back</button>
+    </div>
+
+    <div id="message" class="msg"></div>
+
+    <div style="display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap; margin-top:16px;">
+        <div>
+            <h3>Face Image</h3>
+            <img id="patientFace" width="220" height="180" style="border:1px solid #ccc; object-fit:cover;" />
+        </div>
+
+        <div id="content" style="min-width:280px;"></div>
+    </div>
+</section>
+
+<script src="/patient-detail.js"></script>
+</body>
+</html>

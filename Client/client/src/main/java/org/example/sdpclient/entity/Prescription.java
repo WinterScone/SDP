@@ -5,6 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "prescription")
@@ -30,6 +33,18 @@ public class Prescription {
 
     @Column(nullable = false)
     private String frequency;
+
+    @Column(nullable = false)
+    private boolean active = true;
+
+    @Column(name = "start_date")
+    private LocalDate startDate;
+
+    @Column(name = "end_date")
+    private LocalDate endDate;
+
+    @OneToMany(mappedBy = "prescription", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PrescriptionReminderTime> reminderTimes = new ArrayList<>();
 }
 
 
