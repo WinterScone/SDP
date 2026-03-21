@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @AllArgsConstructor
 @Getter
 @Setter
@@ -13,4 +15,8 @@ import lombok.Setter;
 public class PrescriptionUpdateDto{
     String dosage;
     String frequency;
+    String startDate;
+    String endDate;
+    List<String> reminderTimes;
+    List<String> scheduledTimes;
 }

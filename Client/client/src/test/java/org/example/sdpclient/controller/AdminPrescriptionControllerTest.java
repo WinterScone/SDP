@@ -73,7 +73,7 @@ class AdminPrescriptionControllerTest {
     @Test
     void addPrescription_shouldReturn201_whenCreated() throws Exception {
         String body = """
-                {"medicineId":"VTM01","dosage":"10mg","frequency":"daily"}
+                {"medicineId":"VTM01","dosage":"10mg","frequency":"daily","scheduledTimes":["08:00","20:00"]}
                 """;
 
         Patient patient = new Patient();

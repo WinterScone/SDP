@@ -4,12 +4,16 @@ import org.example.sdpclient.dto.*;
 import org.example.sdpclient.entity.Medicine;
 import org.example.sdpclient.entity.Patient;
 import org.example.sdpclient.entity.Prescription;
+import org.example.sdpclient.entity.PrescriptionReminderTime;
 import org.example.sdpclient.enums.MedicineType;
 import org.example.sdpclient.repository.MedicineRepository;
 import org.example.sdpclient.repository.PatientRepository;
 import org.example.sdpclient.repository.PrescriptionRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -80,7 +84,10 @@ public class AdminManagePatientDetailService {
                         rx.getMedicine().getMedicineId(),
                         rx.getMedicine().getMedicineName(),
                         rx.getDosage(),
-                        rx.getFrequency()
+                        rx.getFrequency(),
+                        rx.getReminderTimes().stream()
+                                .map(rt -> rt.getReminderTime().toString())
+                                .toList()
                 ))
                 .toList();
     }
@@ -102,6 +109,21 @@ public class AdminManagePatientDetailService {
         rx.setDosage(dto.getDosage().trim());
         rx.setFrequency(dto.getFrequency().trim());
 
+        if (!isBlank(dto.getStartDate())) {
+            rx.setStartDate(LocalDate.parse(dto.getStartDate()));
+        }
+        if (!isBlank(dto.getEndDate())) {
+            rx.setEndDate(LocalDate.parse(dto.getEndDate()));
+        }
+
+        List<String> times = dto.getScheduledTimes();
+        if (times == null || times.isEmpty()) {
+            times = dto.getReminderTimes();
+        }
+        if (times != null && !times.isEmpty()) {
+            applyScheduledTimes(rx, times);
+        }
+
         prescriptionRepository.save(rx);
 
         // Log the activity
@@ -120,7 +142,41 @@ public class AdminManagePatientDetailService {
     public void updatePrescription(Prescription rx, PrescriptionUpdateDto dto) {
         rx.setDosage(dto.getDosage().trim());
         rx.setFrequency(dto.getFrequency().trim());
+
+        if (!isBlank(dto.getStartDate())) {
+            rx.setStartDate(LocalDate.parse(dto.getStartDate()));
+        }
+        if (!isBlank(dto.getEndDate())) {
+            rx.setEndDate(LocalDate.parse(dto.getEndDate()));
+        }
+
+        List<String> times = dto.getScheduledTimes();
+        if (times == null || times.isEmpty()) {
+            times = dto.getReminderTimes();
+        }
+        if (times != null) {
+            applyScheduledTimes(rx, times);
+        }
+
         prescriptionRepository.save(rx);
+    }
+
+    private void applyScheduledTimes(Prescription rx, List<String> scheduledTimes) {
+        rx.getReminderTimes().clear();
+
+        if (scheduledTimes == null || scheduledTimes.isEmpty()) {
+            return;
+        }
+
+        for (String timeStr : scheduledTimes) {
+            String trimmed = timeStr.trim();
+            if (trimmed.isEmpty()) continue;
+
+            PrescriptionReminderTime prt = new PrescriptionReminderTime();
+            prt.setPrescription(rx);
+            prt.setReminderTime(LocalTime.parse(trimmed));
+            rx.getReminderTimes().add(prt);
+        }
     }
 
     public boolean prescriptionIdExists(Long id) {
