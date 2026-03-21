@@ -61,6 +61,19 @@ public class Patient {
     @Column(name = "face_data")
     private byte[] faceData;
 
+    @Column(name = "face_content_type")
+    private String faceContentType;
+
+    @Column(name = "face_enrolled_at")
+    private LocalDateTime faceEnrolledAt;
+
+    @Column(name = "face_active", columnDefinition = "boolean default false")
+    private boolean faceActive = false;
+
     @Column(name = "face_recognition_consent", nullable = false)
     private boolean faceRecognitionConsent = false;
+
+    @Column(name = "sms_consent", columnDefinition = "boolean default false")
+    private boolean smsConsent = false;
+
 }

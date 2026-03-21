@@ -41,5 +41,7 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     List<Patient> searchByKeywordAndLinkedAdmin(@Param("q") String q, @Param("adminId") Long adminId);
 
     List<Patient> findByLinkedAdmin_Id(Long linkedAdminId);
+
+    List<Patient> findByFaceActiveTrueAndFaceDataIsNotNull();
 }
 

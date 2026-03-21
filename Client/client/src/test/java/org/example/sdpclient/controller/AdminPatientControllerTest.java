@@ -113,7 +113,8 @@ class AdminPatientControllerTest {
     @Test
     void searchPatients_shouldReturn200_andDelegateToService() throws Exception {
         PatientViewDto dto = new PatientViewDto(
-                1L, "John", "Doe", LocalDate.of(2000, 1, 1), "j@e.com", "123", List.of()
+                1L, "John", "Doe", LocalDate.of(2000, 1, 1), "j@e.com", "123",
+                false, false, null, List.of()
         );
 
         when(adminManageService.searchPatients(anyString(), anyLong(), anyBoolean())).thenReturn(List.of(dto));

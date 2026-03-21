@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -62,6 +63,24 @@ public class AdminPrescriptionController {
 
         if (service.prescriptionExists(id, medId)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Prescription already exists for this medicine");
+        }
+
+        // Resolve scheduled times: prefer scheduledTimes, fall back to reminderTimes
+        List<String> times = dto.getScheduledTimes();
+        if (times == null || times.isEmpty()) {
+            times = dto.getReminderTimes();
+        }
+        if (times == null || times.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "At least one scheduled time is required");
+        }
+        dto.setScheduledTimes(times);
+
+        // Default start/end dates if not provided
+        if (AdminManagePatientDetailService.isBlank(dto.getStartDate())) {
+            dto.setStartDate(LocalDate.now().toString());
+        }
+        if (AdminManagePatientDetailService.isBlank(dto.getEndDate())) {
+            dto.setEndDate(LocalDate.now().plusYears(1).toString());
         }
 
         String adminUsername = CookieUtils.getCookieValue(request, "adminUsername");

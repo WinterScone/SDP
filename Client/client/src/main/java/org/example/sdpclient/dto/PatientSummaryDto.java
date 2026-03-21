@@ -8,5 +8,8 @@ public record PatientSummaryDto(
             String lastName,
             LocalDate dateOfBirth,
             String email,
-            String phone
+            String phone,
+            boolean smsConsent,
+            boolean faceActive,
+            String linkedAdminName
 ) {}

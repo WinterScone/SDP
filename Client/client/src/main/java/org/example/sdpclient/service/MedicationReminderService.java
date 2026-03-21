@@ -3,17 +3,21 @@ package org.example.sdpclient.service;
 import org.example.sdpclient.entity.Prescription;
 import org.example.sdpclient.enums.FrequencyType;
 import org.example.sdpclient.repository.PrescriptionRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalTime;
-import java.util.Arrays;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class MedicationReminderService {
+
+    private static final Logger log = LoggerFactory.getLogger(MedicationReminderService.class);
 
     private final PrescriptionRepository prescriptionRepository;
     private final NotificationService notificationService;
@@ -25,55 +29,33 @@ public class MedicationReminderService {
     }
 
     @Scheduled(cron = "0 0 8,12,14,16,20 * * *")
-    public void sendReminders() {
-        String timeLabel = String.format("%02d:00", LocalTime.now().getHour());
+    public void sendMedicationReminders() {
+        int currentHour = LocalDateTime.now().getHour();
+        log.info("Running medication reminder check for hour {}", currentHour);
 
-        List<FrequencyType> matchingFrequencies = Arrays.stream(FrequencyType.values())
-                .filter(f -> Arrays.asList(frequencyTimes(f)).contains(timeLabel))
-                .toList();
+        List<Prescription> activePrescriptions = prescriptionRepository.findByActiveTrue();
+        Map<Long, List<String>> patientMedicines = new HashMap<>();
 
-        if (matchingFrequencies.isEmpty()) return;
+        for (Prescription p : activePrescriptions) {
+            FrequencyType freq = FrequencyType.fromDisplayString(p.getFrequency());
+            if (freq == null) {
+                log.warn("Unknown frequency '{}' for prescription {}", p.getFrequency(), p.getId());
+                continue;
+            }
 
-        List<Prescription> prescriptions = prescriptionRepository.findByFrequencyIn(matchingFrequencies);
-
-        Map<Long, List<Prescription>> byPatient = prescriptions.stream()
-                .collect(Collectors.groupingBy(rx -> rx.getPatient().getId()));
-
-        byPatient.forEach((patientId, rxList) -> {
-            String firstName = rxList.get(0).getPatient().getFirstName();
-            String sms = buildReminderSms(firstName, timeLabel, rxList);
-            notificationService.notifyPatient(patientId, sms);
-        });
-    }
-
-    private String buildReminderSms(String firstName, String time, List<Prescription> prescriptions) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Hi ").append(firstName).append(", your medication at ")
-          .append(time).append(" is ready to collect.");
-        for (Prescription rx : prescriptions) {
-            int tablets = calculateTablets(rx.getDosage(), rx.getMedicine().getDosagePerForm());
-            sb.append("\n- ").append(rx.getMedicine().getMedicineName())
-              .append(", ").append(rx.getDosage()).append("mg")
-              .append(", ").append(tablets).append(" tablet(s)");
+            if (freq.getDefaultHours().contains(currentHour)) {
+                Long patientId = p.getPatient().getId();
+                patientMedicines.computeIfAbsent(patientId, k -> new ArrayList<>())
+                        .add(p.getMedicine().getMedicineName() + " (" + p.getDosage() + ")");
+            }
         }
-        return sb.toString();
-    }
 
-    private static String[] frequencyTimes(FrequencyType frequency) {
-        return switch (frequency) {
-            case ONCE_A_DAY -> new String[]{"08:00"};
-            case TWICE_A_DAY -> new String[]{"08:00", "20:00"};
-            case THREE_TIMES_A_DAY -> new String[]{"08:00", "14:00", "20:00"};
-            case FOUR_TIMES_A_DAY -> new String[]{"08:00", "12:00", "16:00", "20:00"};
-        };
-    }
-
-    private static int calculateTablets(String dosage, Integer dosagePerForm) {
-        if (dosagePerForm == null || dosagePerForm == 0) return 1;
-        try {
-            return (int) Math.ceil((double) Integer.parseInt(dosage) / dosagePerForm);
-        } catch (NumberFormatException e) {
-            return 1;
+        for (Map.Entry<Long, List<String>> entry : patientMedicines.entrySet()) {
+            String medicines = String.join(", ", entry.getValue());
+            String message = "SDP Reminder: It's time to take your medication — " + medicines;
+            notificationService.notifyPatient(entry.getKey(), message);
         }
+
+        log.info("Medication reminders sent to {} patients", patientMedicines.size());
     }
 }

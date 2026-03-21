@@ -12,7 +12,6 @@ public interface IntakeHistoryRepository extends JpaRepository<IntakeHistory, Lo
 
     List<IntakeHistory> findByPatientIdOrderByTakenDateDescTakenTimeDesc(Long patientId);
 
-    boolean existsByPatientIdAndMedicine_MedicineIdAndTakenDateAndTakenTimeBetween(
-            Long patientId, MedicineType medicineId, LocalDate takenDate,
-            LocalTime windowStart, LocalTime windowEnd);
+    boolean existsByPatient_IdAndMedicine_MedicineIdAndTakenDateAndTakenTimeBetween(
+            Long patientId, MedicineType medicineId, LocalDate date, LocalTime start, LocalTime end);
 }
