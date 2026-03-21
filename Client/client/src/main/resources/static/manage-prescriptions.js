@@ -18,7 +18,7 @@
     const newMedicine = document.getElementById("newMedicine");
     const newDosage = document.getElementById("newDosage");
     const newFrequency = document.getElementById("newFrequency");
-    const formMessage = document.getElementById("formMessage");
+    const newScheduledTimesEl = document.getElementById("newScheduledTimes");
 
     showFormBtn.addEventListener("click", () => {
         prescriptionForm.style.display = "block";
@@ -31,8 +31,8 @@
         newMedicine.value = "";
         newDosage.value = "";
         newFrequency.value = "";
+        newScheduledTimesEl.value = "";
         msg.textContent = "";
-        formMessage.textContent = "";
     });
 
     document.getElementById("addBtn").addEventListener("click", addPrescription);
@@ -87,27 +87,30 @@
         renderPrescriptions(p.prescriptions || []);
     }
 
+    function parseTimes(str) {
+        if (!str) return [];
+        return str.split(",").map(s => s.trim()).filter(s => s.length > 0);
+    }
+
     function renderPrescriptions(list){
         rows.innerHTML = "";
 
         if(list.length === 0){
             const tr = document.createElement("tr");
-            tr.innerHTML = `<td colspan="5">No prescriptions found.</td>`;
+            tr.innerHTML = `<td colspan="7">No prescriptions found.</td>`;
             rows.appendChild(tr);
             return;
         }
 
         list.forEach(rx => {
+            const timesStr = (rx.scheduledTimes || []).join(", ");
             const tr = document.createElement("tr");
             tr.innerHTML = `
           <td>${escapeHtml(rx.medicineName)}</td>
+          <td>${escapeHtml(rx.medicineId)}</td>
           <td><input id="dosage-${rx.id}" value="${escapeAttr(rx.dosage)}" /></td>
-          <td><select id="freq-${rx.id}">
-            <option value="ONCE_A_DAY"${rx.frequency === 'ONCE_A_DAY' ? ' selected' : ''}>Once a day</option>
-            <option value="TWICE_A_DAY"${rx.frequency === 'TWICE_A_DAY' ? ' selected' : ''}>Twice a day</option>
-            <option value="THREE_TIMES_A_DAY"${rx.frequency === 'THREE_TIMES_A_DAY' ? ' selected' : ''}>Three times a day</option>
-            <option value="FOUR_TIMES_A_DAY"${rx.frequency === 'FOUR_TIMES_A_DAY' ? ' selected' : ''}>Four times a day</option>
-          </select></td>
+          <td><input id="freq-${rx.id}" value="${escapeAttr(rx.frequency)}" /></td>
+          <td><input id="times-${rx.id}" value="${escapeAttr(timesStr)}" placeholder="08:00, 20:00" /></td>
           <td><button onclick="saveRx(${rx.id})">Save</button></td>
           <td><button onclick="deleteRx(${rx.id})">Delete</button></td>
         `;
@@ -117,7 +120,8 @@
 
     window.saveRx = async function(id){
         const dosage = document.getElementById(`dosage-${id}`).value.trim();
-        const frequency = document.getElementById(`freq-${id}`).value;
+        const frequency = document.getElementById(`freq-${id}`).value.trim();
+        const scheduledTimes = parseTimes(document.getElementById(`times-${id}`).value);
 
         if(!dosage || !frequency){
             msg.textContent = "Dosage and frequency are required.";
@@ -127,7 +131,7 @@
         const res = await fetch(`/api/admin/prescriptions/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ dosage, frequency })
+            body: JSON.stringify({ dosage, frequency, scheduledTimes })
         });
 
         msg.textContent = res.ok ? "Saved." : "Save failed.";
@@ -145,33 +149,36 @@
     async function addPrescription(){
         const medicineId = newMedicine.value;
         const dosage = newDosage.value.trim();
-        const frequency = newFrequency.value;
+        const frequency = newFrequency.value.trim();
+        const scheduledTimes = parseTimes(newScheduledTimesEl.value);
 
         if(!medicineId || !dosage || !frequency){
-            formMessage.textContent = "Select medicine, dosage, and frequency.";
-            formMessage.className = "msg error";
+            msg.textContent = "Select medicine + dosage + frequency.";
+            return;
+        }
+
+        if(scheduledTimes.length === 0){
+            msg.textContent = "At least one scheduled time is required (e.g. 08:00).";
             return;
         }
 
         const res = await fetch(`/api/admin/patients/${patientId}/prescriptions`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ medicineId, dosage, frequency })
+            body: JSON.stringify({ medicineId, dosage, frequency, scheduledTimes })
         });
 
         if(res.ok){
-            msg.textContent = "Prescription added.";
+            msg.textContent = "Added.";
             newMedicine.value = "";
             newDosage.value = "";
             newFrequency.value = "";
-            formMessage.textContent = "";
+            newScheduledTimesEl.value = "";
             prescriptionForm.style.display = "none";
             showFormBtn.style.display = "block";
             await loadPatientAndPrescriptions();
         } else {
-            const data = await res.json().catch(() => null);
-            formMessage.textContent = (data && data.message) ? data.message : "Add failed. Check dosage is a number and medicine is not already prescribed.";
-            formMessage.className = "msg error";
+            msg.textContent = "Add failed (maybe already exists).";
         }
     }
 

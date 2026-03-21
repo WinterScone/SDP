@@ -53,10 +53,12 @@ async function loadPrescriptions() {
 
         rowsEl.innerHTML = list.map(p => `
       <tr>
-        <td>${escapeHtml(p.medicineId)}</td>
+        <td>${escapeHtml(p.prescriptionId)}</td>
+        <td>${escapeHtml(p.medicineNumber != null ? 'Slot ' + p.medicineNumber : 'N/A')}</td>
+        <td>${escapeHtml(p.medicineCode)}</td>
         <td>${escapeHtml(p.medicineName)}</td>
         <td>${escapeHtml(p.dosage)}</td>
-        <td>${escapeHtml(p.frequency)}</td>
+        <td>${escapeHtml(p.scheduledTime || 'Not scheduled')}</td>
       </tr>
     `).join("");
 

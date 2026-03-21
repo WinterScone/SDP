@@ -44,6 +44,9 @@
             <option value="FOUR_TIMES_A_DAY">Four times a day</option>
         </select>
 
+        <label for="newScheduledTimes">Scheduled Times</label>
+        <input id="newScheduledTimes" type="text" placeholder="e.g. 08:00, 14:00, 20:00" />
+
         <div class="row">
             <button id="addBtn" type="button">Add</button>
             <button type="button" id="cancelBtn">Cancel</button>
@@ -56,8 +59,10 @@
             <thead>
             <tr>
                 <th>Medicine</th>
+                <th>Medicine Code</th>
                 <th>Dosage</th>
                 <th>Frequency</th>
+                <th>Scheduled Times</th>
                 <th>Updated</th>
                 <th>Delete</th>
             </tr>

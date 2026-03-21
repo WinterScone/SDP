@@ -9,6 +9,7 @@ import org.example.sdpclient.dto.PatientPrescriptionsResponse;
 import org.example.sdpclient.entity.Medicine;
 import org.example.sdpclient.entity.Prescription;
 import org.example.sdpclient.enums.MedicineType;
+import org.example.sdpclient.repository.DispenserSlotRepository;
 import org.example.sdpclient.repository.PatientRepository;
 import org.example.sdpclient.repository.PrescriptionRepository;
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,9 @@ class PatientDetailServiceTest {
 
     @Mock
     private PrescriptionRepository prescriptionRepo;
+
+    @Mock
+    private DispenserSlotRepository dispenserSlotRepo;
 
     @InjectMocks
     private PatientDetailService service;
@@ -46,6 +50,7 @@ class PatientDetailServiceTest {
         med.setMedicineName("Amoxicillin");
 
         Prescription rx = new Prescription();
+        rx.setId(1L);
         rx.setMedicine(med);
         rx.setDosage("10mg");
         rx.setFrequency("daily");
