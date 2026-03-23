@@ -1,8 +1,6 @@
 package org.example.sdpclient.controller;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -100,7 +98,7 @@ class MedicineControllerTest {
                 .andExpect(jsonPath("$.message").value("Not found"));
 
         verify(service).exists(MedicineType.VTM01);
-        verify(service, never()).updateQuantity(any(), anyInt(), any(), any());
+        verify(service, never()).updateQuantity(any(), anyInt());
     }
 
     @Test
@@ -114,7 +112,7 @@ class MedicineControllerTest {
                 .andExpect(jsonPath("$.ok").value(true));
 
         verify(service).exists(MedicineType.VTM01);
-        verify(service).updateQuantity(eq(MedicineType.VTM01), eq(20), any(), any());
+        verify(service).updateQuantity(MedicineType.VTM01, 20);
     }
 }
 

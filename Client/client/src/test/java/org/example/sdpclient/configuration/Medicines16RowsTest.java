@@ -7,9 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.boot.DefaultApplicationArguments;
 
-import java.util.List;
-import java.util.Optional;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -19,19 +16,25 @@ class Medicines16RowsTest {
     void run_savesAll_whenNoneExist() {
         MedicineRepository repo = mock(MedicineRepository.class);
 
-        when(repo.findAll()).thenReturn(List.of());
-        when(repo.findById(any(MedicineType.class))).thenReturn(Optional.empty());
+        // for every enum, pretend it doesn't exist
+        when(repo.existsById(any(MedicineType.class))).thenReturn(false);
 
         Medicines16Rows runner = new Medicines16Rows(repo);
+
         runner.run(new DefaultApplicationArguments(new String[0]));
 
         // verify save called exactly once per enum value
+        verify(repo, times(MedicineType.values().length)).save(any(Medicine.class));
+
+        // verify contents of saved entities
         ArgumentCaptor<Medicine> captor = ArgumentCaptor.forClass(Medicine.class);
         verify(repo, times(MedicineType.values().length)).save(captor.capture());
 
         var saved = captor.getAllValues();
         assertThat(saved).hasSize(MedicineType.values().length);
 
+        // spot-check each saved Medicine matches its enum
+        // (order should match enum iteration order)
         for (int i = 0; i < MedicineType.values().length; i++) {
             MedicineType t = MedicineType.values()[i];
             Medicine m = saved.get(i);
@@ -41,6 +44,7 @@ class Medicines16RowsTest {
             assertThat(m.getShape()).isEqualTo(t.getShape());
             assertThat(m.getColour()).isEqualTo(t.getColour());
             assertThat(m.getDosagePerForm()).isEqualTo(t.getDosage());
+            assertThat(m.getQuantity()).isEqualTo(0);
         }
     }
 
@@ -48,46 +52,36 @@ class Medicines16RowsTest {
     void run_skipsSaving_whenAlreadyExists() {
         MedicineRepository repo = mock(MedicineRepository.class);
 
-        // All exist — runner still saves (upserts) each one
-        when(repo.findAll()).thenReturn(List.of());
-        for (MedicineType t : MedicineType.values()) {
-            Medicine existing = new Medicine();
-            existing.setMedicineId(t);
-            existing.setQuantity(10);
-            when(repo.findById(t)).thenReturn(Optional.of(existing));
-        }
+        // everything already exists
+        when(repo.existsById(any(MedicineType.class))).thenReturn(true);
 
         Medicines16Rows runner = new Medicines16Rows(repo);
+
         runner.run(new DefaultApplicationArguments(new String[0]));
 
-        // The runner always saves (upserts)
-        verify(repo, times(MedicineType.values().length)).save(any(Medicine.class));
-        verify(repo, times(MedicineType.values().length)).findById(any(MedicineType.class));
+        // should never save
+        verify(repo, never()).save(any(Medicine.class));
+
+        // but should check existence for every enum
+        verify(repo, times(MedicineType.values().length)).existsById(any(MedicineType.class));
     }
 
     @Test
-    void run_mixed_existingAndMissing_savesAll() {
+    void run_mixed_existingAndMissing_savesOnlyMissing() {
         MedicineRepository repo = mock(MedicineRepository.class);
 
+        // Example: first two exist, rest missing
         MedicineType[] values = MedicineType.values();
-        when(repo.findAll()).thenReturn(List.of());
-
-        // First two exist, rest missing
-        for (int i = 0; i < values.length; i++) {
-            if (i < 2) {
-                Medicine existing = new Medicine();
-                existing.setMedicineId(values[i]);
-                existing.setQuantity(5);
-                when(repo.findById(values[i])).thenReturn(Optional.of(existing));
-            } else {
-                when(repo.findById(values[i])).thenReturn(Optional.empty());
-            }
-        }
+        when(repo.existsById(any(MedicineType.class))).thenAnswer(inv -> {
+            MedicineType id = inv.getArgument(0);
+            return id == values[0] || id == values[1];
+        });
 
         Medicines16Rows runner = new Medicines16Rows(repo);
         runner.run(new DefaultApplicationArguments(new String[0]));
 
-        // Runner always saves all
-        verify(repo, times(values.length)).save(any(Medicine.class));
+        int expectedSaves = Math.max(0, values.length - 2);
+        verify(repo, times(expectedSaves)).save(any(Medicine.class));
+        verify(repo, times(values.length)).existsById(any(MedicineType.class));
     }
 }

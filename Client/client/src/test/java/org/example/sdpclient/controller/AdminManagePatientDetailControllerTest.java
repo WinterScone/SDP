@@ -95,20 +95,18 @@ class AdminManagePatientDetailControllerTest {
                 {"medicineId":"VTM01","dosage":"  ","frequency":""}
                 """;
 
-        when(service.canAdminAccessPatient(anyLong(), anyLong(), anyBoolean())).thenReturn(true);
-
         mockMvc.perform(post("/api/admin/patients/10/prescriptions")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body)
-                        .cookie(new jakarta.servlet.http.Cookie("adminId", "1"))
-                        .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true")))
+                        .content(body))
                 .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(service);
     }
 
     @Test
     void addPrescription_shouldReturn201_whenCreated() throws Exception {
         String body = """
-                {"medicineId":"VTM01","dosage":"10mg","frequency":"daily","scheduledTimes":["08:00"],"startDate":"2024-01-01","endDate":"2025-01-01"}
+                {"medicineId":"VTM01","dosage":"10mg","frequency":"daily"}
                 """;
 
         Patient patient = new Patient();
@@ -130,7 +128,7 @@ class AdminManagePatientDetailControllerTest {
                         .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true")))
                 .andExpect(status().isCreated());
 
-        verify(service).createPrescription(eq(patient), eq(med), any(PrescriptionCreateDto.class), any(), any());
+        verify(service).createPrescription(eq(patient), eq(med), any(PrescriptionCreateDto.class));
     }
 
     @Test
@@ -176,6 +174,6 @@ class AdminManagePatientDetailControllerTest {
                         .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true")))
                 .andExpect(status().isNoContent());
 
-        verify(service).deletePrescription(eq(5L), any(), any());
+        verify(service).deletePrescription(5L);
     }
 }

@@ -57,8 +57,6 @@ class PatientDetailControllerTest {
 
         PatientPrescriptionsResponse.PrescriptionItem item =
                 new PatientPrescriptionsResponse.PrescriptionItem(
-                        1L,
-                        1,
                         "MEDICINE_ID1",
                         "TestMed",
                         "10mg",
@@ -69,6 +67,8 @@ class PatientDetailControllerTest {
 
         mockMvc.perform(get("/api/patient/10/prescriptions"))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.patientId").value(10))
+                // don't assume the list property name; just check content is present
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("MEDICINE_ID1")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("TestMed")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("10mg")))

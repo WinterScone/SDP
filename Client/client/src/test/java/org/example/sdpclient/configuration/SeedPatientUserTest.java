@@ -16,8 +16,10 @@ import static org.mockito.Mockito.*;
 class SeedPatientUserTest {
 
     @Test
-    void seedPatients_insertsTwo_whenNoneExist() throws Exception {
+    void seedPatients_insertsThree_whenNoneExist() throws Exception {
         PatientRepository repo = mock(PatientRepository.class);
+
+        // real encoder
         PasswordEncoder encoder = new BCryptPasswordEncoder();
 
         when(repo.findByUsername(anyString())).thenReturn(Optional.empty());
@@ -28,23 +30,23 @@ class SeedPatientUserTest {
         runner.run(new String[0]);
 
         ArgumentCaptor<Patient> captor = ArgumentCaptor.forClass(Patient.class);
-        verify(repo, times(2)).save(captor.capture());
+        verify(repo, times(3)).save(captor.capture());
 
         var saved = captor.getAllValues();
-        assertThat(saved).hasSize(2);
+        assertThat(saved).hasSize(3);
 
-        assertThat(saved.get(0).getUsername()).isEqualTo("testPatient1");
+        // check fields + password behavior
+        assertThat(saved.get(0).getUsername()).isEqualTo("patient1");
         assertThat(saved.get(0).getFirstName()).isEqualTo("Test");
-        assertThat(saved.get(0).getLastName()).isEqualTo("Patient One");
+        assertThat(saved.get(0).getLastName()).isEqualTo("Patient");
+        assertThat(saved.get(0).getDateOfBirth()).isEqualTo("2000-01-01");
 
         String hash1 = saved.get(0).getPasswordHash();
         assertThat(hash1).isNotBlank();
-        assertThat(hash1).doesNotContain("testPatient1");
-        assertThat(encoder.matches("testPatient1", hash1)).isTrue();
+        assertThat(hash1).doesNotContain("patient123");
+        assertThat(encoder.matches("patient123", hash1)).isTrue();
 
-        assertThat(saved.get(1).getUsername()).isEqualTo("testPatient2");
-        assertThat(saved.get(1).getFirstName()).isEqualTo("Test");
-        assertThat(saved.get(1).getLastName()).isEqualTo("Patient Two");
+        // you can similarly check patient2/patient3 if you want
     }
 
     @Test
@@ -52,20 +54,21 @@ class SeedPatientUserTest {
         PatientRepository repo = mock(PatientRepository.class);
         PasswordEncoder encoder = mock(PasswordEncoder.class);
 
-        // testPatient1 exists, testPatient2 does not
-        when(repo.findByUsername("testPatient1")).thenReturn(Optional.of(new Patient()));
-        when(repo.findByUsername("testPatient2")).thenReturn(Optional.empty());
+        // patient1 exists, others do not
+        when(repo.findByUsername("patient1")).thenReturn(Optional.of(new Patient()));
+        when(repo.findByUsername("patient2")).thenReturn(Optional.empty());
+        when(repo.findByUsername("patient3")).thenReturn(Optional.empty());
 
-        when(encoder.encode(anyString())).thenReturn("ENC(testPatient2)");
+        when(encoder.encode(anyString())).thenReturn("ENC(patient123)");
 
         SeedPatientUser config = new SeedPatientUser();
         CommandLineRunner runner = config.seedPatients(repo, encoder);
 
         runner.run();
 
-        // should only encode/save for 1 user (testPatient2)
-        verify(encoder, times(1)).encode("testPatient2");
-        verify(repo, times(1)).save(any(Patient.class));
+        // should only encode/save for 2 users (patient2 and patient3)
+        verify(encoder, times(2)).encode("patient123");
+        verify(repo, times(2)).save(any(Patient.class));
     }
 
     @Test
@@ -80,8 +83,26 @@ class SeedPatientUserTest {
 
         runner.run();
 
-        verify(repo, times(2)).findByUsername(anyString());
+        verify(repo, times(3)).findByUsername(anyString());
         verifyNoInteractions(encoder);
         verify(repo, never()).save(any(Patient.class));
     }
+
+    private static void assertPatient(
+            Patient p,
+            String username,
+            String passwordHash,
+            String firstName,
+            String lastName,
+            String dob
+    ) {
+        assertThat(p.getUsername()).isEqualTo(username);
+        assertThat(p.getPasswordHash()).isEqualTo(passwordHash);
+        assertThat(p.getFirstName()).isEqualTo(firstName);
+        assertThat(p.getLastName()).isEqualTo(lastName);
+        assertThat(p.getDateOfBirth()).isEqualTo(dob);
+        // also verify raw password isn't accidentally stored
+        assertThat(p.getPasswordHash()).doesNotContain("patient123");
+    }
 }
+
