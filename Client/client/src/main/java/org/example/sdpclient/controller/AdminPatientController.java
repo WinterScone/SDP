@@ -43,7 +43,7 @@ public class AdminPatientController {
         this.resetService = resetService;
     }
 
-    @GetMapping("/patients")
+    @GetMapping
     public List<PatientSummaryDto> getAllPatients(HttpServletRequest request) {
         Long adminId = CookieUtils.getAdminIdFromCookie(request);
         boolean isRoot = CookieUtils.isRootAdmin(request);

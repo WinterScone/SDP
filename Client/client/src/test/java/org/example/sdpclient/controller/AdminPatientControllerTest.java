@@ -14,7 +14,9 @@ import java.util.Optional;
 import org.example.sdpclient.configuration.WebMvcConfig;
 import org.example.sdpclient.dto.*;
 import org.example.sdpclient.entity.Patient;
+import org.example.sdpclient.service.AdminListService;
 import org.example.sdpclient.service.AdminManagePatientDetailService;
+import org.example.sdpclient.service.DatabaseResetService;
 import org.example.sdpclient.service.PatientAdminService;
 import org.example.sdpclient.service.PatientDetailService;
 import org.example.sdpclient.service.PatientImageService;
@@ -52,6 +54,12 @@ class AdminPatientControllerTest {
 
     @MockitoBean
     private PatientImageService patientImageService;
+
+    @MockitoBean
+    private AdminListService adminListService;
+
+    @MockitoBean
+    private DatabaseResetService resetService;
 
     // -------------------------
     // GET /api/admin/patients (getAllPatients)
