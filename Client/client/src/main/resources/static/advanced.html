@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Advanced</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+
+<body>
+
+<section class="card">
+    <div class="topbar">
+        <h2>Advanced</h2>
+        <button class="btn" onclick="window.location.href='/dashboard.html'">← Back</button>
+    </div>
+
+    <div class="actions">
+
+        <button onclick="window.location.href='/new-admin.html'">
+            New Admin
+        </button>
+
+        <button onclick="window.location.href='/new-patient-assignment.html'">
+            New Patient Assignment
+        </button>
+
+        <button onclick="window.location.href='/activity-logs.html'">
+            Activity Logs
+        </button>
+
+    </div>
+
+    <div class="danger-zone">
+        <h3 class="section-title">Danger Zone</h3>
+        <p>Reset the database to initial state. This will remove all user-created admins and patients, keeping only seed data.</p>
+        <button class="danger-btn" onclick="resetDatabase()">Reset Database</button>
+        <div id="resetMessage" class="message-box" style="display:none;"></div>
+    </div>
+</section>
+
+<script src="/advanced.js"></script>
+</body>
+</html>

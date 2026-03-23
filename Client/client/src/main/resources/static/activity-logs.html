@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Activity Logs</title>
+    <link rel="stylesheet" href="/css/common.css">
+</head>
+<body>
+<section class="card extra-wide">
+    <div class="topbar">
+        <h2>Activity Logs</h2>
+        <button class="btn" onclick="window.location.href='/advanced.html'">← Back</button>
+    </div>
+
+    <div class="table-wrapper">
+        <table id="logsTable" style="display:none;">
+            <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Activity Type</th>
+                <th>Description</th>
+                <th>Admin</th>
+                <th>Patient</th>
+                <th>Medicine</th>
+            </tr>
+            </thead>
+            <tbody id="logsBody">
+            </tbody>
+        </table>
+    </div>
+
+    <div id="loadingMessage" class="center-message">
+        <p>Loading activity logs...</p>
+    </div>
+
+    <div id="noLogsMessage" class="center-message" style="display:none;">
+        <p>No activity logs found.</p>
+    </div>
+
+    <div id="errorMessage" class="center-message error" style="display:none;">
+        <p>Failed to load activity logs. Please try again.</p>
+    </div>
+</section>
+
+<!-- IMPORTANT: keep this at the bottom so DOM exists -->
+<script src="activity-logs.js"></script>
+</body>
+</html>

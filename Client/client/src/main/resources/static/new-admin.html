@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>New Admin</title>
+    <link rel="stylesheet" href="/css/common.css">
+</head>
+
+<body>
+<section class="card">
+
+    <div class="topbar">
+        <h2>New Admin</h2>
+        <button class="btn" onclick="window.location.href='/advanced.html'">← Back</button>
+    </div>
+
+    <form id="signupForm" class="form-long" novalidate>
+
+        <label for="su-firstname">First Name</label>
+        <input id="su-firstname" type="text" autocomplete="given-name" />
+
+        <label for="su-lastname">Last Name</label>
+        <input id="su-lastname" type="text" autocomplete="family-name" />
+
+        <label for="su-email">Email</label>
+        <input id="su-email" type="email" autocomplete="email" />
+
+        <label for="su-phone">Phone</label>
+        <input id="su-phone" type="tel" autocomplete="tel" />
+
+        <label for="su-username">Username</label>
+        <input id="su-username" type="text" autocomplete="username" />
+
+        <label for="su-password">Password</label>
+        <input id="su-password" type="password" autocomplete="new-password" />
+
+        <div class="row">
+            <button type="submit">Sign Up</button>
+            <div id="su-message" class="msg"></div>
+        </div>
+    </form>
+</section>
+
+<script src="/new-admin.js"></script>
+</body>
+</html>

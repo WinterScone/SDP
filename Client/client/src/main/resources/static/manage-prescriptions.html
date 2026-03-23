@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Manage Prescriptions</title>
+    <link rel="stylesheet" href="/css/common.css">
+</head>
+
+<body>
+<section class="card wide">
+    <div class="topbar">
+        <h2>Manage Prescriptions</h2>
+        <div class="topbar-actions">
+            <div id="message" class="msg"></div>
+            <button class="btn" type="button" onclick="window.location.href='/patients.html'">← Back</button>
+        </div>
+    </div>
+
+    <h3 class="section-title">Patient Details</h3>
+    <div class="table-wrapper">
+        <table>
+            <tbody id="patientInfo"></tbody>
+        </table>
+    </div>
+
+    <h3 class="section-title">Prescriptions</h3>
+
+    <button type="button" id="showFormBtn">+ Add Prescription</button>
+
+    <div class="form-short" id="prescriptionForm" style="display: none;">
+        <label for="newMedicine">Medicine</label>
+        <select id="newMedicine"></select>
+
+        <label for="newDosage">Dosage</label>
+        <input id="newDosage" type="text" placeholder="e.g. 500mg" />
+
+        <label for="newFrequency">Frequency</label>
+        <input id="newFrequency" type="text" placeholder="e.g. 2/day" />
+
+        <label for="newScheduledTimes">Scheduled Times</label>
+        <input id="newScheduledTimes" type="text" placeholder="e.g. 08:00, 20:00" />
+
+        <div class="row">
+            <button type="button" id="addBtn">Add</button>
+            <button type="button" id="cancelBtn">Cancel</button>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+            <tr>
+                <th>Medicine Code</th>
+                <th class="wrap">Medicine</th>
+                <th>Dosage</th>
+                <th>Frequency</th>
+                <th>Scheduled Times</th>
+                <th>Updated</th>
+                <th>Delete</th>
+            </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+        </table>
+    </div>
+</section>
+
+<script src="/manage-prescriptions.js"></script>
+</body>
+</html>

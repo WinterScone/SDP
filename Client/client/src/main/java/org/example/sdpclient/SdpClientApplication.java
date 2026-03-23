@@ -1,0 +1,13 @@
+package org.example.sdpclient;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
+@SpringBootApplication
+@EnableScheduling
+public class SdpClientApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(SdpClientApplication.class, args);
+    }
+}
