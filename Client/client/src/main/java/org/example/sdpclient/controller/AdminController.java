@@ -1,9 +1,7 @@
 package org.example.sdpclient.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.example.sdpclient.dto.ActivityLogDto;
 import org.example.sdpclient.dto.AdminDto;
-import org.example.sdpclient.service.ActivityLogService;
 import org.example.sdpclient.service.AdminListService;
 import org.example.sdpclient.service.DatabaseResetService;
 import org.example.sdpclient.service.SmsService;
@@ -22,16 +20,13 @@ public class AdminController {
 
     private final AdminListService adminListService;
     private final DatabaseResetService resetService;
-    private final ActivityLogService activityLogService;
     private final SmsService smsService;
 
     public AdminController(AdminListService adminListService,
                            DatabaseResetService resetService,
-                           ActivityLogService activityLogService,
                            SmsService smsService) {
         this.adminListService = adminListService;
         this.resetService = resetService;
-        this.activityLogService = activityLogService;
         this.smsService = smsService;
     }
 
@@ -67,16 +62,6 @@ public class AdminController {
                             "message", "Failed to reset database: " + e.getMessage()
                     ));
         }
-    }
-
-    @GetMapping("/activity-logs")
-    public ResponseEntity<List<ActivityLogDto>> getAllActivityLogs(HttpServletRequest request) {
-        if (!CookieUtils.isRootAdmin(request)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only root admin can access activity logs");
-        }
-
-        List<ActivityLogDto> logs = activityLogService.getAllLogs();
-        return ResponseEntity.ok(logs);
     }
 
     @PostMapping("/sms/test")

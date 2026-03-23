@@ -32,14 +32,22 @@ public class PatientDetailController {
 
         return service.getAllPatientsForAdmin(adminId, isRoot)
                 .stream()
-                .map(p -> new PatientSummaryDto(
-                        p.getId(),
-                        p.getFirstName(),
-                        p.getLastName(),
-                        String.valueOf(p.getDateOfBirth()),
-                        p.getEmail(),
-                        p.getPhone()
-                ))
+                .map(p -> {
+                    String linkedAdminName = p.getLinkedAdmin() != null
+                            ? p.getLinkedAdmin().getFirstName() + " " + p.getLinkedAdmin().getLastName()
+                            : null;
+                    return new PatientSummaryDto(
+                            p.getId(),
+                            p.getFirstName(),
+                            p.getLastName(),
+                            p.getDateOfBirth(),
+                            p.getEmail(),
+                            p.getPhone(),
+                            p.isSmsConsent(),
+                            p.isFaceActive(),
+                            linkedAdminName
+                    );
+                })
                 .toList();
     }
 
@@ -64,8 +72,10 @@ public class PatientDetailController {
         response.put("dateOfBirth", String.valueOf(p.getDateOfBirth()));
         response.put("email", p.getEmail());
         response.put("phone", p.getPhone());
-        response.put("linkedAdminId", p.getLinkedAdminId());
-        response.put("linkedAdminName", p.getLinkedAdminName());
+        response.put("linkedAdminId", p.getLinkedAdmin() != null ? p.getLinkedAdmin().getId() : null);
+        response.put("linkedAdminName", p.getLinkedAdmin() != null
+                ? p.getLinkedAdmin().getFirstName() + " " + p.getLinkedAdmin().getLastName()
+                : null);
 
         return ResponseEntity.ok(response);
     }
@@ -81,7 +91,7 @@ public class PatientDetailController {
         }
 
         var items = service.getPrescriptionItems(patientId);
-        return ResponseEntity.ok(new PatientPrescriptionsResponse(items));
+        return ResponseEntity.ok(new PatientPrescriptionsResponse(patientId, items));
     }
 
     private Long getAdminIdFromCookie(HttpServletRequest request) {

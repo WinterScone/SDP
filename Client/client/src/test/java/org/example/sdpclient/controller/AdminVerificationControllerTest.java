@@ -1,6 +1,6 @@
 package org.example.sdpclient.controller;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -144,7 +144,7 @@ class AdminVerificationControllerTest {
                 .andExpect(jsonPath("$.message").value("Unauthorized"));
 
         verifyNoInteractions(adminRepo);
-        verify(service, never()).register(any());
+        verify(service, never()).register(any(), anyLong(), anyString());
     }
 
     @Test
@@ -164,17 +164,18 @@ class AdminVerificationControllerTest {
                 .andExpect(jsonPath("$.message").value("Only root admin can register new admins"));
 
         verify(adminRepo).findByUsername("admin1");
-        verify(service, never()).register(any());
+        verify(service, never()).register(any(), anyLong(), anyString());
     }
 
     @Test
     void register_shouldReturn400_whenServiceOkFalse() throws Exception {
         Admin caller = new Admin();
+        caller.setId(1L);
         caller.setUsername("root");
         caller.setRoot(true);
 
         when(adminRepo.findByUsername("root")).thenReturn(Optional.of(caller));
-        when(service.register(any())).thenReturn(Map.of("ok", false, "message", "bad"));
+        when(service.register(any(), anyLong(), anyString())).thenReturn(Map.of("ok", false, "message", "bad"));
 
         mockMvc.perform(post("/api/verify/register")
                         .cookie(new Cookie("adminUsername", "root"))
@@ -184,17 +185,18 @@ class AdminVerificationControllerTest {
                 .andExpect(jsonPath("$.ok").value(false));
 
         verify(adminRepo).findByUsername("root");
-        verify(service).register(any());
+        verify(service).register(any(), anyLong(), anyString());
     }
 
     @Test
     void register_shouldReturn200_whenServiceOkTrue() throws Exception {
         Admin caller = new Admin();
+        caller.setId(1L);
         caller.setUsername("root");
         caller.setRoot(true);
 
         when(adminRepo.findByUsername("root")).thenReturn(Optional.of(caller));
-        when(service.register(any())).thenReturn(Map.of("ok", true, "username", "new"));
+        when(service.register(any(), anyLong(), anyString())).thenReturn(Map.of("ok", true, "username", "new"));
 
         mockMvc.perform(post("/api/verify/register")
                         .cookie(new Cookie("adminUsername", "root"))
@@ -205,6 +207,6 @@ class AdminVerificationControllerTest {
                 .andExpect(jsonPath("$.username").value("new"));
 
         verify(adminRepo).findByUsername("root");
-        verify(service).register(any());
+        verify(service).register(any(), anyLong(), anyString());
     }
 }

@@ -15,6 +15,4 @@ public interface AdminRepository extends JpaRepository<Admin, Long> {
 
     @Query("SELECT a FROM Admin a WHERE LOWER(a.username) = LOWER(:username)")
     Optional<Admin> findByUsernameIgnoreCase(@Param("username") String username);
-
-    List<Admin> findByRootTrue();
 }

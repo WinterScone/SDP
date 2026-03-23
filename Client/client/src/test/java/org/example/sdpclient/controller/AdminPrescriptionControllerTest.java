@@ -73,7 +73,7 @@ class AdminPrescriptionControllerTest {
     @Test
     void addPrescription_shouldReturn201_whenCreated() throws Exception {
         String body = """
-                {"medicineId":"VTM01","dosage":"10mg","frequency":"daily","scheduledTimes":["08:00","20:00"]}
+                {"medicineId":"VTM01","dosage":"10","frequency":"daily","scheduledTimes":["08:00","20:00"]}
                 """;
 
         Patient patient = new Patient();
@@ -82,6 +82,7 @@ class AdminPrescriptionControllerTest {
         Medicine med = new Medicine();
         med.setMedicineId(MedicineType.VTM01);
         med.setMedicineName("TestMed");
+        med.setDosagePerForm(10);
 
         when(service.canAdminAccessPatient(anyLong(), anyLong(), anyBoolean())).thenReturn(true);
         when(service.findPatient(10L)).thenReturn(Optional.of(patient));
@@ -92,7 +93,8 @@ class AdminPrescriptionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
                         .cookie(new jakarta.servlet.http.Cookie("adminId", "1"))
-                        .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true")))
+                        .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true"))
+                        .cookie(new jakarta.servlet.http.Cookie("adminUsername", "admin1")))
                 .andExpect(status().isCreated());
 
         verify(service).createPrescription(eq(patient), eq(med), any(PrescriptionCreateDto.class), any(), any());
@@ -101,15 +103,20 @@ class AdminPrescriptionControllerTest {
     @Test
     void updatePrescription_shouldReturn200_whenUpdated() throws Exception {
         String body = """
-                {"dosage":"10mg","frequency":"daily"}
+                {"dosage":"10","frequency":"daily"}
                 """;
 
         Patient patient = new Patient();
         patient.setId(10L);
 
+        Medicine med = new Medicine();
+        med.setMedicineId(MedicineType.VTM01);
+        med.setDosagePerForm(10);
+
         Prescription rx = new Prescription();
         rx.setId(5L);
         rx.setPatient(patient);
+        rx.setMedicine(med);
 
         when(service.findPrescription(5L)).thenReturn(Optional.of(rx));
         when(service.canAdminAccessPatient(anyLong(), anyLong(), anyBoolean())).thenReturn(true);

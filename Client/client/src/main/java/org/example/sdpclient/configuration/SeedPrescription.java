@@ -32,7 +32,7 @@ public class SeedPrescription {
                 p.setPatient(patient);
                 p.setMedicine(medOptional.get());
                 p.setDosage((String) df[0]);
-                p.setFrequency((FrequencyType) df[1]);
+                p.setFrequency(((FrequencyType) df[1]).name());
                 prescriptionRepo.save(p);
             };
 

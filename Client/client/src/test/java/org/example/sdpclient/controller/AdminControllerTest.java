@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.example.sdpclient.configuration.WebMvcConfig;
 import org.example.sdpclient.dto.AdminDto;
-import org.example.sdpclient.service.ActivityLogService;
 import org.example.sdpclient.service.AdminListService;
 import org.example.sdpclient.service.DatabaseResetService;
 import org.example.sdpclient.service.SmsService;
@@ -40,9 +39,6 @@ class AdminControllerTest {
 
     @MockitoBean
     private DatabaseResetService databaseResetService;
-
-    @MockitoBean
-    private ActivityLogService activityLogService;
 
     @MockitoBean
     private SmsService smsService;

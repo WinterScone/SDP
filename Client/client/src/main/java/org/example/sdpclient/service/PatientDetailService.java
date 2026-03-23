@@ -40,6 +40,10 @@ public class PatientDetailService {
         }
     }
 
+    public java.util.Optional<Patient> getPatientById(Long patientId) {
+        return patientRepo.findById(patientId);
+    }
+
     public boolean patientExists(Long patientId) {
         return patientRepo.existsById(patientId);
     }

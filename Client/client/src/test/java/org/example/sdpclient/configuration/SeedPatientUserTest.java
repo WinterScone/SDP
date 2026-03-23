@@ -17,7 +17,7 @@ import static org.mockito.Mockito.*;
 class SeedPatientUserTest {
 
     @Test
-    void seedPatients_insertsTwo_whenNoneExist() throws Exception {
+    void seedPatients_insertsThree_whenNoneExist() throws Exception {
         PatientRepository repo = mock(PatientRepository.class);
 
         // real encoder
@@ -31,26 +31,37 @@ class SeedPatientUserTest {
         runner.run(new String[0]);
 
         ArgumentCaptor<Patient> captor = ArgumentCaptor.forClass(Patient.class);
-        verify(repo, times(2)).save(captor.capture());
+        verify(repo, times(3)).save(captor.capture());
 
         var saved = captor.getAllValues();
-        assertThat(saved).hasSize(2);
+        assertThat(saved).hasSize(3);
 
-        // check fields + password behavior
-        assertThat(saved.get(0).getUsername()).isEqualTo("testPatient1");
-        assertThat(saved.get(0).getFirstName()).isEqualTo("Test");
+        // first seed: patient1
+        assertThat(saved.get(0).getUsername()).isEqualTo("patient1");
+        assertThat(saved.get(0).getFirstName()).isEqualTo("Testing");
         assertThat(saved.get(0).getLastName()).isEqualTo("Patient One");
         assertThat(saved.get(0).getDateOfBirth()).isEqualTo(LocalDate.of(1990, 1, 1));
 
-        String hash1 = saved.get(0).getPasswordHash();
+        String hash0 = saved.get(0).getPasswordHash();
+        assertThat(hash0).isNotBlank();
+        assertThat(encoder.matches("patient1", hash0)).isTrue();
+
+        // second seed: testPatient1
+        assertThat(saved.get(1).getUsername()).isEqualTo("testPatient1");
+        assertThat(saved.get(1).getFirstName()).isEqualTo("Test");
+        assertThat(saved.get(1).getLastName()).isEqualTo("Patient One");
+        assertThat(saved.get(1).getDateOfBirth()).isEqualTo(LocalDate.of(1990, 1, 1));
+
+        String hash1 = saved.get(1).getPasswordHash();
         assertThat(hash1).isNotBlank();
         assertThat(hash1).doesNotContain("testPatient1");
         assertThat(encoder.matches("testPatient1", hash1)).isTrue();
 
-        assertThat(saved.get(1).getUsername()).isEqualTo("testPatient2");
-        assertThat(saved.get(1).getFirstName()).isEqualTo("Test");
-        assertThat(saved.get(1).getLastName()).isEqualTo("Patient Two");
-        assertThat(saved.get(1).getDateOfBirth()).isEqualTo(LocalDate.of(1990, 1, 2));
+        // third seed: testPatient2
+        assertThat(saved.get(2).getUsername()).isEqualTo("testPatient2");
+        assertThat(saved.get(2).getFirstName()).isEqualTo("Test");
+        assertThat(saved.get(2).getLastName()).isEqualTo("Patient Two");
+        assertThat(saved.get(2).getDateOfBirth()).isEqualTo(LocalDate.of(1990, 1, 2));
     }
 
     @Test
@@ -58,7 +69,8 @@ class SeedPatientUserTest {
         PatientRepository repo = mock(PatientRepository.class);
         PasswordEncoder encoder = mock(PasswordEncoder.class);
 
-        // testPatient1 exists, testPatient2 does not
+        // patient1 and testPatient1 exist, testPatient2 does not
+        when(repo.findByUsername("patient1")).thenReturn(Optional.of(new Patient()));
         when(repo.findByUsername("testPatient1")).thenReturn(Optional.of(new Patient()));
         when(repo.findByUsername("testPatient2")).thenReturn(Optional.empty());
 
@@ -86,7 +98,7 @@ class SeedPatientUserTest {
 
         runner.run();
 
-        verify(repo, times(2)).findByUsername(anyString());
+        verify(repo, times(3)).findByUsername(anyString());
         verifyNoInteractions(encoder);
         verify(repo, never()).save(any(Patient.class));
     }
