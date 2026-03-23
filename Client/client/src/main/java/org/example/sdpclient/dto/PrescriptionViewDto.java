@@ -1,7 +1,6 @@
 package org.example.sdpclient.dto;
 
 
-import org.example.sdpclient.enums.FrequencyType;
 import org.example.sdpclient.enums.MedicineType;
 
 import java.util.List;

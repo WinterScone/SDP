@@ -1,8 +1,11 @@
 package org.example.sdpclient.controller;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.example.sdpclient.dto.*;
+import org.example.sdpclient.service.AdminListService;
 import org.example.sdpclient.service.AdminManagePatientDetailService;
+import org.example.sdpclient.service.DatabaseResetService;
 import org.example.sdpclient.service.PatientAdminService;
 import org.example.sdpclient.service.PatientDetailService;
 import org.example.sdpclient.service.PatientImageService;
@@ -23,18 +26,24 @@ public class AdminPatientController {
     private final PatientDetailService patientDetailService;
     private final AdminManagePatientDetailService adminManageService;
     private final PatientImageService patientImageService;
+    private final AdminListService adminListService;
+    private final DatabaseResetService resetService;
 
     public AdminPatientController(PatientAdminService patientAdminService,
                                   PatientDetailService patientDetailService,
                                   AdminManagePatientDetailService adminManageService,
-                                  PatientImageService patientImageService) {
+                                  PatientImageService patientImageService,
+                                  AdminListService adminListService,
+                                  DatabaseResetService resetService) {
         this.patientAdminService = patientAdminService;
         this.patientDetailService = patientDetailService;
         this.adminManageService = adminManageService;
         this.patientImageService = patientImageService;
+        this.adminListService = adminListService;
+        this.resetService = resetService;
     }
 
-    @GetMapping
+    @GetMapping("/patients")
     public List<PatientSummaryDto> getAllPatients(HttpServletRequest request) {
         Long adminId = CookieUtils.getAdminIdFromCookie(request);
         boolean isRoot = CookieUtils.isRootAdmin(request);
@@ -54,6 +63,12 @@ public class AdminPatientController {
                 ))
                 .toList();
     }
+
+    @GetMapping("/admins")
+    public ResponseEntity<List<AdminDto>> getAllAdmins() {
+        return ResponseEntity.ok(adminListService.getAllAdmins());
+    }
+
 
     @GetMapping("/assignments")
     public ResponseEntity<List<PatientRow>> getPatientAssignments(HttpServletRequest request) {
@@ -127,5 +142,61 @@ public class AdminPatientController {
 
         patientAdminService.linkAdminToPatient(patientId, adminId, assignerAdminId, assignerAdminUsername);
         return ResponseEntity.ok(Map.of("ok", true));
+    }
+
+    @PostMapping("/reset-database")
+    public ResponseEntity<?> resetDatabase(HttpServletRequest request) {
+        // Only root admin can reset database
+        if (!isRootAdmin(request)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only root admin can reset the database");
+        }
+
+        try {
+            var stats = resetService.getResetStats();
+            Long adminId = getAdminIdFromCookie(request);
+            String adminUsername = getCookieValue(request, "adminUsername");
+
+            resetService.resetToSeedData(adminId, adminUsername);
+
+            return ResponseEntity.ok(Map.of(
+                    "ok", true,
+                    "message", String.format("Deleted %d admins, %d patients, %d prescriptions. Seed data preserved.",
+                            stats.adminsToDelete(),
+                            stats.patientsToDelete(),
+                            stats.prescriptionsToDelete())
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                            "ok", false,
+                            "message", "Failed to reset database: " + e.getMessage()
+                    ));
+        }
+    }
+
+    private boolean isRootAdmin(HttpServletRequest request) {
+        String rootStr = getCookieValue(request, "adminRoot");
+        return "true".equalsIgnoreCase(rootStr);
+    }
+
+    private Long getAdminIdFromCookie(HttpServletRequest request) {
+        String idStr = getCookieValue(request, "adminId");
+        if (idStr == null || idStr.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
+        try {
+            return Long.parseLong(idStr);
+        } catch (NumberFormatException e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid admin ID");
+        }
+    }
+
+    private String getCookieValue(HttpServletRequest request, String name) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) return null;
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals(name)) return cookie.getValue();
+        }
+        return null;
     }
 }

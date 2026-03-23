@@ -177,6 +177,27 @@ public class AdminManagePatientDetailService {
         prescriptionRepository.save(rx);
     }
 
+    public void deletePrescription(Long id, Long adminId, String adminUsername) {
+        Optional<Prescription> rxOpt = prescriptionRepository.findById(id);
+        if (rxOpt.isPresent()) {
+            Prescription rx = rxOpt.get();
+            Patient patient = rx.getPatient();
+            String patientName = patient.getFirstName() + " " + patient.getLastName();
+
+            activityLogService.logPrescriptionDeleted(
+                    patient.getId(),
+                    patientName,
+                    rx.getMedicine().getMedicineName(),
+                    rx.getDosage(),
+                    rx.getFrequency().name().replace("_", " ").toLowerCase(),
+                    adminId,
+                    adminUsername
+            );
+        }
+
+        prescriptionRepository.deleteById(id);
+    }
+
     private void applyScheduledTimes(Prescription rx, List<String> scheduledTimes) {
         rx.getReminderTimes().clear();
 
@@ -198,30 +219,6 @@ public class AdminManagePatientDetailService {
     public boolean prescriptionIdExists(Long id) {
         return prescriptionRepository.existsById(id);
     }
-
-    public void deletePrescription(Long id, Long adminId, String adminUsername) {
-        // Get prescription details before deleting for logging
-        Optional<Prescription> rxOpt = prescriptionRepository.findById(id);
-        if (rxOpt.isPresent()) {
-            Prescription rx = rxOpt.get();
-            Patient patient = rx.getPatient();
-            String patientName = patient.getFirstName() + " " + patient.getLastName();
-
-            // Log the activity before deletion
-            activityLogService.logPrescriptionDeleted(
-                    patient.getId(),
-                    patientName,
-                    rx.getMedicine().getMedicineName(),
-                    rx.getDosage(),
-                    rx.getFrequency().name().replace("_", " ").toLowerCase(),
-                    adminId,
-                    adminUsername
-            );
-        }
-
-        prescriptionRepository.deleteById(id);
-    }
-
 
     public List<MedicineViewDto> listMedicines() {
         return medicineRepository.findAll().stream()
