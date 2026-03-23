@@ -1,12 +1,14 @@
 package org.example.sdpclient.controller;
 
 import org.example.sdpclient.service.SmsService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/test")
+@ConditionalOnProperty(name = "twilio.enabled", havingValue = "true")
 public class SmsTestController {
 
     private final SmsService smsService;

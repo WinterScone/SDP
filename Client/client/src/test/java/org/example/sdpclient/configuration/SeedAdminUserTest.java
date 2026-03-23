@@ -25,30 +25,32 @@ class SeedAdminUserTest {
 
     @Test
     void seedAdmin_createsAdminWhenNotExists() {
-        var admin1 = adminRepository.findByUsername("admin1");
+        var root = adminRepository.findByUsername("root");
+        assertTrue(root.isPresent());
+        assertEquals("Root", root.get().getFirstName());
+        assertEquals("Admin", root.get().getLastName());
+        assertTrue(root.get().isRoot());
+
+        var admin1 = adminRepository.findByUsername("testAdmin1");
         assertTrue(admin1.isPresent());
-        assertEquals("Admin", admin1.get().getFirstName());
-        assertEquals("One", admin1.get().getLastName());
+        assertEquals("Test", admin1.get().getFirstName());
+        assertEquals("Admin One", admin1.get().getLastName());
 
-        var admin2 = adminRepository.findByUsername("admin2");
+        var admin2 = adminRepository.findByUsername("testAdmin2");
         assertTrue(admin2.isPresent());
-        assertEquals("Admin", admin2.get().getFirstName());
-        assertEquals("Two", admin2.get().getLastName());
-
-        var admin3 = adminRepository.findByUsername("admin3");
-        assertTrue(admin3.isPresent());
-        assertEquals("Admin", admin3.get().getFirstName());
-        assertEquals("Three", admin3.get().getLastName());
+        assertEquals("Test", admin2.get().getFirstName());
+        assertEquals("Admin Two", admin2.get().getLastName());
     }
 
     @Test
     void seedAdmin_passwordIsEncoded() {
-        var usernames = java.util.List.of("admin1", "admin2", "admin3");
+        var usernames = java.util.List.of("root", "testAdmin1", "testAdmin2");
+        var passwords = java.util.List.of("root", "testAdmin1", "testAdmin2");
 
-        for (String username : usernames) {
-            var admin = adminRepository.findByUsername(username).orElseThrow();
-            assertNotEquals("admin123", admin.getPasswordHash());
-            assertTrue(passwordEncoder.matches("admin123", admin.getPasswordHash()));
+        for (int i = 0; i < usernames.size(); i++) {
+            var admin = adminRepository.findByUsername(usernames.get(i)).orElseThrow();
+            assertNotEquals(passwords.get(i), admin.getPasswordHash());
+            assertTrue(passwordEncoder.matches(passwords.get(i), admin.getPasswordHash()));
         }
     }
 

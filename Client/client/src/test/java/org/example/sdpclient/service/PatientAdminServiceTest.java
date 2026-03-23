@@ -32,6 +32,9 @@ class PatientAdminServiceTest {
     @Mock
     private AdminRepository adminRepo;
 
+    @Mock
+    private ActivityLogService activityLogService;
+
     @InjectMocks
     private PatientAdminService service;
 
@@ -41,10 +44,10 @@ class PatientAdminServiceTest {
         p.setId(1L);
         p.setFirstName("Jane");
         p.setLastName("Doe");
-        p.setDateOfBirth(LocalDate.of(2000, 1, 2).toString());
+        p.setDateOfBirth(LocalDate.of(2000, 1, 2));
         p.setEmail("jane@example.com");
         p.setPhone("123");
-        p.setCreatedAt(LocalDateTime.of(2024, 1, 1, 10, 0).toString());
+        p.setCreatedAt(LocalDateTime.of(2024, 1, 1, 10, 0));
         p.setLinkedAdminId(9L);
         p.setLinkedAdminName("admin9");
 
@@ -79,7 +82,7 @@ class PatientAdminServiceTest {
         when(patientRepo.findById(10L)).thenReturn(Optional.of(patient));
         when(adminRepo.findById(7L)).thenReturn(Optional.of(admin));
 
-        service.linkAdminToPatient(10L, 7L);
+        service.linkAdminToPatient(10L, 7L, 1L, "assigner");
 
         assertEquals(7L, patient.getLinkedAdminId());
         assertEquals("rootAdmin", patient.getLinkedAdminName());
@@ -98,7 +101,7 @@ class PatientAdminServiceTest {
 
         ResponseStatusException ex = assertThrows(
                 ResponseStatusException.class,
-                () -> service.linkAdminToPatient(10L, 7L)
+                () -> service.linkAdminToPatient(10L, 7L, 1L, "assigner")
         );
 
         assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
@@ -119,7 +122,7 @@ class PatientAdminServiceTest {
 
         ResponseStatusException ex = assertThrows(
                 ResponseStatusException.class,
-                () -> service.linkAdminToPatient(10L, 7L)
+                () -> service.linkAdminToPatient(10L, 7L, 1L, "assigner")
         );
 
         assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());

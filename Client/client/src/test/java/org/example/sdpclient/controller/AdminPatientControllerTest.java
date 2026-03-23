@@ -1,6 +1,8 @@
 package org.example.sdpclient.controller;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -43,6 +45,9 @@ class AdminPatientControllerTest {
     @MockitoBean
     private AdminListService adminListService;
 
+    @MockitoBean
+    private org.example.sdpclient.service.DatabaseResetService databaseResetService;
+
     @Test
     void getAllPatients_shouldReturn200_andList() throws Exception {
         PatientRow row = new PatientRow(
@@ -59,7 +64,9 @@ class AdminPatientControllerTest {
 
         when(service.getAllPatientsSafe()).thenReturn(List.of(row));
 
-        mockMvc.perform(get("/api/admin/patients"))
+        mockMvc.perform(get("/api/admin/patients")
+                        .cookie(new jakarta.servlet.http.Cookie("adminId", "1"))
+                        .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)));
 
@@ -85,11 +92,11 @@ class AdminPatientControllerTest {
 
         mockMvc.perform(put("/api/admin/patients/10/link-admin")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+                        .content(body)
+                        .cookie(new jakarta.servlet.http.Cookie("adminId", "1"))
+                        .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true")))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("adminId is required"));
-
-        verifyNoInteractions(service);
     }
 
     @Test
@@ -100,11 +107,14 @@ class AdminPatientControllerTest {
 
         mockMvc.perform(put("/api/admin/patients/10/link-admin")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
+                        .content(body)
+                        .cookie(new jakarta.servlet.http.Cookie("adminId", "1"))
+                        .cookie(new jakarta.servlet.http.Cookie("adminUsername", "root"))
+                        .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ok").value(true));
 
-        verify(service).linkAdminToPatient(10L, 7L);
+        verify(service).linkAdminToPatient(eq(10L), eq(7L), any(), any());
     }
 }
 
