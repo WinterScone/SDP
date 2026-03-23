@@ -3,9 +3,10 @@ package org.example.sdpclient.controller;
 import org.example.sdpclient.service.SmsService;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/sms")
+@RequestMapping("/api/test")
 public class SmsTestController {
 
     private final SmsService smsService;
@@ -14,21 +15,25 @@ public class SmsTestController {
         this.smsService = smsService;
     }
 
-    @PostMapping("/test")
-    public String sendTestSms(@RequestParam String phone) {
-        String cleanPhone = phone.trim();
+    @PostMapping("/sms")
+    public Map<String, String> sendTestSmsPost(@RequestParam String to) {
+        return send(to);
+    }
 
-        if (!cleanPhone.startsWith("+")) {
-            cleanPhone = "+" + cleanPhone;
+    @GetMapping("/sms")
+    public Map<String, String> sendTestSmsGet(@RequestParam String to) {
+        return send(to);
+    }
+
+    private Map<String, String> send(String to) {
+        try {
+            String sid = smsService.sendSms(
+                    to,
+                    "Test SMS from SDP integration."
+            );
+            return Map.of("status", "success", "sid", sid);
+        } catch (Exception e) {
+            return Map.of("status", "error", "message", e.getMessage());
         }
-
-        System.out.println("Normalized phone: " + cleanPhone);
-
-        String sid = smsService.sendMedicationReminder(
-                cleanPhone,
-                "Medication reminder: it's time to take your scheduled dose."
-        );
-
-        return "SMS sent successfully. SID: " + sid;
     }
 }

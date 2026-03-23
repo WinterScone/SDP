@@ -1,7 +1,9 @@
 package org.example.sdpclient.configuration;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import com.twilio.Twilio;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -17,12 +19,9 @@ public class TwilioConfig {
     @Value("${twilio.phone-number}")
     private String phoneNumber;
 
-    public String getAccountSid() {
-        return accountSid;
-    }
-
-    public String getAuthToken() {
-        return authToken;
+    @PostConstruct
+    public void init() {
+        Twilio.init(accountSid, authToken);
     }
 
     public String getPhoneNumber() {

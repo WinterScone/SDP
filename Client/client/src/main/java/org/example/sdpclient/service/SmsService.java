@@ -1,25 +1,26 @@
 package org.example.sdpclient.service;
 
-
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
-import org.springframework.beans.factory.annotation.Value;
+import org.example.sdpclient.configuration.TwilioConfig;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 @Service
+@ConditionalOnProperty(name = "twilio.enabled", havingValue = "true")
 public class SmsService {
 
-    @Value("${twilio.phone-number}")
-    private String twilioPhoneNumber;
+    private final TwilioConfig twilioConfig;
 
-    public String sendMedicationReminder(String toPhoneNumber, String messageBody) {
-        System.out.println("Sending FROM: " + twilioPhoneNumber);
-        System.out.println("Sending TO: " + toPhoneNumber);
+    public SmsService(TwilioConfig twilioConfig) {
+        this.twilioConfig = twilioConfig;
+    }
 
+    public String sendSms(String to, String body) {
         Message message = Message.creator(
-                new PhoneNumber(toPhoneNumber),
-                new PhoneNumber(twilioPhoneNumber),
-                messageBody
+                new PhoneNumber(to),
+                new PhoneNumber(twilioConfig.getPhoneNumber()),
+                body
         ).create();
 
         return message.getSid();

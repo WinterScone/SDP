@@ -2,11 +2,9 @@ package org.example.sdpclient.controller;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.example.sdpclient.dto.ReduceMedicineRequest;
 import org.example.sdpclient.entity.Medicine;
 import org.example.sdpclient.enums.MedicineType;
-import org.example.sdpclient.repository.MedicineRepository;
 import org.example.sdpclient.service.MedicineService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,28 +28,25 @@ public class MedicineController {
     }
 
     @PatchMapping("/{id}/quantity")
-    public ResponseEntity<?> updateQuantity(@PathVariable MedicineType id, @RequestBody Map<String, Integer> body,
-                                           HttpServletRequest request) {
-
+    public ResponseEntity<?> updateQuantity(
+            @PathVariable MedicineType id,
+            @RequestBody Map<String, Integer> body,
+            HttpServletRequest request
+    ) {
         Integer quantity = body.get("quantity");
+
         if (quantity == null || quantity < 0) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of(
-                            "ok",
-                            false,
-                            "message",
-                            "Quantity must be >= 0")
-                    );
+            return ResponseEntity.badRequest().body(Map.of(
+                    "ok", false,
+                    "message", "Quantity must be >= 0"
+            ));
         }
 
         if (!service.exists(id)) {
-            return ResponseEntity.status(400)
-                    .body(Map.of(
-                            "ok",
-                            false,
-                            "message",
-                            "Not found")
-                    );
+            return ResponseEntity.status(400).body(Map.of(
+                    "ok", false,
+                    "message", "Not found"
+            ));
         }
 
         Long adminId = getAdminIdFromCookie(request);
@@ -61,9 +56,44 @@ public class MedicineController {
         return ResponseEntity.ok(Map.of("ok", true));
     }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> updateMedicine(
+            @PathVariable MedicineType id,
+            @RequestBody Map<String, Object> body,
+            HttpServletRequest request
+    ) {
+        Number quantityNumber = body.get("quantity") instanceof Number
+                ? (Number) body.get("quantity")
+                : null;
+
+        Integer quantity = quantityNumber == null ? null : quantityNumber.intValue();
+        String instruction = body.get("instruction") == null
+                ? ""
+                : body.get("instruction").toString().trim();
+
+        if (quantity == null || quantity < 0) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "ok", false,
+                    "message", "Quantity must be >= 0"
+            ));
+        }
+
+        if (!service.exists(id)) {
+            return ResponseEntity.status(400).body(Map.of(
+                    "ok", false,
+                    "message", "Not found"
+            ));
+        }
+
+        Long adminId = getAdminIdFromCookie(request);
+        String adminUsername = getCookieValue(request, "adminUsername");
+
+        service.updateMedicine(id, quantity, instruction, adminId, adminUsername);
+        return ResponseEntity.ok(Map.of("ok", true));
+    }
+
     @PostMapping("/reduce")
     public ResponseEntity<?> reduceMedicine(@RequestBody ReduceMedicineRequest request) {
-
         if (request.getMedicineName() == null || request.getQuantity() == null) {
             return ResponseEntity.badRequest()
                     .body(Map.of("ok", false, "message", "Medicine name and quantity required"));
@@ -86,6 +116,7 @@ public class MedicineController {
         if (idStr == null || idStr.isBlank()) {
             return null;
         }
+
         try {
             return Long.parseLong(idStr);
         } catch (NumberFormatException e) {
@@ -96,12 +127,13 @@ public class MedicineController {
     private String getCookieValue(HttpServletRequest request, String name) {
         Cookie[] cookies = request.getCookies();
         if (cookies == null) return null;
+
         for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(name)) return cookie.getValue();
+            if (cookie.getName().equals(name)) {
+                return cookie.getValue();
+            }
         }
+
         return null;
     }
 }
-
-
-
