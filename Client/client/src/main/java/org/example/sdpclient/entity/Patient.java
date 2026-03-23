@@ -70,7 +70,7 @@ public class Patient {
     @Column(name = "face_active", columnDefinition = "boolean default false")
     private boolean faceActive = false;
 
-    @Column(name = "face_recognition_consent", nullable = false)
+    @Column(name = "face_recognition_consent", columnDefinition = "boolean default false")
     private boolean faceRecognitionConsent = false;
 
     @Column(name = "sms_consent", columnDefinition = "boolean default false")

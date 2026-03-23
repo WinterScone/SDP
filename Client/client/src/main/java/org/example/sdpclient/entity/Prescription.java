@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.example.sdpclient.enums.FrequencyType;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +32,9 @@ public class Prescription {
     @Column(nullable = false)
     private String dosage;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String frequency;
+    private FrequencyType frequency;
 
     @Column(columnDefinition = "boolean default true")
     private boolean active = true;

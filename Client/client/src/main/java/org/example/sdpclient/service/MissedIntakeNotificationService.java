@@ -41,7 +41,7 @@ public class MissedIntakeNotificationService {
         LocalDate today = LocalDate.now();
 
         for (Prescription p : activePrescriptions) {
-            FrequencyType freq = FrequencyType.fromDisplayString(p.getFrequency());
+            FrequencyType freq = p.getFrequency();
             if (freq == null) continue;
 
             if (!freq.getDefaultHours().contains(reminderHour)) continue;

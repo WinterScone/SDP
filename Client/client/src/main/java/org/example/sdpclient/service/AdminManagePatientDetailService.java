@@ -4,24 +4,18 @@ import org.example.sdpclient.dto.*;
 import org.example.sdpclient.entity.Medicine;
 import org.example.sdpclient.entity.Patient;
 import org.example.sdpclient.entity.Prescription;
-<<<<<<< HEAD
-import org.example.sdpclient.enums.FrequencyType;
-=======
 import org.example.sdpclient.entity.PrescriptionReminderTime;
->>>>>>> aeb2c603f101fa0b47dbd81c05d1cf90ea98636d
+import org.example.sdpclient.enums.FrequencyType;
 import org.example.sdpclient.enums.MedicineType;
 import org.example.sdpclient.repository.MedicineRepository;
 import org.example.sdpclient.repository.PatientRepository;
 import org.example.sdpclient.repository.PrescriptionRepository;
 import org.springframework.stereotype.Service;
 
-<<<<<<< HEAD
-import java.util.LinkedHashSet;
-=======
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
->>>>>>> aeb2c603f101fa0b47dbd81c05d1cf90ea98636d
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.SequencedSet;
@@ -99,7 +93,7 @@ public class AdminManagePatientDetailService {
                         rx.getMedicine().getMedicineId(),
                         rx.getMedicine().getMedicineName(),
                         rx.getDosage(),
-                        rx.getFrequency(),
+                        rx.getFrequency().name(),
                         rx.getReminderTimes().stream()
                                 .map(rt -> rt.getReminderTime().toString())
                                 .toList()
@@ -162,7 +156,7 @@ public class AdminManagePatientDetailService {
 
     public void updatePrescription(Prescription rx, PrescriptionUpdateDto dto) {
         rx.setDosage(dto.getDosage().trim());
-        rx.setFrequency(dto.getFrequency().trim());
+        rx.setFrequency(FrequencyType.valueOf(dto.getFrequency().trim()));
 
         if (!isBlank(dto.getStartDate())) {
             rx.setStartDate(LocalDate.parse(dto.getStartDate()));
