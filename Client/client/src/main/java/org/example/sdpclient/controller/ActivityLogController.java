@@ -1,5 +1,6 @@
 package org.example.sdpclient.controller;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.example.sdpclient.dto.ActivityLogDto;
 import org.example.sdpclient.service.ActivityLogService;
@@ -32,4 +33,19 @@ public class ActivityLogController {
         List<ActivityLogDto> logs = activityLogService.getAllLogs();
         return ResponseEntity.ok(logs);
     }
+
+    private boolean isRootAdmin(HttpServletRequest request) {
+        String rootStr = getCookieValue(request, "adminRoot");
+        return "true".equalsIgnoreCase(rootStr);
+    }
+
+    private String getCookieValue(HttpServletRequest request, String name) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) return null;
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals(name)) return cookie.getValue();
+        }
+        return null;
+    }
+
 }

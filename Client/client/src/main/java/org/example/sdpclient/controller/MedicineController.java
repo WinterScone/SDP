@@ -1,5 +1,6 @@
 package org.example.sdpclient.controller;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.example.sdpclient.dto.ReduceMedicineRequest;
 import org.example.sdpclient.entity.Medicine;
@@ -101,5 +102,31 @@ public class MedicineController {
             return ResponseEntity.badRequest()
                     .body(Map.of("ok", false, "message", ex.getMessage()));
         }
+    }
+
+    private Long getAdminIdFromCookie(HttpServletRequest request) {
+        String idStr = getCookieValue(request, "adminId");
+        if (idStr == null || idStr.isBlank()) {
+            return null;
+        }
+
+        try {
+            return Long.parseLong(idStr);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private String getCookieValue(HttpServletRequest request, String name) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) return null;
+
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals(name)) {
+                return cookie.getValue();
+            }
+        }
+
+        return null;
     }
 }

@@ -1,5 +1,6 @@
 package org.example.sdpclient.configuration;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.example.sdpclient.util.CookieUtils;
@@ -19,5 +20,14 @@ public class AdminAuthenticationInterceptor implements HandlerInterceptor {
             return false;
         }
         return true;
+    }
+
+    private String getCookieValue(HttpServletRequest request, String name) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) return null;
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals(name)) return cookie.getValue();
+        }
+        return null;
     }
 }

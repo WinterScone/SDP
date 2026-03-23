@@ -38,21 +38,13 @@
         <input id="password" type="password" autocomplete="new-password" required />
 
         <div style="margin-top: 16px; padding: 12px; border: 1px solid #d0d7de; border-radius: 6px; background: #f6f8fa;">
-            <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px; color: #24292f;">Facial Recognition</div>
-            <p style="font-size: 13px; color: #57606a; margin: 0 0 10px 0; line-height: 1.6;">This system can use facial recognition to verify your identity when collecting the medication. Your facial data will be stored securely and used solely for authentication purposes. You may opt out at any time by talking to your assigned administrator.</p>
+            <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px; color: #24292f;">Enable Facial Recognition & SMS Notifications</div>
+            <p style="font-size: 13px; color: #57606a; margin: 0 0 10px 0; line-height: 1.6;">If enabled, the system can use facial recognition to verify your identity when collecting the medication and receive medication reminders via SMS. Your facial data will be stored securely and used solely for authentication purposes. You may opt out at any time by talking to your assigned administrator.</p>
             <label style="display: flex; align-items: flex-start; gap: 8px; font-weight: normal; cursor: pointer;">
                 <input id="faceConsent" type="checkbox" style="width: auto; height: auto; margin-top: 2px; min-height: unset;" />
                 <span>I consent to the collection and use of my facial data for identity verification purposes.</span>
             </label>
         </div>
-
-        <div class="checkbox-row" style="margin-top:1rem">
-            <input id="faceConsent" type="checkbox" />
-            <label for="faceConsent">Enable face recognition &amp; SMS notifications</label>
-        </div>
-        <p id="faceConsentHint" class="helper" style="margin:0.25rem 0 0.5rem">
-            If enabled, you can enroll your face for quick login and receive medication reminders via SMS.
-        </p>
 
         <div id="faceSection" style="display:none; margin-bottom:1rem">
             <label>Face Capture (optional)</label>

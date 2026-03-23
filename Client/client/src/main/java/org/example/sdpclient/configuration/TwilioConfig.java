@@ -33,4 +33,8 @@ public class TwilioConfig {
             log.info("Twilio not configured — SMS features disabled");
         }
     }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
 }
