@@ -11,6 +11,7 @@ import java.util.List;
 
 @Service
 public class MedicineService {
+
     private final MedicineRepository repo;
     private final ActivityLogService activityLogService;
 
@@ -29,11 +30,11 @@ public class MedicineService {
 
     public void updateQuantity(MedicineType id, int quantity, Long adminId, String adminUsername) {
         Medicine medicine = repo.findById(id).orElseThrow();
+
         int oldQuantity = medicine.getQuantity();
         medicine.setQuantity(quantity);
         repo.save(medicine);
 
-        // Log the activity
         activityLogService.logMedicineStockChange(
                 medicine.getMedicineName(),
                 oldQuantity,
@@ -43,6 +44,23 @@ public class MedicineService {
         );
     }
 
+    public void updateMedicine(MedicineType id, int quantity, String instruction, Long adminId, String adminUsername) {
+        Medicine medicine = repo.findById(id).orElseThrow();
+
+        int oldQuantity = medicine.getQuantity();
+
+        medicine.setQuantity(quantity);
+        medicine.setInstruction(instruction);
+        repo.save(medicine);
+
+        activityLogService.logMedicineStockChange(
+                medicine.getMedicineName(),
+                oldQuantity,
+                quantity,
+                adminId,
+                adminUsername
+        );
+    }
 
     @Transactional
     public void reduceQuantityByName(String medicineName, int quantityToReduce) {
@@ -54,6 +72,7 @@ public class MedicineService {
         }
 
         int current = medicine.getQuantity();
+
         if (current < quantityToReduce) {
             throw new IllegalArgumentException("Not enough stock. Current=" + current);
         }
@@ -62,6 +81,3 @@ public class MedicineService {
         repo.save(medicine);
     }
 }
-
-
-

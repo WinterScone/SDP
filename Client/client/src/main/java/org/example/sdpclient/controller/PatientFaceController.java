@@ -117,16 +117,21 @@ public class PatientFaceController {
             }
 
             var prescriptions = patient.getPrescriptions().stream()
-                    .map(p -> Map.of(
-                            "prescriptionId", p.getId(),
-                            "medicineId", p.getMedicine().getMedicineId().getId(),
-                            "medicineName", p.getMedicine().getMedicineName(),
-                            "dosage", p.getDosage(),
-                            "frequency", p.getFrequency(),
-                            "scheduledTimes", p.getReminderTimes().stream()
-                                    .map(rt -> rt.getReminderTime().toString())
-                                    .toList()
-                    ))
+                    .map(p -> {
+                        var item = new java.util.LinkedHashMap<String, Object>();
+
+                        item.put("prescriptionId", p.getId());
+                        item.put("medicineId", p.getMedicine().getMedicineId().getId());
+                        item.put("medicineName", p.getMedicine().getMedicineName());
+                        item.put("instruction", p.getMedicine().getInstruction() == null ? "" : p.getMedicine().getInstruction());
+                        item.put("frequency", p.getFrequency());
+                        item.put("dosage", p.getDosage());
+                        item.put("scheduledTimes", p.getReminderTimes().stream()
+                                .map(rt -> rt.getReminderTime().toString())
+                                .toList());
+
+                        return item;
+                    })
                     .toList();
 
             return ResponseEntity.ok(Map.of(
