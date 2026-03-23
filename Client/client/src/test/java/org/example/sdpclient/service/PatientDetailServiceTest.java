@@ -54,7 +54,7 @@ class PatientDetailServiceTest {
         rx.setId(1L);
         rx.setMedicine(med);
         rx.setDosage("10mg");
-        rx.setFrequency(FrequencyType.ONCE_A_DAY);
+        rx.setFrequency("ONCE_A_DAY");
 
         when(prescriptionRepo.findByPatientId(5L)).thenReturn(List.of(rx));
 
