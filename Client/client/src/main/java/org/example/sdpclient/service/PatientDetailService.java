@@ -1,13 +1,13 @@
 package org.example.sdpclient.service;
 
 import org.example.sdpclient.dto.PatientPrescriptionsResponse;
+import org.example.sdpclient.dto.PatientViewDto;
 import org.example.sdpclient.entity.Patient;
 import org.example.sdpclient.repository.PatientRepository;
 import org.example.sdpclient.repository.PrescriptionRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -29,7 +29,7 @@ public class PatientDetailService {
         if (isRoot) {
             return patientRepo.findAll(Sort.by("id"));
         } else {
-            return patientRepo.findByLinkedAdminId(adminId);
+            return patientRepo.findByLinkedAdmin_Id(adminId);
         }
     }
 
@@ -42,20 +42,12 @@ public class PatientDetailService {
 
         return prescriptions.stream()
                 .map(prescription -> new PatientPrescriptionsResponse.PrescriptionItem(
-                        prescription.getId(),
-                        prescription.getMedicine().getMedicineId().getId(),
                         prescription.getMedicine().getMedicineId().name(),
                         prescription.getMedicine().getMedicineName(),
                         prescription.getDosage(),
-                        prescription.getReminderTimes().isEmpty()
-                                ? null
-                                : prescription.getReminderTimes().get(0).getReminderTime()
-                                .format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+                        prescription.getFrequency().name()
                 ))
                 .toList();
     }
-
-    public java.util.Optional<Patient> getPatientById(Long patientId) {
-        return patientRepo.findById(patientId);
-    }
 }
+

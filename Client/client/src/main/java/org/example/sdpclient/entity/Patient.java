@@ -1,9 +1,10 @@
 package org.example.sdpclient.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,6 +16,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Table(name = "patient", indexes = {
+    @Index(name = "idx_patient_linked_admin", columnList = "linked_admin_id")
+})
 public class Patient {
 
     @Id
@@ -24,51 +28,39 @@ public class Patient {
     @Column(unique = true, nullable = false)
     private String username;
 
-    @Column(name = "password", nullable = false)
+    @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
-    @Column(nullable = false)
+    @Column(name = "first_name", nullable = false)
     private String firstName;
 
-    @Column(nullable = false)
+    @Column(name = "last_name", nullable = false)
     private String lastName;
 
-    @Column(nullable = false)
+    @Column(name = "date_of_birth", nullable = false)
     private LocalDate dateOfBirth;
 
     private String email;
     private String phone;
 
-    @Column(nullable = false)
-    private boolean smsConsent = false;
-
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "linked_admin_id")
-    private Long linkedAdminId;
-
-    @Column(name = "linked_admin_name")
-    private String linkedAdminName;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "linked_admin_id")
+    private Admin linkedAdmin;
 
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Prescription> prescriptions = new ArrayList<>();
-
-    @JdbcTypeCode(SqlTypes.VARBINARY)
-    @Column(name = "face_data")
-    private byte[] faceData;
-
-    @Column(name = "face_content_type")
-    private String faceContentType;
-
-    @Column(name = "face_enrolled_at")
-    private LocalDateTime faceEnrolledAt;
-
-    @Column(name = "face_active", nullable = false)
-    private boolean faceActive = true;
 
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
+
+    @Column(name = "face_data")
+    private byte[] faceData;
+
+    @Column(name = "face_recognition_consent", nullable = false)
+    private boolean faceRecognitionConsent = false;
 }

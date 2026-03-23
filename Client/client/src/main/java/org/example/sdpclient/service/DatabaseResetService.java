@@ -51,8 +51,7 @@ public class DatabaseResetService {
         // Reset linked admin for seed patients
         var seedPatients = patientRepo.findAll();
         seedPatients.forEach(p -> {
-            p.setLinkedAdminId(null);
-            p.setLinkedAdminName(null);
+            p.setLinkedAdmin(null);
         });
         patientRepo.saveAll(seedPatients);
 

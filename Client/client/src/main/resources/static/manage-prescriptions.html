@@ -13,7 +13,7 @@
         <h2>Manage Prescriptions</h2>
         <div class="topbar-actions">
             <div id="message" class="msg"></div>
-            <button class="btn" type="button" onclick="window.location.href='/patients.html'">← Back</button>
+            <button class="btn" onclick="window.location.href='/patients.html'">← Back</button>
         </div>
     </div>
 
@@ -26,36 +26,38 @@
 
     <h3 class="section-title">Prescriptions</h3>
 
-    <button type="button" id="showFormBtn">+ Add Prescription</button>
+    <button id="showFormBtn">+ Add Prescription</button>
 
     <div class="form-short" id="prescriptionForm" style="display: none;">
         <label for="newMedicine">Medicine</label>
         <select id="newMedicine"></select>
 
         <label for="newDosage">Dosage</label>
-        <input id="newDosage" type="text" placeholder="e.g. 500mg" />
+        <input id="newDosage" type="text" placeholder="e.g. 500" />
 
         <label for="newFrequency">Frequency</label>
-        <input id="newFrequency" type="text" placeholder="e.g. 2/day" />
-
-        <label for="newScheduledTimes">Scheduled Times</label>
-        <input id="newScheduledTimes" type="text" placeholder="e.g. 08:00, 20:00" />
+        <select id="newFrequency">
+            <option value="">Select Frequency</option>
+            <option value="ONCE_A_DAY">Once a day</option>
+            <option value="TWICE_A_DAY">Twice a day</option>
+            <option value="THREE_TIMES_A_DAY">Three times a day</option>
+            <option value="FOUR_TIMES_A_DAY">Four times a day</option>
+        </select>
 
         <div class="row">
-            <button type="button" id="addBtn">Add</button>
+            <button id="addBtn" type="button">Add</button>
             <button type="button" id="cancelBtn">Cancel</button>
         </div>
+        <div id="formMessage" class="msg" style="margin-top: 8px;"></div>
     </div>
 
     <div class="table-wrapper">
         <table>
             <thead>
             <tr>
-                <th>Medicine Code</th>
-                <th class="wrap">Medicine</th>
+                <th>Medicine</th>
                 <th>Dosage</th>
                 <th>Frequency</th>
-                <th>Scheduled Times</th>
                 <th>Updated</th>
                 <th>Delete</th>
             </tr>

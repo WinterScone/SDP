@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import org.example.sdpclient.entity.Medicine;
 import org.example.sdpclient.enums.MedicineType;
 import org.example.sdpclient.repository.MedicineRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -11,13 +12,18 @@ import java.util.List;
 
 @Service
 public class MedicineService {
-
     private final MedicineRepository repo;
     private final ActivityLogService activityLogService;
+    private final NotificationService notificationService;
 
-    public MedicineService(MedicineRepository repo, ActivityLogService activityLogService) {
+    @Value("${notification.low-stock-threshold}")
+    private int lowStockThreshold;
+
+    public MedicineService(MedicineRepository repo, ActivityLogService activityLogService,
+                           NotificationService notificationService) {
         this.repo = repo;
         this.activityLogService = activityLogService;
+        this.notificationService = notificationService;
     }
 
     public List<Medicine> getAll() {
@@ -28,13 +34,15 @@ public class MedicineService {
         return repo.existsById(id);
     }
 
+    @Transactional
     public void updateQuantity(MedicineType id, int quantity, Long adminId, String adminUsername) {
-        Medicine medicine = repo.findById(id).orElseThrow();
-
+        Medicine medicine = repo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Medicine not found: " + id));
         int oldQuantity = medicine.getQuantity();
         medicine.setQuantity(quantity);
         repo.save(medicine);
 
+        // Log the activity
         activityLogService.logMedicineStockChange(
                 medicine.getMedicineName(),
                 oldQuantity,
@@ -42,25 +50,9 @@ public class MedicineService {
                 adminId,
                 adminUsername
         );
+
     }
 
-    public void updateMedicine(MedicineType id, int quantity, String instruction, Long adminId, String adminUsername) {
-        Medicine medicine = repo.findById(id).orElseThrow();
-
-        int oldQuantity = medicine.getQuantity();
-
-        medicine.setQuantity(quantity);
-        medicine.setInstruction(instruction);
-        repo.save(medicine);
-
-        activityLogService.logMedicineStockChange(
-                medicine.getMedicineName(),
-                oldQuantity,
-                quantity,
-                adminId,
-                adminUsername
-        );
-    }
 
     @Transactional
     public void reduceQuantityByName(String medicineName, int quantityToReduce) {
@@ -72,12 +64,32 @@ public class MedicineService {
         }
 
         int current = medicine.getQuantity();
-
         if (current < quantityToReduce) {
             throw new IllegalArgumentException("Not enough stock. Current=" + current);
         }
 
-        medicine.setQuantity(current - quantityToReduce);
+        int newQuantity = current - quantityToReduce;
+        medicine.setQuantity(newQuantity);
         repo.save(medicine);
+
+    }
+
+    public int checkLowStock() {
+        List<Medicine> lowStock = repo.findAll().stream()
+                .filter(m -> m.getQuantity() < lowStockThreshold)
+                .toList();
+
+        if (!lowStock.isEmpty()) {
+            StringBuilder sb = new StringBuilder("Low stock alert:");
+            for (Medicine m : lowStock) {
+                sb.append("\n- ").append(m.getMedicineName()).append(", ").append(m.getQuantity()).append(" unit(s) left");
+            }
+            notificationService.notifyRootAdmins(sb.toString());
+        }
+
+        return lowStock.size();
     }
 }
+
+
+

@@ -11,7 +11,10 @@
 <section class="card wide">
     <div class="topbar">
         <h2>Patients</h2>
-        <button class="btn" onclick="window.location.href='/dashboard.html'">← Back</button>
+        <div class="topbar-actions">
+            <button class="btn" onclick="window.location.href='/patient-signup.html'">+ Sign Up Patient</button>
+            <button class="btn" onclick="window.location.href='/dashboard.html'">← Back</button>
+        </div>
     </div>
 
     <div class="search-row">
@@ -37,6 +40,7 @@
             </thead>
 
             <tbody id="rows"></tbody>
+            <!-- JS inserts rows here -->
         </table>
     </div>
 </section>

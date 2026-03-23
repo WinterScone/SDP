@@ -22,7 +22,7 @@ async function loadHistory(patientId) {
     messageEl.textContent = "Loading...";
     rowsEl.innerHTML = "";
 
-    const res = await fetch(`/api/patient/${patientId}/intake`);
+    const res = await fetch(`/api/patients/${patientId}/intake`);
     const data = await res.json().catch(() => null);
 
     if (!res.ok || !data) {

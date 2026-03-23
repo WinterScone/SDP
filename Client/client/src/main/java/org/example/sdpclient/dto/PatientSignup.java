@@ -18,5 +18,6 @@ public class PatientSignup {
     private String dateOfBirth;
     private String email;
     private String phone;
+    private boolean faceRecognitionConsent;
 }
 

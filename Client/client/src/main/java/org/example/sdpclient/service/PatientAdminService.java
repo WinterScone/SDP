@@ -31,12 +31,12 @@ public class PatientAdminService {
                         p.getId(),
                         p.getFirstName(),
                         p.getLastName(),
-                        p.getDateOfBirth().toString(),
+                        p.getDateOfBirth(),
                         p.getEmail(),
                         p.getPhone(),
-                        p.getCreatedAt().toString(),
-                        p.getLinkedAdminId(),
-                        p.getLinkedAdminName()
+                        p.getCreatedAt(),
+                        p.getLinkedAdmin() != null ? p.getLinkedAdmin().getId() : null,
+                        p.getLinkedAdmin() != null ? p.getLinkedAdmin().getUsername() : null
                 ))
                 .toList();
     }
@@ -57,11 +57,10 @@ public class PatientAdminService {
                 ));
 
         // Check if this is a reassignment
-        boolean isReassignment = patient.getLinkedAdminId() != null;
-        String previousAdminName = patient.getLinkedAdminName();
+        boolean isReassignment = patient.getLinkedAdmin() != null;
+        String previousAdminName = isReassignment ? patient.getLinkedAdmin().getUsername() : null;
 
-        patient.setLinkedAdminId(adminId);
-        patient.setLinkedAdminName(admin.getUsername());
+        patient.setLinkedAdmin(admin);
         patientRepo.save(patient);
 
         // Log the activity
@@ -78,4 +77,3 @@ public class PatientAdminService {
         );
     }
 }
-

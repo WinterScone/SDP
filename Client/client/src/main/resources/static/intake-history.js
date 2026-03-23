@@ -41,7 +41,7 @@ logoutBtn.addEventListener("click", () => {
 });
 
 async function loadPrescriptions(patientId) {
-    const res = await fetch(`/api/patient/${patientId}/prescriptions`);
+    const res = await fetch(`/api/patients/${patientId}/prescriptions`);
     const data = await res.json().catch(() => null);
     if (!data || !res.ok) return;
 
@@ -59,7 +59,7 @@ async function loadHistory(patientId) {
     messageEl.textContent = "Loading...";
     rowsEl.innerHTML = "";
 
-    const res = await fetch(`/api/patient/${patientId}/intake`);
+    const res = await fetch(`/api/patients/${patientId}/intake`);
     const data = await res.json().catch(() => null);
 
     if (!res.ok || !data) {
@@ -101,7 +101,7 @@ logBtn.addEventListener("click", async () => {
     logMessageEl.textContent = "";
 
     try {
-        const res = await fetch(`/api/patient/${patientId}/intake`, {
+        const res = await fetch(`/api/patients/${patientId}/intake`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
