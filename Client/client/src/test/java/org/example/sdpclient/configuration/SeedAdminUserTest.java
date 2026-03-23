@@ -32,12 +32,12 @@ class SeedAdminUserTest {
 
         var admin1 = adminRepository.findByUsername("testAdmin1");
         assertTrue(admin1.isPresent());
-        assertEquals("Test", admin1.get().getFirstName());
+        assertEquals("Louis", admin1.get().getFirstName());
         assertEquals("Admin One", admin1.get().getLastName());
 
         var admin2 = adminRepository.findByUsername("testAdmin2");
         assertTrue(admin2.isPresent());
-        assertEquals("Test", admin2.get().getFirstName());
+        assertEquals("Ting", admin2.get().getFirstName());
         assertEquals("Admin Two", admin2.get().getLastName());
     }
 

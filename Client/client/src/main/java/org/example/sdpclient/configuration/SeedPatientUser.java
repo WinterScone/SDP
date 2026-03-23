@@ -15,20 +15,20 @@ public class SeedPatientUser {
     @Bean
     CommandLineRunner seedPatients(PatientRepository repo, PasswordEncoder encoder) {
         return args -> {
-            seed(repo, encoder, "patient1", "patient1",
-                    "Testing", "Patient One",
-                    LocalDate.of(1990, 1, 1),
-                    "patient1@sdp.com", "07700 800000");
-
             seed(repo, encoder, "testPatient1", "testPatient1",
-                    "Test", "Patient One",
+                    "Asshmar", "Patient One",
                     LocalDate.of(1990, 1, 1),
-                    "testpatient1@sdp.com", "07700 800001");
+                    "patient1@sdp.com", "07444 660738");
 
             seed(repo, encoder, "testPatient2", "testPatient2",
-                    "Test", "Patient Two",
+                    "Angelo", "Patient Two",
+                    LocalDate.of(1990, 1, 1),
+                    "testpatient1@sdp.com", "07496 151506");
+
+            seed(repo, encoder, "testPatient3", "testPatient3",
+                    "Bahar", "Patient Three",
                     LocalDate.of(1990, 1, 2),
-                    "testpatient2@sdp.com", "07700 800002");
+                    "testpatient2@sdp.com", "07398 742784");
         };
     }
 
@@ -42,9 +42,7 @@ public class SeedPatientUser {
                       String email,
                       String phone) {
 
-        if (repo.findByUsername(username).isPresent()) return;
-
-        Patient patient = new Patient();
+        Patient patient = repo.findByUsername(username).orElse(new Patient());
         patient.setUsername(username);
         patient.setPasswordHash(encoder.encode(rawPassword));
         patient.setFirstName(firstName);
