@@ -13,22 +13,22 @@ import org.springframework.test.context.TestPropertySource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@Import(Medicines16Rows.class)
+@Import(SeedMedicine.class)
 @org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase(replace = org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace.NONE)
 @TestPropertySource(properties = {
         "spring.jpa.hibernate.ddl-auto=create-drop",
         "spring.sql.init.mode=never"
 })
-class Medicines16RowsJpaTest {
+class SeedMedicineJpaTest {
 
-    @Autowired Medicines16Rows runner;
+    @Autowired SeedMedicine runner;
     @Autowired MedicineRepository repository;
-    @Autowired org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager em;
+    @Autowired TestEntityManager em;
 
     @Test
     void run_insertsAll_andIsIdempotent() {
         runner.run(new DefaultApplicationArguments(new String[0]));
-        em.flush(); // <-- will throw with the real root cause
+        em.flush();
         em.clear();
 
         long expected = MedicineType.values().length;
@@ -41,4 +41,3 @@ class Medicines16RowsJpaTest {
         assertThat(repository.count()).isEqualTo(expected);
     }
 }
-

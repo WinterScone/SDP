@@ -13,6 +13,7 @@ import org.example.sdpclient.dto.*;
 import org.example.sdpclient.entity.Medicine;
 import org.example.sdpclient.entity.Patient;
 import org.example.sdpclient.entity.Prescription;
+import org.example.sdpclient.enums.FrequencyType;
 import org.example.sdpclient.enums.MedicineType;
 import org.example.sdpclient.repository.MedicineRepository;
 import org.example.sdpclient.repository.PatientRepository;
@@ -38,6 +39,9 @@ class AdminManagePatientDetailServiceTest {
 
     @Mock
     private ActivityLogService activityLogService;
+
+    @Mock
+    private NotificationService notificationService;
 
     @InjectMocks
     private AdminManagePatientDetailService service;
@@ -131,7 +135,7 @@ class AdminManagePatientDetailServiceTest {
         rx.setId(1L);
         rx.setMedicine(med);
         rx.setDosage("10mg");
-        rx.setFrequency("daily");
+        rx.setFrequency(FrequencyType.ONCE_A_DAY);
 
         when(prescriptionRepository.findByPatientId(5L)).thenReturn(List.of(rx));
 
@@ -203,7 +207,7 @@ class AdminManagePatientDetailServiceTest {
 
         PrescriptionCreateDto dto = mock(PrescriptionCreateDto.class);
         when(dto.getDosage()).thenReturn(" 10mg ");
-        when(dto.getFrequency()).thenReturn(" daily ");
+        when(dto.getFrequency()).thenReturn(FrequencyType.ONCE_A_DAY);
 
         service.createPrescription(patient, medicine, dto, 1L, "testAdmin");
 
@@ -214,7 +218,7 @@ class AdminManagePatientDetailServiceTest {
         assertSame(patient, saved.getPatient());
         assertSame(medicine, saved.getMedicine());
         assertEquals("10mg", saved.getDosage());
-        assertEquals("daily", saved.getFrequency());
+        assertEquals(FrequencyType.ONCE_A_DAY, saved.getFrequency());
     }
 
 
@@ -222,16 +226,16 @@ class AdminManagePatientDetailServiceTest {
     void updatePrescription_shouldTrimFields_andSave() {
         Prescription rx = new Prescription();
         rx.setDosage("old");
-        rx.setFrequency("old");
+        rx.setFrequency(FrequencyType.ONCE_A_DAY);
 
         PrescriptionUpdateDto dto = mock(PrescriptionUpdateDto.class);
         when(dto.getDosage()).thenReturn(" 20mg ");
-        when(dto.getFrequency()).thenReturn(" twice ");
+        when(dto.getFrequency()).thenReturn(" TWICE_A_DAY ");
 
         service.updatePrescription(rx, dto);
 
         assertEquals("20mg", rx.getDosage());
-        assertEquals("twice", rx.getFrequency());
+        assertEquals(FrequencyType.TWICE_A_DAY, rx.getFrequency());
 
         verify(prescriptionRepository).save(rx);
     }

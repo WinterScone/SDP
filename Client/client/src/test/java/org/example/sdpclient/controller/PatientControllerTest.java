@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.example.sdpclient.configuration.WebMvcConfig;
 import org.example.sdpclient.dto.PatientPrescriptionsResponse;
-import org.example.sdpclient.service.IntakeHistoryService;
 import org.example.sdpclient.service.PatientDetailService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,9 +34,6 @@ class PatientControllerTest {
 
     @MockitoBean
     private PatientDetailService patientDetailService;
-
-    @MockitoBean
-    private IntakeHistoryService intakeHistoryService;
 
     @Test
     void getPatientPrescriptions_shouldReturn400_whenPatientNotFound() throws Exception {

@@ -227,7 +227,8 @@ public class AdminManagePatientDetailService {
         return medicineRepository.findAll().stream()
                 .map(m -> new MedicineViewDto(
                         m.getMedicineId(),
-                        m.getMedicineName()
+                        m.getMedicineName(),
+                        m.getInstruction()
                 ))
                 .toList();
     }

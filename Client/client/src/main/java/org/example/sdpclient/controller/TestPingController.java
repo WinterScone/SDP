@@ -1,4 +1,4 @@
-package org.example.sdpclient.configuration;
+package org.example.sdpclient.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,4 +16,3 @@ public class TestPingController {
         return "pong-public";
     }
 }
-

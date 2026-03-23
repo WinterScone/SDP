@@ -18,7 +18,7 @@ public class SeedPatientUser {
             seed(repo, encoder, "patient1", "patient1",
                     "Testing", "Patient One",
                     LocalDate.of(1990, 1, 1),
-                    "testpatient1@sdp.com", "07761 844142");
+                    "patient1@sdp.com", "07700 800000");
 
             seed(repo, encoder, "testPatient1", "testPatient1",
                     "Test", "Patient One",

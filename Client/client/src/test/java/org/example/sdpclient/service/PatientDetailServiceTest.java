@@ -8,6 +8,7 @@ import java.util.List;
 import org.example.sdpclient.dto.PatientPrescriptionsResponse;
 import org.example.sdpclient.entity.Medicine;
 import org.example.sdpclient.entity.Prescription;
+import org.example.sdpclient.enums.FrequencyType;
 import org.example.sdpclient.enums.MedicineType;
 import org.example.sdpclient.repository.DispenserSlotRepository;
 import org.example.sdpclient.repository.PatientRepository;
@@ -53,7 +54,7 @@ class PatientDetailServiceTest {
         rx.setId(1L);
         rx.setMedicine(med);
         rx.setDosage("10mg");
-        rx.setFrequency("daily");
+        rx.setFrequency(FrequencyType.ONCE_A_DAY);
 
         when(prescriptionRepo.findByPatientId(5L)).thenReturn(List.of(rx));
 

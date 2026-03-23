@@ -1,12 +1,9 @@
 package org.example.sdpclient.service;
 
 import jakarta.transaction.Transactional;
-import org.example.sdpclient.repository.AdminRepository;
-import org.example.sdpclient.repository.PatientRepository;
-import org.example.sdpclient.repository.PrescriptionRepository;
+import org.example.sdpclient.repository.*;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Set;
 
 @Service
@@ -15,18 +12,24 @@ public class DatabaseResetService {
     private final AdminRepository adminRepo;
     private final PatientRepository patientRepo;
     private final PrescriptionRepository prescriptionRepo;
+    private final IntakeHistoryRepository intakeHistoryRepo;
+    private final ReminderLogRepository reminderLogRepo;
     private final ActivityLogService activityLogService;
 
     private static final Set<String> SEED_ADMIN_USERNAMES = Set.of("root", "testAdmin1", "testAdmin2");
-    private static final Set<String> SEED_PATIENT_USERNAMES = Set.of("testPatient1", "testPatient2");
+    private static final Set<String> SEED_PATIENT_USERNAMES = Set.of("patient1", "testPatient1", "testPatient2");
 
     public DatabaseResetService(AdminRepository adminRepo,
                                 PatientRepository patientRepo,
                                 PrescriptionRepository prescriptionRepo,
+                                IntakeHistoryRepository intakeHistoryRepo,
+                                ReminderLogRepository reminderLogRepo,
                                 ActivityLogService activityLogService) {
         this.adminRepo = adminRepo;
         this.patientRepo = patientRepo;
         this.prescriptionRepo = prescriptionRepo;
+        this.intakeHistoryRepo = intakeHistoryRepo;
+        this.reminderLogRepo = reminderLogRepo;
         this.activityLogService = activityLogService;
     }
 
@@ -38,8 +41,14 @@ public class DatabaseResetService {
         // Clear all activity logs first
         activityLogService.clearAllLogs();
 
-        // Delete all prescriptions first (foreign key constraint)
-        prescriptionRepo.deleteAll();
+        // Clear tables that have FK references to prescriptions/patients
+        intakeHistoryRepo.deleteAll();
+        reminderLogRepo.deleteAll();
+
+        // Delete all prescriptions (use native queries to avoid JPA entity
+        // deserialization errors from legacy frequency strings in the DB)
+        prescriptionRepo.deleteAllReminderTimesNative();
+        prescriptionRepo.deleteAllPrescriptionsNative();
 
         // Delete non-seed patients
         var allPatients = patientRepo.findAll();

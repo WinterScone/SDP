@@ -1,5 +1,6 @@
 package org.example.sdpclient.configuration;
 
+import org.example.sdpclient.entity.Patient;
 import org.example.sdpclient.entity.Prescription;
 import org.example.sdpclient.enums.FrequencyType;
 import org.example.sdpclient.enums.MedicineType;
@@ -22,25 +23,24 @@ public class SeedPrescription {
             if (patientOptional.isEmpty()) return;
             var patient = patientOptional.get();
 
-            java.util.function.BiConsumer<MedicineType, Object[]> addIfMissing = (medicineType, df) -> {
-                if (prescriptionRepo.existsByPatientIdAndMedicine_MedicineId(patient.getId(), medicineType)) return;
-
-                var medOptional = medicineRepo.findById(medicineType);
-                if (medOptional.isEmpty()) return;
-
-                Prescription p = new Prescription();
-                p.setPatient(patient);
-                p.setMedicine(medOptional.get());
-                p.setDosage((String) df[0]);
-                p.setFrequency((FrequencyType) df[1]);
-                prescriptionRepo.save(p);
-            };
-
-            addIfMissing.accept(MedicineType.VTM01, new Object[]{String.valueOf(1000), FrequencyType.TWICE_A_DAY});
-            addIfMissing.accept(MedicineType.VTM02, new Object[]{String.valueOf(268), FrequencyType.ONCE_A_DAY});
-            addIfMissing.accept(MedicineType.VTM03, new Object[]{String.valueOf(100), FrequencyType.FOUR_TIMES_A_DAY});
+            addIfMissing(patient, MedicineType.VTM01, "1000", FrequencyType.TWICE_A_DAY, medicineRepo, prescriptionRepo);
+            addIfMissing(patient, MedicineType.VTM02, "268", FrequencyType.ONCE_A_DAY, medicineRepo, prescriptionRepo);
+            addIfMissing(patient, MedicineType.VTM03, "100", FrequencyType.FOUR_TIMES_A_DAY, medicineRepo, prescriptionRepo);
         };
     }
+
+    private void addIfMissing(Patient patient, MedicineType medicineType, String dosage, FrequencyType frequency,
+                              MedicineRepository medicineRepo, PrescriptionRepository prescriptionRepo) {
+        if (prescriptionRepo.existsByPatientIdAndMedicine_MedicineId(patient.getId(), medicineType)) return;
+
+        var medOptional = medicineRepo.findById(medicineType);
+        if (medOptional.isEmpty()) return;
+
+        Prescription p = new Prescription();
+        p.setPatient(patient);
+        p.setMedicine(medOptional.get());
+        p.setDosage(dosage);
+        p.setFrequency(frequency);
+        prescriptionRepo.save(p);
+    }
 }
-
-

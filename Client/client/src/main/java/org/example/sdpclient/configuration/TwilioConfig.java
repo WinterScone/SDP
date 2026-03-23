@@ -25,10 +25,12 @@ public class TwilioConfig {
 
     @PostConstruct
     public void init() {
-        log.info("Twilio config — phone-number: {}", phoneNumber);
         if (accountSid != null && !accountSid.isBlank()
                 && authToken != null && !authToken.isBlank()) {
             Twilio.init(accountSid, authToken);
+            log.info("Twilio initialized — phone-number: {}", phoneNumber);
+        } else {
+            log.info("Twilio not configured — SMS features disabled");
         }
     }
 }

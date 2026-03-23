@@ -59,6 +59,30 @@ public class MedicineController {
         return ResponseEntity.ok(Map.of("ok", true));
     }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> updateMedicine(@PathVariable MedicineType id, @RequestBody Map<String, Object> body,
+                                            HttpServletRequest request) {
+
+        Integer quantity = body.get("quantity") instanceof Number n ? n.intValue() : null;
+        if (quantity == null || quantity < 0) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("ok", false, "message", "Quantity must be >= 0"));
+        }
+
+        if (!service.exists(id)) {
+            return ResponseEntity.status(400)
+                    .body(Map.of("ok", false, "message", "Not found"));
+        }
+
+        String instruction = body.get("instruction") instanceof String s ? s : null;
+
+        Long adminId = CookieUtils.getAdminIdOrNull(request);
+        String adminUsername = CookieUtils.getCookieValue(request, "adminUsername");
+
+        service.updateMedicine(id, quantity, instruction, adminId, adminUsername);
+        return ResponseEntity.ok(Map.of("ok", true));
+    }
+
     @PostMapping("/reduce")
     public ResponseEntity<?> reduceMedicine(@RequestBody ReduceMedicineRequest request) {
 

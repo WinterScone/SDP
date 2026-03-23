@@ -61,6 +61,30 @@ public class MedicineService {
 
 
     @Transactional
+    public void updateMedicine(MedicineType id, int quantity, String instruction, Long adminId, String adminUsername) {
+        Medicine medicine = repo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Medicine not found: " + id));
+        int oldQuantity = medicine.getQuantity();
+        medicine.setQuantity(quantity);
+        medicine.setInstruction(instruction);
+        repo.save(medicine);
+
+        if (quantity < lowStockThreshold) {
+            notificationService.notifyRootAdmins(
+                    "SDP Low Stock Alert: " + medicine.getMedicineName()
+                            + " is below threshold (" + quantity + " remaining).");
+        }
+
+        activityLogService.logMedicineStockChange(
+                medicine.getMedicineName(),
+                oldQuantity,
+                quantity,
+                adminId,
+                adminUsername
+        );
+    }
+
+    @Transactional
     public void reduceQuantityByName(String medicineName, int quantityToReduce) {
         Medicine medicine = repo.findByMedicineName(medicineName)
                 .orElseThrow(() -> new IllegalArgumentException("Medicine not found: " + medicineName));

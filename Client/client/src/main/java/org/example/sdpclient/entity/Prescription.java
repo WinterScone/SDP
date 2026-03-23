@@ -46,6 +46,7 @@ public class Prescription {
     private LocalDate endDate;
 
     @OneToMany(mappedBy = "prescription", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("reminderTime ASC")
     private List<PrescriptionReminderTime> reminderTimes = new ArrayList<>();
 }
 

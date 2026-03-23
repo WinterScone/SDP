@@ -13,12 +13,17 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
+                // The frontend is served from the same origin (resources/static),
+                // so CORS is not needed for normal operation. This config exists
+                // to allow cross-origin tools (Postman, external test clients).
+                // Cookies are same-origin only; cross-origin clients must use
+                // other auth mechanisms.
                 registry.addMapping("/api/**")
-                        .allowedOrigins("*")  // Allow all origins - change this for production
+                        .allowedOrigins("*")
                         .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .exposedHeaders("*")
-                        .allowCredentials(false);  // Set to true if you need cookies
+                        .allowCredentials(false);
             }
         };
     }

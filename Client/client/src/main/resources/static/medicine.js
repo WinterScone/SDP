@@ -40,6 +40,7 @@
 
             const medicineId = m.medicineId ?? "";
             const qtyCellId = `qty-cell-${medicineId}`;
+            const instrCellId = `instr-cell-${medicineId}`;
             const statusId = `status-${medicineId}`;
 
             tr.innerHTML = `
@@ -49,12 +50,22 @@
           <td>${m.colour ?? ""}</td>
           <td>${m.dosagePerForm ?? ""}</td>
           <td id="${qtyCellId}">${m.quantity ?? 0}</td>
+          <td id="${instrCellId}">${m.instruction ?? ""}</td>
           <td>
             <input
                 type="number"
                 min="0"
                 value="${m.quantity ?? 0}"
                 data-id="${medicineId}"
+                placeholder="Qty"
+                style="width:70px;"
+            />
+            <input
+                type="text"
+                value="${m.instruction ?? ""}"
+                data-instr-id="${medicineId}"
+                placeholder="Instruction"
+                style="width:140px;"
             />
           </td>
         <td>
@@ -67,13 +78,15 @@
         }
 
         rowsEl.querySelectorAll("button[data-save]").forEach(btn => {
-            btn.addEventListener("click", () => saveQuantity(btn.getAttribute("data-save")));
+            btn.addEventListener("click", () => saveMedicine(btn.getAttribute("data-save")));
         });
     }
 
-    async function saveQuantity(medicineId) {
-        const input = rowsEl.querySelector(`input[data-id="${medicineId}"]`);
-        const qty = Number(input.value);
+    async function saveMedicine(medicineId) {
+        const qtyInput = rowsEl.querySelector(`input[data-id="${medicineId}"]`);
+        const instrInput = rowsEl.querySelector(`input[data-instr-id="${medicineId}"]`);
+        const qty = Number(qtyInput.value);
+        const instruction = instrInput.value.trim() || null;
 
         if (!Number.isFinite(qty) || qty < 0) {
             setMsg("Quantity must be 0 or more.");
@@ -82,17 +95,19 @@
 
         setMsg(`Saving ${medicineId}...`);
 
-        const res = await fetch(`/api/medicines/${medicineId}/quantity`, {
+        const res = await fetch(`/api/medicines/${medicineId}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ quantity: qty })
+            body: JSON.stringify({ quantity: qty, instruction: instruction })
         });
 
         const qtyCell = document.getElementById(`qty-cell-${medicineId}`);
+        const instrCell = document.getElementById(`instr-cell-${medicineId}`);
         const statusEl = document.getElementById(`status-${medicineId}`);
 
         if (res.ok) {
             if (qtyCell) qtyCell.textContent = String(qty);
+            if (instrCell) instrCell.textContent = instruction ?? "";
             if (statusEl) {
                 statusEl.textContent = "Saved";
                 setTimeout(() => statusEl.textContent = "", 1200);

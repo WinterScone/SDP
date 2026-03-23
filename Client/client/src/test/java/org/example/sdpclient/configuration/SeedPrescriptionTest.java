@@ -3,6 +3,7 @@ package org.example.sdpclient.configuration;
 import org.example.sdpclient.entity.Medicine;
 import org.example.sdpclient.entity.Patient;
 import org.example.sdpclient.entity.Prescription;
+import org.example.sdpclient.enums.FrequencyType;
 import org.example.sdpclient.enums.MedicineType;
 import org.example.sdpclient.repository.MedicineRepository;
 import org.example.sdpclient.repository.PatientRepository;
@@ -100,17 +101,17 @@ class SeedPrescriptionTest {
         assertSame(patient, p1.getPatient());
         assertSame(med1, p1.getMedicine());
         assertEquals("1000", p1.getDosage());
-        assertEquals("Twice a day", p1.getFrequency());
+        assertEquals(FrequencyType.TWICE_A_DAY, p1.getFrequency());
 
         Prescription p2 = saved.get(1);
         assertSame(med2, p2.getMedicine());
         assertEquals("268", p2.getDosage());
-        assertEquals("Once a day", p2.getFrequency());
+        assertEquals(FrequencyType.ONCE_A_DAY, p2.getFrequency());
 
         Prescription p3 = saved.get(2);
         assertSame(med3, p3.getMedicine());
         assertEquals("100", p3.getDosage());
-        assertEquals("Three times a day", p3.getFrequency());
+        assertEquals(FrequencyType.FOUR_TIMES_A_DAY, p3.getFrequency());
     }
 
     @Test

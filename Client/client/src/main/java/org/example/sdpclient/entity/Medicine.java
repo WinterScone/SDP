@@ -28,4 +28,7 @@ public class Medicine {
     private Integer dosagePerForm;
     private int quantity;
 
+    @Column(length = 500)
+    private String instruction;
+
 }

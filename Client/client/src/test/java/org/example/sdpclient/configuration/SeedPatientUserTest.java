@@ -31,26 +31,33 @@ class SeedPatientUserTest {
         runner.run(new String[0]);
 
         ArgumentCaptor<Patient> captor = ArgumentCaptor.forClass(Patient.class);
-        verify(repo, times(2)).save(captor.capture());
+        verify(repo, times(3)).save(captor.capture());
 
         var saved = captor.getAllValues();
-        assertThat(saved).hasSize(2);
+        assertThat(saved).hasSize(3);
 
-        // check fields + password behavior
-        assertThat(saved.get(0).getUsername()).isEqualTo("testPatient1");
-        assertThat(saved.get(0).getFirstName()).isEqualTo("Test");
+        // patient1 (first seed entry)
+        assertThat(saved.get(0).getUsername()).isEqualTo("patient1");
+        assertThat(saved.get(0).getFirstName()).isEqualTo("Testing");
         assertThat(saved.get(0).getLastName()).isEqualTo("Patient One");
         assertThat(saved.get(0).getDateOfBirth()).isEqualTo(LocalDate.of(1990, 1, 1));
 
-        String hash1 = saved.get(0).getPasswordHash();
-        assertThat(hash1).isNotBlank();
-        assertThat(hash1).doesNotContain("testPatient1");
-        assertThat(encoder.matches("testPatient1", hash1)).isTrue();
-
-        assertThat(saved.get(1).getUsername()).isEqualTo("testPatient2");
+        // testPatient1
+        assertThat(saved.get(1).getUsername()).isEqualTo("testPatient1");
         assertThat(saved.get(1).getFirstName()).isEqualTo("Test");
-        assertThat(saved.get(1).getLastName()).isEqualTo("Patient Two");
-        assertThat(saved.get(1).getDateOfBirth()).isEqualTo(LocalDate.of(1990, 1, 2));
+        assertThat(saved.get(1).getLastName()).isEqualTo("Patient One");
+        assertThat(saved.get(1).getDateOfBirth()).isEqualTo(LocalDate.of(1990, 1, 1));
+
+        String hash2 = saved.get(1).getPasswordHash();
+        assertThat(hash2).isNotBlank();
+        assertThat(hash2).doesNotContain("testPatient1");
+        assertThat(encoder.matches("testPatient1", hash2)).isTrue();
+
+        // testPatient2
+        assertThat(saved.get(2).getUsername()).isEqualTo("testPatient2");
+        assertThat(saved.get(2).getFirstName()).isEqualTo("Test");
+        assertThat(saved.get(2).getLastName()).isEqualTo("Patient Two");
+        assertThat(saved.get(2).getDateOfBirth()).isEqualTo(LocalDate.of(1990, 1, 2));
     }
 
     @Test
@@ -58,20 +65,21 @@ class SeedPatientUserTest {
         PatientRepository repo = mock(PatientRepository.class);
         PasswordEncoder encoder = mock(PasswordEncoder.class);
 
-        // testPatient1 exists, testPatient2 does not
+        // testPatient1 exists, patient1 and testPatient2 do not
+        when(repo.findByUsername("patient1")).thenReturn(Optional.empty());
         when(repo.findByUsername("testPatient1")).thenReturn(Optional.of(new Patient()));
         when(repo.findByUsername("testPatient2")).thenReturn(Optional.empty());
 
-        when(encoder.encode(anyString())).thenReturn("ENC(testPatient2)");
+        when(encoder.encode(anyString())).thenReturn("ENC");
 
         SeedPatientUser config = new SeedPatientUser();
         CommandLineRunner runner = config.seedPatients(repo, encoder);
 
         runner.run();
 
-        // should only encode/save for 1 user (testPatient2)
-        verify(encoder, times(1)).encode("testPatient2");
-        verify(repo, times(1)).save(any(Patient.class));
+        // should encode/save for 2 users (patient1 and testPatient2)
+        verify(encoder, times(2)).encode(anyString());
+        verify(repo, times(2)).save(any(Patient.class));
     }
 
     @Test
@@ -86,7 +94,7 @@ class SeedPatientUserTest {
 
         runner.run();
 
-        verify(repo, times(2)).findByUsername(anyString());
+        verify(repo, times(3)).findByUsername(anyString());
         verifyNoInteractions(encoder);
         verify(repo, never()).save(any(Patient.class));
     }
