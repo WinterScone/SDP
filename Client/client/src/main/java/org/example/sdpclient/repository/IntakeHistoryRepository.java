@@ -1,8 +1,9 @@
 package org.example.sdpclient.repository;
 
 import org.example.sdpclient.entity.IntakeHistory;
-import org.example.sdpclient.enums.MedicineType;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import org.example.sdpclient.enums.MedicineType;
 
 import java.time.LocalDate;
 import java.time.LocalTime;

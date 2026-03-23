@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.example.sdpclient.enums.FrequencyType;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -32,9 +31,8 @@ public class Prescription {
     @Column(nullable = false)
     private String dosage;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private FrequencyType frequency;
+    private String frequency;
 
     @Column(columnDefinition = "boolean default true")
     private boolean active = true;
@@ -46,7 +44,6 @@ public class Prescription {
     private LocalDate endDate;
 
     @OneToMany(mappedBy = "prescription", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("reminderTime ASC")
     private List<PrescriptionReminderTime> reminderTimes = new ArrayList<>();
 }
 

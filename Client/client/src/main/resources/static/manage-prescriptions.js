@@ -34,7 +34,6 @@
         newFrequency.value = "";
         newScheduledTimesEl.value = "";
         msg.textContent = "";
-        formMessage.textContent = "";
     });
 
     document.getElementById("addBtn").addEventListener("click", addPrescription);
@@ -155,8 +154,12 @@
         const scheduledTimes = parseTimes(newScheduledTimesEl.value);
 
         if(!medicineId || !dosage || !frequency){
-            formMessage.textContent = "Select medicine, dosage, and frequency.";
-            formMessage.className = "msg error";
+            msg.textContent = "Select medicine + dosage + frequency.";
+            return;
+        }
+
+        if(scheduledTimes.length === 0){
+            msg.textContent = "At least one scheduled time is required (e.g. 08:00).";
             return;
         }
 
@@ -172,7 +175,7 @@
         });
 
         if(res.ok){
-            msg.textContent = "Prescription added.";
+            msg.textContent = "Added.";
             newMedicine.value = "";
             newDosage.value = "";
             newFrequency.value = "";
@@ -181,9 +184,7 @@
             showFormBtn.style.display = "block";
             await loadPatientAndPrescriptions();
         } else {
-            const data = await res.json().catch(() => null);
-            formMessage.textContent = (data && data.message) ? data.message : "Add failed. Check dosage is a number and medicine is not already prescribed.";
-            formMessage.className = "msg error";
+            msg.textContent = "Add failed (maybe already exists).";
         }
     }
 

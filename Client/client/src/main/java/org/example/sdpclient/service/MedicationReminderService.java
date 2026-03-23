@@ -37,7 +37,7 @@ public class MedicationReminderService {
         Map<Long, List<String>> patientMedicines = new HashMap<>();
 
         for (Prescription p : activePrescriptions) {
-            FrequencyType freq = p.getFrequency();
+            FrequencyType freq = FrequencyType.fromDisplayString(p.getFrequency());
             if (freq == null) {
                 log.warn("Unknown frequency '{}' for prescription {}", p.getFrequency(), p.getId());
                 continue;
