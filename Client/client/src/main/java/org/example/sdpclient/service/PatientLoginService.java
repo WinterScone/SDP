@@ -16,15 +16,19 @@ public class PatientLoginService {
 
     private final PatientRepository repo;
     private final PasswordEncoder encoder;
+    private final ActivityLogService activityLogService;
 
-    public PatientLoginService(PatientRepository repo, PasswordEncoder encoder) {
+    public PatientLoginService(PatientRepository repo, PasswordEncoder encoder,
+                               ActivityLogService activityLogService) {
         this.repo = repo;
         this.encoder = encoder;
+        this.activityLogService = activityLogService;
     }
 
     public Map<String, Object> login(PatientLogin req) {
         var userOptional = repo.findByUsernameIgnoreCase(req.getUsername());
         if (userOptional.isEmpty()) {
+            activityLogService.logPatientLoginFailed(req.getUsername());
             return Map.of(
                     "ok",
                     false
@@ -33,11 +37,15 @@ public class PatientLoginService {
 
         var user = userOptional.get();
         if (!encoder.matches(req.getPassword(), user.getPasswordHash())) {
+            activityLogService.logPatientLoginFailed(req.getUsername());
             return Map.of(
                     "ok",
                     false
             );
         }
+
+        activityLogService.logPatientLogin(user.getId(),
+                user.getFirstName() + " " + user.getLastName());
 
         return Map.of(
                 "ok",
@@ -102,6 +110,9 @@ public class PatientLoginService {
         patient.setLinkedAdmin(null);
 
         Patient saved = repo.save(patient);
+
+        activityLogService.logPatientSignup(saved.getId(),
+                saved.getFirstName() + " " + saved.getLastName());
 
         return Map.of(
                 "ok",

@@ -172,7 +172,8 @@ public class AdminManagePatientDetailService {
         );
     }
 
-    public void updatePrescription(Prescription rx, PrescriptionUpdateDto dto) {
+    public void updatePrescription(Prescription rx, PrescriptionUpdateDto dto,
+                                   Long adminId, String adminUsername) {
         rx.setDosage(dto.getDosage().trim());
         rx.setFrequency(dto.getFrequency().trim());
 
@@ -192,6 +193,18 @@ public class AdminManagePatientDetailService {
         }
 
         prescriptionRepository.save(rx);
+
+        Patient patient = rx.getPatient();
+        String patientName = patient.getFirstName() + " " + patient.getLastName();
+        activityLogService.logPrescriptionUpdated(
+                patient.getId(),
+                patientName,
+                rx.getMedicine().getMedicineName(),
+                dto.getDosage().trim(),
+                dto.getFrequency().trim(),
+                adminId,
+                adminUsername
+        );
     }
 
     private void applyScheduledTimes(Prescription rx, List<String> scheduledTimes) {

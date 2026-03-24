@@ -29,6 +29,9 @@ class PatientLoginServiceTest {
     @Mock
     private PasswordEncoder encoder;
 
+    @Mock
+    private ActivityLogService activityLogService;
+
     @InjectMocks
     private PatientLoginService service;
 

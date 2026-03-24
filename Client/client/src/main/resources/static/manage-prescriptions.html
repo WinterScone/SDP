@@ -30,15 +30,15 @@
 
     <div class="form-short" id="prescriptionForm" style="display: none;">
         <label for="newMedicine">Medicine</label>
-        <select id="newMedicine"></select>
+        <select id="newMedicine" required></select>
         <p id="unitDoseHint" style="margin:4px 0 8px; font-size:13px; color:#57606a;"></p>
 
         <label for="newDosage">Quantity</label>
-        <input id="newDosage" type="text" placeholder="e.g. 2" />
+        <input id="newDosage" type="text" placeholder="e.g. 2" required />
         <p id="newDosageHint" style="margin:4px 0 8px; font-size:13px; color:#57606a;"></p>
 
         <label for="newFrequency">Frequency</label>
-        <select id="newFrequency">
+        <select id="newFrequency" required>
             <option value="">Select Frequency</option>
             <option value="ONCE_A_DAY">Once a day</option>
             <option value="TWICE_A_DAY">Twice a day</option>
@@ -46,8 +46,8 @@
             <option value="FOUR_TIMES_A_DAY">Four times a day</option>
         </select>
 
-        <label for="newScheduledTimes">Scheduled Times</label>
-        <input id="newScheduledTimes" type="text" placeholder="e.g. 08:00, 14:00, 20:00" />
+        <label>Scheduled Times</label>
+        <div id="newScheduledTimesContainer"></div>
 
         <div class="row">
             <button id="addBtn" type="button">Add</button>

@@ -31,17 +31,20 @@ public class MachineService {
     private final PrescriptionRepository prescriptionRepository;
     private final ReminderLogRepository reminderLogRepository;
     private final PatientRepository patientRepository;
+    private final ActivityLogService activityLogService;
 
     public MachineService(
             PatientFaceService patientFaceService,
             PrescriptionRepository prescriptionRepository,
             ReminderLogRepository reminderLogRepository,
-            PatientRepository patientRepository
+            PatientRepository patientRepository,
+            ActivityLogService activityLogService
     ) {
         this.patientFaceService = patientFaceService;
         this.prescriptionRepository = prescriptionRepository;
         this.reminderLogRepository = reminderLogRepository;
         this.patientRepository = patientRepository;
+        this.activityLogService = activityLogService;
     }
 
     public MachinePatientImagesResponse getAllPatientImages() {
@@ -165,6 +168,16 @@ public class MachineService {
         }
 
         reminderLogRepository.save(log);
+
+        String patientName = (patient.getFirstName() != null ? patient.getFirstName() : "") + " "
+                + (patient.getLastName() != null ? patient.getLastName() : "");
+        activityLogService.logMedicineDispensed(
+                patient.getId(),
+                patientName.trim(),
+                prescription.getMedicine().getMedicineName(),
+                status.name()
+        );
+
         return new DispenseResultResponse(true, "Dispense result saved successfully");
     }
 

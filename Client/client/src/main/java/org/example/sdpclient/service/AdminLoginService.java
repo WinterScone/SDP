@@ -28,13 +28,17 @@ public class AdminLoginService {
         var userOptional = repo.findByUsernameIgnoreCase(req.getUsername());
 
         if (userOptional.isEmpty()) {
+            activityLogService.logAdminLoginFailed(req.getUsername());
             return Map.of("ok", false);
         }
 
         var user = userOptional.get();
         if (!encoder.matches(req.getPassword(), user.getPasswordHash())) {
+            activityLogService.logAdminLoginFailed(req.getUsername());
             return Map.of("ok", false);
         }
+
+        activityLogService.logAdminLogin(user.getId(), user.getUsername());
 
         return Map.of(
                 "ok", true,

@@ -626,6 +626,21 @@ td.actions button:last-child {
     color: #cf222e;
 }
 
+.type-auth {
+    background: #fff1e5;
+    color: #bc4c00;
+}
+
+.type-face {
+    background: #eef6fc;
+    color: #0550ae;
+}
+
+.type-dispense {
+    background: #d4f4e2;
+    color: #116329;
+}
+
 /* Checkmark */
 .checkmark {
     color: #1a7f37;

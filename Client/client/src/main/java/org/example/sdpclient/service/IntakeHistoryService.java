@@ -22,13 +22,16 @@ public class IntakeHistoryService {
     private final IntakeHistoryRepository intakeHistoryRepo;
     private final PatientRepository patientRepo;
     private final MedicineRepository medicineRepo;
+    private final ActivityLogService activityLogService;
 
     public IntakeHistoryService(IntakeHistoryRepository intakeHistoryRepo,
                                 PatientRepository patientRepo,
-                                MedicineRepository medicineRepo) {
+                                MedicineRepository medicineRepo,
+                                ActivityLogService activityLogService) {
         this.intakeHistoryRepo = intakeHistoryRepo;
         this.patientRepo = patientRepo;
         this.medicineRepo = medicineRepo;
+        this.activityLogService = activityLogService;
     }
 
     public Map<String, Object> logIntake(Long patientId, IntakeLogRequest req) {
@@ -70,6 +73,11 @@ public class IntakeHistoryService {
         record.setNotes(req.getNotes() != null && !req.getNotes().isBlank() ? req.getNotes().trim() : null);
 
         intakeHistoryRepo.save(record);
+
+        String patientName = patient.getFirstName() + " " + patient.getLastName();
+        activityLogService.logMedicineIntakeLogged(patient.getId(), patientName,
+                medicine.getMedicineName());
+
         return Map.of("ok", true);
     }
 

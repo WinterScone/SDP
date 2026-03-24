@@ -114,7 +114,8 @@ public class AdminPrescriptionController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied to this patient");
         }
 
-        service.updatePrescription(rx, dto);
+        String adminUsername = CookieUtils.getCookieValue(request, "adminUsername");
+        service.updatePrescription(rx, dto, adminId, adminUsername);
     }
 
     @DeleteMapping("/prescriptions/{id}")

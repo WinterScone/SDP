@@ -211,7 +211,17 @@ class AdminManagePatientDetailServiceTest {
 
     @Test
     void updatePrescription_shouldTrimFields_andSave() {
+        Patient patient = new Patient();
+        patient.setId(1L);
+        patient.setFirstName("John");
+        patient.setLastName("Doe");
+
+        Medicine medicine = new Medicine();
+        medicine.setMedicineName("Aspirin");
+
         Prescription rx = new Prescription();
+        rx.setPatient(patient);
+        rx.setMedicine(medicine);
         rx.setDosage("old");
         rx.setFrequency("ONCE_A_DAY");
 
@@ -219,7 +229,7 @@ class AdminManagePatientDetailServiceTest {
         when(dto.getDosage()).thenReturn(" 20mg ");
         when(dto.getFrequency()).thenReturn(" TWICE_A_DAY ");
 
-        service.updatePrescription(rx, dto);
+        service.updatePrescription(rx, dto, 1L, "admin1");
 
         assertEquals("20mg", rx.getDosage());
         assertEquals("TWICE_A_DAY", rx.getFrequency());

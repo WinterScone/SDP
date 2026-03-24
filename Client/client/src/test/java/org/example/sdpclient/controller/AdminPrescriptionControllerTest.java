@@ -128,7 +128,7 @@ class AdminPrescriptionControllerTest {
                         .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true")))
                 .andExpect(status().isOk());
 
-        verify(service).updatePrescription(eq(rx), any(PrescriptionUpdateDto.class));
+        verify(service).updatePrescription(eq(rx), any(PrescriptionUpdateDto.class), eq(1L), eq(null));
     }
 
     @Test

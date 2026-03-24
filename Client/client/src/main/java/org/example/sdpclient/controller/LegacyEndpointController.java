@@ -42,8 +42,8 @@ public class LegacyEndpointController {
 
     @Deprecated
     @PostMapping("/api/verify/logout")
-    public ResponseEntity<?> legacyAdminLogout(HttpServletResponse response) {
-        return adminAuthController.logout(response);
+    public ResponseEntity<?> legacyAdminLogout(HttpServletRequest request, HttpServletResponse response) {
+        return adminAuthController.logout(request, response);
     }
 
     @Deprecated
