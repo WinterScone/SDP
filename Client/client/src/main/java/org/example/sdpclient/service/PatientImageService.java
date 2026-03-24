@@ -8,9 +8,10 @@ import org.example.sdpclient.repository.PatientRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.Base64;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class PatientImageService {
@@ -48,19 +49,13 @@ public class PatientImageService {
 
     @Transactional(readOnly = true)
     public List<PatientImageDto> getAllPatientImages() {
-        List<Patient> patients = patientRepo.findAll();
-        Map<Long, PatientImage> imagesByPatientId = imageRepo.findAll().stream()
-                .collect(Collectors.toMap(img -> img.getPatient().getId(), Function.identity()));
-
-        return patients.stream().map(patient -> {
-            PatientImage img = imagesByPatientId.get(patient.getId());
-            String image = null;
-            String contentType = null;
-            if (img != null && ALLOWED_CONTENT_TYPES.contains(img.getContentType())) {
-                contentType = img.getContentType();
-                image = "data:" + contentType + ";base64," + Base64.getEncoder().encodeToString(img.getData());
-            }
-            return new PatientImageDto(patient.getUsername(), image, contentType);
-        }).toList();
+        return patientRepo.findAll().stream()
+                .filter(p -> p.getFaceData() != null && p.getFaceData().length > 0)
+                .map(p -> {
+                    String contentType = p.getFaceContentType() != null ? p.getFaceContentType() : "image/jpeg";
+                    String image = "data:" + contentType + ";base64," + Base64.getEncoder().encodeToString(p.getFaceData());
+                    return new PatientImageDto(p.getId(), image, contentType);
+                })
+                .toList();
     }
 }
