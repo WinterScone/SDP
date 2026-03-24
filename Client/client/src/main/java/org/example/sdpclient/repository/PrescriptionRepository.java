@@ -1,7 +1,6 @@
 package org.example.sdpclient.repository;
 
 import org.example.sdpclient.entity.Prescription;
-import org.example.sdpclient.enums.MedicineType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -11,7 +10,7 @@ import java.util.List;
 public interface PrescriptionRepository extends JpaRepository<Prescription, Long> {
     List<Prescription> findByPatientId(Long patientId);
 
-    boolean existsByPatientIdAndMedicine_MedicineId(Long id, MedicineType medType);
+    boolean existsByPatientIdAndMedicine_MedicineId(Long id, Integer medicineId);
 
     List<Prescription> findByPatientIdAndActiveTrue(Long patientId);
 
@@ -25,5 +24,3 @@ public interface PrescriptionRepository extends JpaRepository<Prescription, Long
     @Query(value = "DELETE FROM prescription", nativeQuery = true)
     void deleteAllPrescriptionsNative();
 }
-
-

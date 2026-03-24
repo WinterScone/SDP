@@ -8,7 +8,6 @@ import java.util.List;
 import org.example.sdpclient.dto.PatientPrescriptionsResponse;
 import org.example.sdpclient.entity.Medicine;
 import org.example.sdpclient.entity.Prescription;
-import org.example.sdpclient.enums.FrequencyType;
 import org.example.sdpclient.enums.MedicineType;
 import org.example.sdpclient.repository.DispenserSlotRepository;
 import org.example.sdpclient.repository.PatientRepository;
@@ -47,7 +46,7 @@ class PatientDetailServiceTest {
     @Test
     void getPrescriptionItems_shouldMapPrescriptionsToResponseItems() {
         Medicine med = new Medicine();
-        med.setMedicineId(MedicineType.VTM01);
+        med.setMedicineId(MedicineType.VTM01.getId());
         med.setMedicineName("Amoxicillin");
 
         Prescription rx = new Prescription();
@@ -65,16 +64,6 @@ class PatientDetailServiceTest {
 
         PatientPrescriptionsResponse.PrescriptionItem item = result.get(0);
 
-        // If PrescriptionItem is a record -> use item.medicineId(), etc.
-        // If it is a class -> use getters.
-        //
-        // Most likely it's a record (nested record), so:
-        // assertEquals("MEDICINE_ID1", item.medicineId());
-        // assertEquals("Amoxicillin", item.medicineName());
-        // assertEquals("10mg", item.dosage());
-        // assertEquals("daily", item.frequency());
-
-        // If you’re unsure, you can at least verify mapping happened:
         assertNotNull(item);
 
         verify(prescriptionRepo).findByPatientId(5L);
@@ -93,4 +82,3 @@ class PatientDetailServiceTest {
         verify(prescriptionRepo).findByPatientId(5L);
     }
 }
-

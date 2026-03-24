@@ -65,7 +65,7 @@ public class PatientDetailService {
                     return new PatientPrescriptionsResponse.PrescriptionItem(
                             prescription.getId(),
                             slotNumber,
-                            prescription.getMedicine().getMedicineId().name(),
+                            String.valueOf(prescription.getMedicine().getMedicineId()),
                             prescription.getMedicine().getMedicineName(),
                             prescription.getDosage(),
                             scheduledTime.isEmpty() ? null : scheduledTime
@@ -74,4 +74,3 @@ public class PatientDetailService {
                 .toList();
     }
 }
-

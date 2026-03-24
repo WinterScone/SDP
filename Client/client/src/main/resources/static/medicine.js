@@ -25,15 +25,7 @@
         const meds = await res.json();
         setMsg("");
 
-        meds.sort((a, b) => {
-            const aId = String(a.medicineId ?? "");
-            const bId = String(b.medicineId ?? "");
-
-            const aNum = parseInt(aId.replace(/\D+/g, ""), 10) || 0;
-            const bNum = parseInt(bId.replace(/\D+/g, ""), 10) || 0;
-
-            return aNum - bNum;
-        });
+        meds.sort((a, b) => (a.medicineId ?? 0) - (b.medicineId ?? 0));
 
         for (const m of meds) {
             const tr = document.createElement("tr");

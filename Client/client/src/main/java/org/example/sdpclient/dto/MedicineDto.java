@@ -1,8 +1,7 @@
 package org.example.sdpclient.dto;
 
 public record MedicineDto(
-        int id,
-        String medicineId,
+        Integer medicineId,
         String name,
         String shape,
         String colour,

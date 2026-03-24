@@ -202,8 +202,8 @@ public class MachineService {
                 dueItems.add(
                         new PatientPrescriptionsResponse.PrescriptionItem(
                                 prescription.getId(),
-                                prescription.getMedicine().getMedicineId().getId(),
-                                prescription.getMedicine().getMedicineId().name(),
+                                prescription.getMedicine().getMedicineId(),
+                                String.valueOf(prescription.getMedicine().getMedicineId()),
                                 prescription.getMedicine().getMedicineName(),
                                 prescription.getDosage(),
                                 reminderTime.getReminderTime().format(DateTimeFormatter.ofPattern("HH:mm:ss"))

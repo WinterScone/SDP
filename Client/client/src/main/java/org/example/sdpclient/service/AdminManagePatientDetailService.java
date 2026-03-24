@@ -5,7 +5,6 @@ import org.example.sdpclient.entity.Medicine;
 import org.example.sdpclient.entity.Patient;
 import org.example.sdpclient.entity.Prescription;
 import org.example.sdpclient.entity.PrescriptionReminderTime;
-import org.example.sdpclient.enums.MedicineType;
 import org.example.sdpclient.repository.MedicineRepository;
 import org.example.sdpclient.repository.PatientRepository;
 import org.example.sdpclient.repository.PrescriptionRepository;
@@ -126,7 +125,7 @@ public class AdminManagePatientDetailService {
                 .toList();
     }
 
-    public boolean prescriptionExists(Long patientId, MedicineType medicineId) {
+    public boolean prescriptionExists(Long patientId, Integer medicineId) {
         return prescriptionRepository.existsByPatientIdAndMedicine_MedicineId(patientId, medicineId);
     }
 
@@ -252,7 +251,7 @@ public class AdminManagePatientDetailService {
                 .toList();
     }
 
-    public Optional<Medicine> findMedicineById(MedicineType medicineId) {
+    public Optional<Medicine> findMedicineById(Integer medicineId) {
         return medicineRepository.findById(medicineId);
     }
 

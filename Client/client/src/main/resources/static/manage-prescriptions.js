@@ -24,14 +24,14 @@
     const newDosageHint = document.getElementById("newDosageHint");
 
     function updateNewDosageHint() {
-        const selected = medicinesCache.find(m => m.medicineId === newMedicine.value);
+        const selected = medicinesCache.find(m => String(m.medicineId) === newMedicine.value);
         const unitDose = selected && selected.unitDose != null ? selected.unitDose : null;
         const qty = parseFloat(newDosage.value);
         newDosageHint.textContent = unitDose && !isNaN(qty) ? `Total Dosage: ${qty * unitDose}mg` : "";
     }
 
     newMedicine.addEventListener("change", () => {
-        const selected = medicinesCache.find(m => m.medicineId === newMedicine.value);
+        const selected = medicinesCache.find(m => String(m.medicineId) === newMedicine.value);
         unitDoseHint.textContent = selected && selected.unitDose != null
             ? `Unit Dosage: ${selected.unitDose}mg`
             : "";
@@ -201,7 +201,7 @@
             return;
         }
 
-        const selected = medicinesCache.find(m => m.medicineId === medicineId);
+        const selected = medicinesCache.find(m => String(m.medicineId) === medicineId);
         const unitDose = selected && selected.unitDose != null ? selected.unitDose : null;
         const dosage = unitDose ? String(parseFloat(qty) * unitDose) : qty;
 
@@ -213,7 +213,7 @@
         const res = await fetch(`/api/admin/patients/${patientId}/prescriptions`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ medicineId, dosage, frequency, scheduledTimes })
+            body: JSON.stringify({ medicineId: Number(medicineId), dosage, frequency, scheduledTimes })
         });
 
         if(res.ok){

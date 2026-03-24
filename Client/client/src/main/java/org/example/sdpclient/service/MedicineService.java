@@ -2,7 +2,6 @@ package org.example.sdpclient.service;
 
 import jakarta.transaction.Transactional;
 import org.example.sdpclient.entity.Medicine;
-import org.example.sdpclient.enums.MedicineType;
 import org.example.sdpclient.repository.MedicineRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
@@ -30,12 +29,12 @@ public class MedicineService {
         return repo.findAll(Sort.by("medicineId"));
     }
 
-    public boolean exists(MedicineType id) {
+    public boolean exists(Integer id) {
         return repo.existsById(id);
     }
 
     @Transactional
-    public void updateQuantity(MedicineType id, int quantity, Long adminId, String adminUsername) {
+    public void updateQuantity(Integer id, int quantity, Long adminId, String adminUsername) {
         Medicine medicine = repo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Medicine not found: " + id));
         int oldQuantity = medicine.getQuantity();
@@ -61,7 +60,7 @@ public class MedicineService {
 
 
     @Transactional
-    public void updateMedicine(MedicineType id, int quantity, String instruction, Long adminId, String adminUsername) {
+    public void updateMedicine(Integer id, int quantity, String instruction, Long adminId, String adminUsername) {
         Medicine medicine = repo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Medicine not found: " + id));
         int oldQuantity = medicine.getQuantity();
@@ -125,6 +124,3 @@ public class MedicineService {
         return lowStock.size();
     }
 }
-
-
-

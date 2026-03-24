@@ -88,15 +88,6 @@ class AdminManagePatientDetailServiceTest {
 
         assertEquals(2, result.size());
 
-        // If PatientViewDto is a record -> result.get(0).id()
-        // If it's a class -> result.get(0).getId()
-
-        // We can still validate key fields in a tolerant way:
-        // (uncomment the right style if needed)
-
-        // assertEquals(10L, result.get(0).id());
-        // assertEquals("Jane", result.get(0).firstName());
-
         verify(patientRepository).searchByKeyword("abc");
     }
 
@@ -124,7 +115,7 @@ class AdminManagePatientDetailServiceTest {
     @Test
     void getPrescriptionViews_shouldMapPrescriptionsToDtos() {
         Medicine med = new Medicine();
-        med.setMedicineId(MedicineType.VTM01);
+        med.setMedicineId(MedicineType.VTM01.getId());
         med.setMedicineName("TestMed");
 
         Prescription rx = new Prescription();
@@ -149,14 +140,14 @@ class AdminManagePatientDetailServiceTest {
     @Test
     void prescriptionExists_shouldDelegateToRepository() {
         when(prescriptionRepository
-                .existsByPatientIdAndMedicine_MedicineId(7L, MedicineType.VTM01))
+                .existsByPatientIdAndMedicine_MedicineId(7L, MedicineType.VTM01.getId()))
                 .thenReturn(true);
 
-        boolean exists = service.prescriptionExists(7L, MedicineType.VTM01);
+        boolean exists = service.prescriptionExists(7L, MedicineType.VTM01.getId());
 
         assertTrue(exists);
         verify(prescriptionRepository)
-                .existsByPatientIdAndMedicine_MedicineId(7L, MedicineType.VTM01);
+                .existsByPatientIdAndMedicine_MedicineId(7L, MedicineType.VTM01.getId());
     }
 
 
@@ -198,7 +189,7 @@ class AdminManagePatientDetailServiceTest {
         patient.setId(1L);
 
         Medicine medicine = new Medicine();
-        medicine.setMedicineId(MedicineType.VTM01);
+        medicine.setMedicineId(MedicineType.VTM01.getId());
         medicine.setMedicineName("Amoxicillin");
 
         PrescriptionCreateDto dto = mock(PrescriptionCreateDto.class);
@@ -243,7 +234,7 @@ class AdminManagePatientDetailServiceTest {
     @Test
     void listMedicines_shouldMapMedicinesToDtos() {
         Medicine m1 = new Medicine();
-        m1.setMedicineId(MedicineType.VTM01);
+        m1.setMedicineId(MedicineType.VTM01.getId());
         m1.setMedicineName("TestMed");
 
         when(medicineRepository.findAll()).thenReturn(List.of(m1));
@@ -252,26 +243,22 @@ class AdminManagePatientDetailServiceTest {
 
         assertEquals(1, result.size());
 
-        // record style:
-        // assertEquals(MedicineType.MEDICINE_ID1, result.get(0).medicineId());
-        // assertEquals("TestMed", result.get(0).medicineName());
-
         verify(medicineRepository).findAll();
     }
 
     @Test
     void findMedicineById_shouldDelegateToRepository() {
-        MedicineType type = MedicineType.VTM01;
+        Integer id = MedicineType.VTM01.getId();
 
         Medicine med = new Medicine();
-        med.setMedicineId(type);
+        med.setMedicineId(id);
 
-        when(medicineRepository.findById(type)).thenReturn(Optional.of(med));
+        when(medicineRepository.findById(id)).thenReturn(Optional.of(med));
 
-        Optional<Medicine> result = service.findMedicineById(type);
+        Optional<Medicine> result = service.findMedicineById(id);
 
         assertTrue(result.isPresent());
-        verify(medicineRepository).findById(type);
+        verify(medicineRepository).findById(id);
     }
 
 

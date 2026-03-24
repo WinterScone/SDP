@@ -46,9 +46,9 @@ class SeedPrescriptionTest {
 
         when(patientRepo.findByUsername("testPatient1")).thenReturn(Optional.of(patient));
 
-        when(prescriptionRepo.existsByPatientIdAndMedicine_MedicineId(1L, MedicineType.VTM01)).thenReturn(true);
-        when(prescriptionRepo.existsByPatientIdAndMedicine_MedicineId(1L, MedicineType.VTM02)).thenReturn(true);
-        when(prescriptionRepo.existsByPatientIdAndMedicine_MedicineId(1L, MedicineType.VTM03)).thenReturn(true);
+        when(prescriptionRepo.existsByPatientIdAndMedicine_MedicineId(1L, MedicineType.VTM01.getId())).thenReturn(true);
+        when(prescriptionRepo.existsByPatientIdAndMedicine_MedicineId(1L, MedicineType.VTM02.getId())).thenReturn(true);
+        when(prescriptionRepo.existsByPatientIdAndMedicine_MedicineId(1L, MedicineType.VTM03.getId())).thenReturn(true);
 
         var runner = new SeedPrescription().seed(patientRepo, medicineRepo, prescriptionRepo);
 
@@ -75,17 +75,17 @@ class SeedPrescriptionTest {
         when(prescriptionRepo.existsByPatientIdAndMedicine_MedicineId(eq(1L), any())).thenReturn(false);
 
         Medicine med1 = new Medicine();
-        med1.setMedicineId(MedicineType.VTM01);
+        med1.setMedicineId(MedicineType.VTM01.getId());
 
         Medicine med2 = new Medicine();
-        med2.setMedicineId(MedicineType.VTM02);
+        med2.setMedicineId(MedicineType.VTM02.getId());
 
         Medicine med3 = new Medicine();
-        med3.setMedicineId(MedicineType.VTM03);
+        med3.setMedicineId(MedicineType.VTM03.getId());
 
-        when(medicineRepo.findById(MedicineType.VTM01)).thenReturn(Optional.of(med1));
-        when(medicineRepo.findById(MedicineType.VTM02)).thenReturn(Optional.of(med2));
-        when(medicineRepo.findById(MedicineType.VTM03)).thenReturn(Optional.of(med3));
+        when(medicineRepo.findById(MedicineType.VTM01.getId())).thenReturn(Optional.of(med1));
+        when(medicineRepo.findById(MedicineType.VTM02.getId())).thenReturn(Optional.of(med2));
+        when(medicineRepo.findById(MedicineType.VTM03.getId())).thenReturn(Optional.of(med3));
 
         ArgumentCaptor<Prescription> captor = ArgumentCaptor.forClass(Prescription.class);
 

@@ -23,10 +23,10 @@ public class SeedPrescription {
             if (patientOptional.isEmpty()) return;
             var patient = patientOptional.get();
 
-            java.util.function.BiConsumer<MedicineType, Object[]> addIfMissing = (medicineType, df) -> {
-                if (prescriptionRepo.existsByPatientIdAndMedicine_MedicineId(patient.getId(), medicineType)) return;
+            java.util.function.BiConsumer<Integer, Object[]> addIfMissing = (medicineId, df) -> {
+                if (prescriptionRepo.existsByPatientIdAndMedicine_MedicineId(patient.getId(), medicineId)) return;
 
-                var medOptional = medicineRepo.findById(medicineType);
+                var medOptional = medicineRepo.findById(medicineId);
                 if (medOptional.isEmpty()) return;
 
                 Prescription p = new Prescription();
@@ -37,9 +37,9 @@ public class SeedPrescription {
                 prescriptionRepo.save(p);
             };
 
-            addIfMissing.accept(MedicineType.VTM01, new Object[]{String.valueOf(1000), FrequencyType.TWICE_A_DAY});
-            addIfMissing.accept(MedicineType.VTM02, new Object[]{String.valueOf(268), FrequencyType.ONCE_A_DAY});
-            addIfMissing.accept(MedicineType.VTM03, new Object[]{String.valueOf(100), FrequencyType.FOUR_TIMES_A_DAY});
+            addIfMissing.accept(MedicineType.VTM01.getId(), new Object[]{String.valueOf(1000), FrequencyType.TWICE_A_DAY});
+            addIfMissing.accept(MedicineType.VTM02.getId(), new Object[]{String.valueOf(268), FrequencyType.ONCE_A_DAY});
+            addIfMissing.accept(MedicineType.VTM03.getId(), new Object[]{String.valueOf(100), FrequencyType.FOUR_TIMES_A_DAY});
         };
     }
 }

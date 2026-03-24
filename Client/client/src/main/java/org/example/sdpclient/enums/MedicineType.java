@@ -1,19 +1,19 @@
 package org.example.sdpclient.enums;
 
 public enum MedicineType {
-    VTM01(1, "Vitamin C", "Tablet", "White", 1000),
-    VTM02(2, "Vitamin E", "Capsule", "Green", 268),
-    VTM03(3, "Vitamin B6", "Tablet", "Pale Yellow", 100),
-    SUP01(4, "Omega-3 Fish Oil", "Capsule", "Clear", 1000),
-    MINMG(5, "Magnesium", "Tablet", "White", 400),
-    MINCA(6, "Calcium", "Tablet", "White", 600),
-    MINZN(7, "Zinc", "Tablet", "Brown", 50),
-    MINFE(8, "Iron", "Tablet", "Brown", 18),
-    SUP02(9, "Probiotics", "Capsule", "White", 1000),
-    SUP03(10, "Turmeric", "Capsule", "Yellow", 500),
-    SUP04(11, "CoQ10", "Capsule", "Yellow", 100),
-    SUP05(12, "Ashwagandha", "Capsule", "Green", 500),
-    MINK(13, "Potassium", "Tablet", "Pale Yellow", 2500);
+    VTM01(0, "Vitamin C", "Tablet", "White", 1000),
+    VTM02(1, "Vitamin E", "Capsule", "Green", 268),
+    VTM03(2, "Vitamin B6", "Tablet", "Pale Yellow", 100),
+    SUP01(3, "Omega-3 Fish Oil", "Capsule", "Clear", 1000),
+    MINMG(4, "Magnesium", "Tablet", "White", 400),
+    MINCA(5, "Calcium", "Tablet", "White", 600),
+    MINZN(6, "Zinc", "Tablet", "Brown", 50),
+    MINFE(7, "Iron", "Tablet", "Brown", 18),
+    SUP02(8, "Probiotics", "Capsule", "White", 1000),
+    SUP03(9, "Turmeric", "Capsule", "Yellow", 500),
+    SUP04(10, "CoQ10", "Capsule", "Yellow", 100),
+    SUP05(11, "Ashwagandha", "Capsule", "Green", 500),
+    MINK(12, "Potassium", "Tablet", "Pale Yellow", 2500);
 
     private final int id;
     private final String name;
