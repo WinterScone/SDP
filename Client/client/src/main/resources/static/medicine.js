@@ -48,7 +48,7 @@
           <td>${m.medicineName ?? ""}</td>
           <td>${m.shape ?? ""}</td>
           <td>${m.colour ?? ""}</td>
-          <td>${m.dosagePerForm ?? ""}</td>
+          <td>${m.unitDose ?? ""}</td>
           <td id="${qtyCellId}">${m.quantity ?? 0}</td>
           <td id="${instrCellId}">${m.instruction ?? ""}</td>
           <td>

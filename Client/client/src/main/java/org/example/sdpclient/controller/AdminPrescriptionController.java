@@ -52,10 +52,10 @@ public class AdminPrescriptionController {
 
         try {
             int dosage = Integer.parseInt(dto.getDosage().trim());
-            int dosagePerForm = medicine.getDosagePerForm();
-            if (dosage % dosagePerForm != 0) {
+            int unitDose = medicine.getUnitDose();
+            if (dosage % unitDose != 0) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Dosage must be a multiple of " + dosagePerForm + "mg (dosage per unit)");
+                        "Dosage must be a multiple of " + unitDose + "mg (dosage per unit)");
             }
         } catch (NumberFormatException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dosage must be a valid number");
@@ -102,10 +102,10 @@ public class AdminPrescriptionController {
 
         try {
             int dosage = Integer.parseInt(dto.getDosage().trim());
-            int dosagePerForm = rx.getMedicine().getDosagePerForm();
-            if (dosage % dosagePerForm != 0) {
+            int unitDose = rx.getMedicine().getUnitDose();
+            if (dosage % unitDose != 0) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Dosage must be a multiple of " + dosagePerForm + "mg (dosage per unit)");
+                        "Dosage must be a multiple of " + unitDose + "mg (dosage per unit)");
             }
         } catch (NumberFormatException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dosage must be a valid number");

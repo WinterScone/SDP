@@ -11,5 +11,6 @@ public record PrescriptionViewDto(
         String medicineName,
         String dosage,
         String frequency,
-        List<String> scheduledTimes
+        List<String> scheduledTimes,
+        Integer unitDose
 ) {}

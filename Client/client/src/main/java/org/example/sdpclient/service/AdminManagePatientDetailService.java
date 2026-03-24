@@ -120,7 +120,8 @@ public class AdminManagePatientDetailService {
                         rx.getFrequency(),
                         rx.getReminderTimes().stream()
                                 .map(rt -> rt.getReminderTime().toString())
-                                .toList()
+                                .toList(),
+                        rx.getMedicine().getUnitDose()
                 ))
                 .toList();
     }
@@ -245,7 +246,8 @@ public class AdminManagePatientDetailService {
                 .map(m -> new MedicineViewDto(
                         m.getMedicineId(),
                         m.getMedicineName(),
-                        m.getInstruction()
+                        m.getInstruction(),
+                        m.getUnitDose()
                 ))
                 .toList();
     }
@@ -257,4 +259,5 @@ public class AdminManagePatientDetailService {
     public static boolean isBlank(String s) {
         return s == null || s.trim().isEmpty();
     }
+
 }

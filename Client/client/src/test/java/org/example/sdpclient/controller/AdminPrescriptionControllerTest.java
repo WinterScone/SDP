@@ -44,7 +44,7 @@ class AdminPrescriptionControllerTest {
 
     @Test
     void listMedicines_shouldReturn200_andDelegateToService() throws Exception {
-        MedicineViewDto med = new MedicineViewDto(MedicineType.VTM01, "TestMed", null);
+        MedicineViewDto med = new MedicineViewDto(MedicineType.VTM01, "TestMed", null, null);
         when(service.listMedicines()).thenReturn(List.of(med));
 
         mockMvc.perform(get("/api/admin/medicines"))
@@ -73,7 +73,7 @@ class AdminPrescriptionControllerTest {
     @Test
     void addPrescription_shouldReturn201_whenCreated() throws Exception {
         String body = """
-                {"medicineId":"VTM01","dosage":"10","frequency":"daily","scheduledTimes":["08:00","20:00"]}
+                {"medicineId":"VTM01","dosage":"1000","frequency":"daily","scheduledTimes":["08:00","20:00"]}
                 """;
 
         Patient patient = new Patient();
@@ -82,7 +82,7 @@ class AdminPrescriptionControllerTest {
         Medicine med = new Medicine();
         med.setMedicineId(MedicineType.VTM01);
         med.setMedicineName("TestMed");
-        med.setDosagePerForm(10);
+        med.setUnitDose(1000);
 
         when(service.canAdminAccessPatient(anyLong(), anyLong(), anyBoolean())).thenReturn(true);
         when(service.findPatient(10L)).thenReturn(Optional.of(patient));
@@ -103,7 +103,7 @@ class AdminPrescriptionControllerTest {
     @Test
     void updatePrescription_shouldReturn200_whenUpdated() throws Exception {
         String body = """
-                {"dosage":"10","frequency":"daily"}
+                {"dosage":"1000","frequency":"daily"}
                 """;
 
         Patient patient = new Patient();
@@ -111,7 +111,7 @@ class AdminPrescriptionControllerTest {
 
         Medicine med = new Medicine();
         med.setMedicineId(MedicineType.VTM01);
-        med.setDosagePerForm(10);
+        med.setUnitDose(1000);
 
         Prescription rx = new Prescription();
         rx.setId(5L);
