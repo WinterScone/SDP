@@ -106,6 +106,26 @@ public class AdminPatientController {
         return ResponseEntity.ok(patientImageService.getAllPatientImages());
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updatePatient(
+            @PathVariable Long id,
+            @RequestBody PatientUpdateDto dto,
+            HttpServletRequest request) {
+
+        if (!CookieUtils.isRootAdmin(request)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only root admin can edit patient details");
+        }
+
+        try {
+            Long adminId = CookieUtils.getAdminIdFromCookie(request);
+            String adminUsername = CookieUtils.getCookieValue(request, "adminUsername");
+            PatientViewDto updated = adminManageService.updatePatientDetails(id, dto, adminId, adminUsername);
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PutMapping("/{patientId}/link-admin")
     public ResponseEntity<?> linkAdminToPatient(
             @PathVariable Long patientId,
