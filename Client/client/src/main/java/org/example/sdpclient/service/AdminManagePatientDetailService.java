@@ -85,6 +85,36 @@ public class AdminManagePatientDetailService {
         return patientRepository.findById(id);
     }
 
+    public PatientViewDto updatePatientDetails(Long patientId, PatientUpdateDto dto, Long adminId, String adminUsername) {
+        Patient patient = patientRepository.findById(patientId)
+                .orElseThrow(() -> new IllegalArgumentException("Patient not found: " + patientId));
+
+        if (dto.getFirstName() != null && !dto.getFirstName().isBlank()) patient.setFirstName(dto.getFirstName());
+        if (dto.getLastName() != null && !dto.getLastName().isBlank()) patient.setLastName(dto.getLastName());
+        if (dto.getDateOfBirth() != null) patient.setDateOfBirth(dto.getDateOfBirth());
+        if (dto.getEmail() != null) patient.setEmail(dto.getEmail().isBlank() ? null : dto.getEmail());
+        if (dto.getPhone() != null) patient.setPhone(dto.getPhone().isBlank() ? null : dto.getPhone());
+        if (dto.getSmsConsent() != null) patient.setSmsConsent(dto.getSmsConsent());
+        if (dto.getFaceRecognitionConsent() != null) patient.setFaceRecognitionConsent(dto.getFaceRecognitionConsent());
+
+        patientRepository.save(patient);
+        activityLogService.logPatientUpdated(patientId,
+                patient.getFirstName() + " " + patient.getLastName(), adminId, adminUsername);
+
+        return new PatientViewDto(
+                patient.getId(),
+                patient.getFirstName(),
+                patient.getLastName(),
+                patient.getDateOfBirth(),
+                patient.getEmail(),
+                patient.getPhone(),
+                patient.isSmsConsent(),
+                patient.isFaceActive(),
+                patient.getLinkedAdmin() != null ? patient.getLinkedAdmin().getUsername() : null,
+                getPrescriptionViews(patientId)
+        );
+    }
+
 
     public List<PrescriptionViewDto> getPrescriptionViews(Long patientId) {
         return prescriptionRepository.findByPatientId(patientId).stream()

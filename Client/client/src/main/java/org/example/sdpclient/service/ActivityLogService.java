@@ -130,6 +130,18 @@ public class ActivityLogService {
     }
 
     @Transactional
+    public void logPatientUpdated(Long patientId, String patientName, Long adminId, String adminUsername) {
+        ActivityLog log = new ActivityLog();
+        log.setActivityType("PATIENT_UPDATED");
+        log.setDescription(String.format("Patient details updated for %s", patientName));
+        log.setAdminId(adminId);
+        log.setAdminUsername(adminUsername);
+        log.setPatientId(patientId);
+        log.setPatientName(patientName);
+        repository.save(log);
+    }
+
+    @Transactional
     public void clearAllLogs() {
         repository.deleteAll();
     }
