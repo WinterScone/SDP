@@ -18,20 +18,57 @@
     const newMedicine = document.getElementById("newMedicine");
     const newDosage = document.getElementById("newDosage");
     const newFrequency = document.getElementById("newFrequency");
-    const newScheduledTimesEl = document.getElementById("newScheduledTimes");
+    const newScheduledTimesContainer = document.getElementById("newScheduledTimesContainer");
     const formMessage = document.getElementById("formMessage");
     const unitDoseHint = document.getElementById("unitDoseHint");
     const newDosageHint = document.getElementById("newDosageHint");
 
+    const FREQUENCY_DEFAULTS = {
+        ONCE_A_DAY:        ["08:00"],
+        TWICE_A_DAY:       ["08:00", "20:00"],
+        THREE_TIMES_A_DAY: ["08:00", "14:00", "20:00"],
+        FOUR_TIMES_A_DAY:  ["08:00", "12:00", "16:00", "20:00"]
+    };
+
+    function generateTimePickers(prefix, frequency, existingTimes) {
+        const defaults = FREQUENCY_DEFAULTS[frequency];
+        if (!defaults) return "";
+        return defaults.map((def, i) => {
+            const val = existingTimes && existingTimes[i] ? existingTimes[i] : def;
+            return `<input type="time" id="${prefix}-time-${i}" value="${val}" />`;
+        }).join(" ");
+    }
+
+    function collectTimes(prefix, frequency) {
+        const defaults = FREQUENCY_DEFAULTS[frequency];
+        if (!defaults) return [];
+        return defaults.map((_, i) => {
+            const el = document.getElementById(`${prefix}-time-${i}`);
+            return el ? el.value : "";
+        }).filter(v => v.length > 0);
+    }
+
+    function frequencySelectHtml(id, selectedValue) {
+        const options = [
+            {value: "ONCE_A_DAY", label: "Once a day"},
+            {value: "TWICE_A_DAY", label: "Twice a day"},
+            {value: "THREE_TIMES_A_DAY", label: "Three times a day"},
+            {value: "FOUR_TIMES_A_DAY", label: "Four times a day"}
+        ];
+        return `<select id="freq-${id}" onchange="onEditFreqChange(${id})">` +
+            options.map(o => `<option value="${o.value}"${o.value === selectedValue ? ' selected' : ''}>${o.label}</option>`).join("") +
+            `</select>`;
+    }
+
     function updateNewDosageHint() {
-        const selected = medicinesCache.find(m => m.medicineId === newMedicine.value);
+        const selected = medicinesCache.find(m => String(m.medicineId) === newMedicine.value);
         const unitDose = selected && selected.unitDose != null ? selected.unitDose : null;
         const qty = parseFloat(newDosage.value);
         newDosageHint.textContent = unitDose && !isNaN(qty) ? `Total Dosage: ${qty * unitDose}mg` : "";
     }
 
     newMedicine.addEventListener("change", () => {
-        const selected = medicinesCache.find(m => m.medicineId === newMedicine.value);
+        const selected = medicinesCache.find(m => String(m.medicineId) === newMedicine.value);
         unitDoseHint.textContent = selected && selected.unitDose != null
             ? `Unit Dosage: ${selected.unitDose}mg`
             : "";
@@ -39,6 +76,10 @@
     });
 
     newDosage.addEventListener("input", updateNewDosageHint);
+
+    newFrequency.addEventListener("change", () => {
+        newScheduledTimesContainer.innerHTML = generateTimePickers("new", newFrequency.value, null);
+    });
 
     showFormBtn.addEventListener("click", () => {
         prescriptionForm.style.display = "block";
@@ -51,11 +92,10 @@
         newMedicine.value = "";
         newDosage.value = "";
         newFrequency.value = "";
-        newScheduledTimesEl.value = "";
+        newScheduledTimesContainer.innerHTML = "";
         unitDoseHint.textContent = "";
         newDosageHint.textContent = "";
         msg.textContent = "";
-        formMessage.textContent = "";
     });
 
     document.getElementById("addBtn").addEventListener("click", addPrescription);
@@ -104,15 +144,10 @@
         <tr><th>Last Name</th><td>${safe(p.lastName)}</td></tr>
         <tr><th>Date of Birth</th><td>${safe(p.dateOfBirth)}</td></tr>
         <tr><th>Email</th><td>${safe(p.email)}</td></tr>
-        <tr><th>Phone</th><td>${safe(p.phone)}</td></tr>
+        <tr><th>Phone</th><td>${formatPhone(p.phone)}</td></tr>
       `;
 
         renderPrescriptions(p.prescriptions || []);
-    }
-
-    function parseTimes(str) {
-        if (!str) return [];
-        return str.split(",").map(s => s.trim()).filter(s => s.length > 0);
     }
 
     function renderPrescriptions(list){
@@ -126,7 +161,6 @@
         }
 
         list.forEach(rx => {
-            const timesStr = (rx.scheduledTimes || []).join(", ");
             const unitDose = rx.unitDose;
             const qtyVal = unitDose ? Math.round(parseFloat(rx.dosage || 0) / unitDose) : (rx.dosage || "");
             const initialHint = unitDose && qtyVal !== "" ? `${qtyVal * unitDose}mg` : "";
@@ -137,8 +171,8 @@
           <td>${escapeHtml(rx.unitDose != null ? rx.unitDose + 'mg' : '-')}</td>
           <td><input id="qty-${rx.id}" value="${escapeAttr(String(qtyVal))}" data-unit-dose="${escapeAttr(String(unitDose ?? ''))}" oninput="updateDosageHint(${rx.id})" placeholder="Quantity" /></td>
           <td id="dosage-hint-${rx.id}" style="font-size:13px; color:#57606a;">${escapeHtml(initialHint)}</td>
-          <td><input id="freq-${rx.id}" value="${escapeAttr(rx.frequency)}" /></td>
-          <td><input id="times-${rx.id}" value="${escapeAttr(timesStr)}" placeholder="08:00, 20:00" /></td>
+          <td>${frequencySelectHtml(rx.id, rx.frequency)}</td>
+          <td><div id="times-container-${rx.id}">${generateTimePickers(`rx-${rx.id}`, rx.frequency, rx.scheduledTimes)}</div></td>
           <td><button onclick="saveRx(${rx.id})">Save</button></td>
           <td><button onclick="deleteRx(${rx.id})">Delete</button></td>
         `;
@@ -160,7 +194,7 @@
         const unitDose = parseFloat(qtyInput.dataset.unitDose);
         const dosage = unitDose && qty !== "" ? String(parseFloat(qty) * unitDose) : qty;
         const frequency = document.getElementById(`freq-${id}`).value.trim();
-        const scheduledTimes = parseTimes(document.getElementById(`times-${id}`).value);
+        const scheduledTimes = collectTimes(`rx-${id}`, frequency);
 
         if(!qty || !frequency){
             msg.textContent = "Quantity and frequency are required.";
@@ -177,6 +211,12 @@
         if(res.ok) await loadPatientAndPrescriptions();
     };
 
+    window.onEditFreqChange = function(id) {
+        const freq = document.getElementById(`freq-${id}`).value;
+        const container = document.getElementById(`times-container-${id}`);
+        container.innerHTML = generateTimePickers(`rx-${id}`, freq, null);
+    };
+
     window.deleteRx = async function(id){
         if(!confirm("Delete this prescription?")) return;
 
@@ -189,7 +229,7 @@
         const medicineId = newMedicine.value;
         const qty = newDosage.value.trim();
         const frequency = newFrequency.value.trim();
-        const scheduledTimes = parseTimes(newScheduledTimesEl.value);
+        const scheduledTimes = collectTimes("new", frequency);
 
         if(!medicineId || !qty || !frequency){
             formMessage.textContent = "Select medicine, quantity, and frequency.";
@@ -197,40 +237,46 @@
             return;
         }
 
-        const selected = medicinesCache.find(m => m.medicineId === medicineId);
-        const unitDose = selected && selected.unitDose != null ? selected.unitDose : null;
-        const dosage = unitDose ? String(parseFloat(qty) * unitDose) : qty;
-
         if(scheduledTimes.length === 0){
-            msg.textContent = "At least one scheduled time is required (e.g. 08:00).";
+            msg.textContent = "At least one scheduled time is required.";
             return;
         }
+
+        const selected = medicinesCache.find(m => String(m.medicineId) === medicineId);
+        const unitDose = selected && selected.unitDose != null ? selected.unitDose : null;
+        const dosage = unitDose ? String(parseFloat(qty) * unitDose) : qty;
 
         const res = await fetch(`/api/admin/patients/${patientId}/prescriptions`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ medicineId, dosage, frequency, scheduledTimes })
+            body: JSON.stringify({ medicineId: Number(medicineId), dosage, frequency, scheduledTimes })
         });
 
         if(res.ok){
-            msg.textContent = "Prescription added.";
+            msg.textContent = "Added.";
             newMedicine.value = "";
             newDosage.value = "";
             newFrequency.value = "";
-            newScheduledTimesEl.value = "";
+            newScheduledTimesContainer.innerHTML = "";
             unitDoseHint.textContent = "";
             newDosageHint.textContent = "";
             prescriptionForm.style.display = "none";
             showFormBtn.style.display = "block";
             await loadPatientAndPrescriptions();
         } else {
-            const data = await res.json().catch(() => null);
-            formMessage.textContent = (data && data.message) ? data.message : "Add failed. Check dosage is a number and medicine is not already prescribed.";
-            formMessage.className = "msg error";
+            msg.textContent = "Add failed (maybe already exists).";
         }
     }
 
     function safe(v){ return v == null ? "" : String(v); }
+
+    function formatPhone(phone) {
+        if (!phone) return "-";
+        const ukMatch = phone.match(/^\+44(\d{4})(\d{6})$/);
+        if (ukMatch) return "+44 " + ukMatch[1] + " " + ukMatch[2];
+        if (/^07\d{9}$/.test(phone)) return phone.slice(0, 5) + " " + phone.slice(5);
+        return phone;
+    }
 
     function escapeHtml(s){
         return safe(s)

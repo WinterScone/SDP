@@ -1,9 +1,9 @@
 package org.example.sdpclient.controller;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.example.sdpclient.dto.ReduceMedicineRequest;
 import org.example.sdpclient.entity.Medicine;
-import org.example.sdpclient.enums.MedicineType;
 import org.example.sdpclient.service.MedicineService;
 import org.example.sdpclient.util.CookieUtils;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +28,7 @@ public class MedicineController {
     }
 
     @PatchMapping("/{id}/quantity")
-    public ResponseEntity<?> updateQuantity(@PathVariable MedicineType id, @RequestBody Map<String, Integer> body,
+    public ResponseEntity<?> updateQuantity(@PathVariable Integer id, @RequestBody Map<String, Integer> body,
                                            HttpServletRequest request) {
 
         Integer quantity = body.get("quantity");
@@ -60,7 +60,7 @@ public class MedicineController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<?> updateMedicine(@PathVariable MedicineType id, @RequestBody Map<String, Object> body,
+    public ResponseEntity<?> updateMedicine(@PathVariable Integer id, @RequestBody Map<String, Object> body,
                                             HttpServletRequest request) {
 
         Integer quantity = body.get("quantity") instanceof Number n ? n.intValue() : null;
@@ -101,5 +101,31 @@ public class MedicineController {
             return ResponseEntity.badRequest()
                     .body(Map.of("ok", false, "message", ex.getMessage()));
         }
+    }
+
+    private Long getAdminIdFromCookie(HttpServletRequest request) {
+        String idStr = getCookieValue(request, "adminId");
+        if (idStr == null || idStr.isBlank()) {
+            return null;
+        }
+
+        try {
+            return Long.parseLong(idStr);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private String getCookieValue(HttpServletRequest request, String name) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) return null;
+
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals(name)) {
+                return cookie.getValue();
+            }
+        }
+
+        return null;
     }
 }

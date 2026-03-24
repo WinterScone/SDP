@@ -44,7 +44,7 @@ class AdminPrescriptionControllerTest {
 
     @Test
     void listMedicines_shouldReturn200_andDelegateToService() throws Exception {
-        MedicineViewDto med = new MedicineViewDto(MedicineType.VTM01, "TestMed", null, null);
+        MedicineViewDto med = new MedicineViewDto(MedicineType.VTM01.getId(), "TestMed", null, null);
         when(service.listMedicines()).thenReturn(List.of(med));
 
         mockMvc.perform(get("/api/admin/medicines"))
@@ -57,7 +57,7 @@ class AdminPrescriptionControllerTest {
     @Test
     void addPrescription_shouldReturn400_whenBodyMissingRequiredFields() throws Exception {
         String body = """
-                {"medicineId":"VTM01","dosage":"  ","frequency":""}
+                {"medicineId":0,"dosage":"  ","frequency":""}
                 """;
 
         when(service.canAdminAccessPatient(anyLong(), anyLong(), anyBoolean())).thenReturn(true);
@@ -73,27 +73,28 @@ class AdminPrescriptionControllerTest {
     @Test
     void addPrescription_shouldReturn201_whenCreated() throws Exception {
         String body = """
-                {"medicineId":"VTM01","dosage":"1000","frequency":"ONCE_A_DAY","scheduledTimes":["08:00","20:00"]}
+                {"medicineId":0,"dosage":"1000","frequency":"daily","scheduledTimes":["08:00","20:00"]}
                 """;
 
         Patient patient = new Patient();
         patient.setId(10L);
 
         Medicine med = new Medicine();
-        med.setMedicineId(MedicineType.VTM01);
+        med.setMedicineId(MedicineType.VTM01.getId());
         med.setMedicineName("TestMed");
         med.setUnitDose(1000);
 
         when(service.canAdminAccessPatient(anyLong(), anyLong(), anyBoolean())).thenReturn(true);
         when(service.findPatient(10L)).thenReturn(Optional.of(patient));
-        when(service.findMedicineById(MedicineType.VTM01)).thenReturn(Optional.of(med));
-        when(service.prescriptionExists(10L, MedicineType.VTM01)).thenReturn(false);
+        when(service.findMedicineById(MedicineType.VTM01.getId())).thenReturn(Optional.of(med));
+        when(service.prescriptionExists(10L, MedicineType.VTM01.getId())).thenReturn(false);
 
         mockMvc.perform(post("/api/admin/patients/10/prescriptions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
                         .cookie(new jakarta.servlet.http.Cookie("adminId", "1"))
-                        .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true")))
+                        .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true"))
+                        .cookie(new jakarta.servlet.http.Cookie("adminUsername", "admin1")))
                 .andExpect(status().isCreated());
 
         verify(service).createPrescription(eq(patient), eq(med), any(PrescriptionCreateDto.class), any(), any());
@@ -102,14 +103,14 @@ class AdminPrescriptionControllerTest {
     @Test
     void updatePrescription_shouldReturn200_whenUpdated() throws Exception {
         String body = """
-                {"dosage":"1000","frequency":"ONCE_A_DAY"}
+                {"dosage":"1000","frequency":"daily"}
                 """;
 
         Patient patient = new Patient();
         patient.setId(10L);
 
         Medicine med = new Medicine();
-        med.setMedicineId(MedicineType.VTM01);
+        med.setMedicineId(MedicineType.VTM01.getId());
         med.setUnitDose(1000);
 
         Prescription rx = new Prescription();
@@ -127,7 +128,7 @@ class AdminPrescriptionControllerTest {
                         .cookie(new jakarta.servlet.http.Cookie("adminRoot", "true")))
                 .andExpect(status().isOk());
 
-        verify(service).updatePrescription(eq(rx), any(PrescriptionUpdateDto.class));
+        verify(service).updatePrescription(eq(rx), any(PrescriptionUpdateDto.class), eq(1L), eq(null));
     }
 
     @Test

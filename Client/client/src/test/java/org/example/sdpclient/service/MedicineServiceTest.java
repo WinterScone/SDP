@@ -43,23 +43,23 @@ class MedicineServiceTest {
 
     @Test
     void exists_shouldDelegateToRepository() {
-        when(repo.existsById(MedicineType.VTM01)).thenReturn(true);
+        when(repo.existsById(0)).thenReturn(true);
 
-        boolean result = service.exists(MedicineType.VTM01);
+        boolean result = service.exists(0);
 
         assertTrue(result);
-        verify(repo).existsById(MedicineType.VTM01);
+        verify(repo).existsById(0);
     }
 
     @Test
     void updateQuantity_shouldUpdateAndSave_whenMedicineExists() {
         Medicine existing = new Medicine();
-        existing.setMedicineId(MedicineType.VTM01);
+        existing.setMedicineId(MedicineType.VTM01.getId());
         existing.setQuantity(5);
 
-        when(repo.findById(MedicineType.VTM01)).thenReturn(Optional.of(existing));
+        when(repo.findById(0)).thenReturn(Optional.of(existing));
 
-        service.updateQuantity(MedicineType.VTM01, 42, 1L, "testAdmin");
+        service.updateQuantity(0, 42, 1L, "testAdmin");
 
         assertEquals(42, existing.getQuantity());
 
@@ -67,18 +67,17 @@ class MedicineServiceTest {
         verify(repo).save(captor.capture());
         assertSame(existing, captor.getValue());
 
-        verify(repo).findById(MedicineType.VTM01);
+        verify(repo).findById(0);
     }
 
     @Test
     void updateQuantity_shouldThrow_whenMedicineNotFound() {
-        when(repo.findById(MedicineType.VTM01)).thenReturn(Optional.empty());
+        when(repo.findById(0)).thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class,
-                () -> service.updateQuantity(MedicineType.VTM01, 10, 1L, "testAdmin"));
+                () -> service.updateQuantity(0, 10, 1L, "testAdmin"));
 
-        verify(repo).findById(MedicineType.VTM01);
+        verify(repo).findById(0);
         verify(repo, never()).save(any());
     }
 }
-

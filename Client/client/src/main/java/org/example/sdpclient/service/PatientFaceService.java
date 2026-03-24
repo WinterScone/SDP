@@ -13,11 +13,14 @@ public class PatientFaceService {
 
     private final PatientRepository patientRepository;
     private final FaceRecognitionService faceRecognitionService;
+    private final ActivityLogService activityLogService;
 
     public PatientFaceService(PatientRepository patientRepository,
-                              FaceRecognitionService faceRecognitionService) {
+                              FaceRecognitionService faceRecognitionService,
+                              ActivityLogService activityLogService) {
         this.patientRepository = patientRepository;
         this.faceRecognitionService = faceRecognitionService;
+        this.activityLogService = activityLogService;
     }
 
     @Transactional
@@ -33,6 +36,9 @@ public class PatientFaceService {
         patient.setFaceActive(true);
 
         patientRepository.save(patient);
+
+        String patientName = patient.getFirstName() + " " + patient.getLastName();
+        activityLogService.logFaceEnrolled(patient.getId(), patientName);
     }
 
     @Transactional(readOnly = true)

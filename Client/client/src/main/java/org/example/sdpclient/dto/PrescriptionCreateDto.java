@@ -1,12 +1,9 @@
 package org.example.sdpclient.dto;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.example.sdpclient.enums.FrequencyType;
-import org.example.sdpclient.enums.MedicineType;
 
 import java.util.List;
 
@@ -16,9 +13,9 @@ import java.util.List;
 @Getter
 @Setter
 public class PrescriptionCreateDto {
-    MedicineType medicineId;
+    Integer medicineId;
     String dosage;
-    FrequencyType frequency;
+    String frequency;
     String startDate;
     String endDate;
     List<String> reminderTimes;

@@ -1,5 +1,6 @@
 const form = document.getElementById("signupForm");
 const messageEl = document.getElementById("message");
+const smsConsent = document.getElementById("smsConsent");
 const faceConsent = document.getElementById("faceConsent");
 const faceSection = document.getElementById("faceSection");
 const video = document.getElementById("faceVideo");
@@ -43,7 +44,7 @@ faceConsent.addEventListener("change", () => {
 
 startCameraBtn.addEventListener("click", async () => {
     try {
-        cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        cameraStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 } } });
         video.srcObject = cameraStream;
         video.style.display = "block";
         startCameraBtn.style.display = "none";
@@ -56,7 +57,12 @@ startCameraBtn.addEventListener("click", async () => {
 
 captureFaceBtn.addEventListener("click", () => {
     const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const vw = video.videoWidth;
+    const vh = video.videoHeight;
+    const side = Math.min(vw, vh);
+    const sx = (vw - side) / 2;
+    const sy = (vh - side) / 2;
+    ctx.drawImage(video, sx, sy, side, side, 0, 0, canvas.width, canvas.height);
     canvas.toBlob(blob => {
         capturedBlob = blob;
         setFaceStatus("Face captured successfully!", true);
@@ -71,6 +77,15 @@ captureFaceBtn.addEventListener("click", () => {
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    const countryCode = document.getElementById("phoneCountryCode").value;
+    const localPhone = document.getElementById("phone").value;
+
+    function buildE164(cc, localNumber) {
+        let digits = localNumber.replace(/\s+/g, "").replace(/^0+/, "");
+        if (!digits) return "";
+        return cc + digits;
+    }
+
     const payload = {
         username: document.getElementById("username").value.trim(),
         password: document.getElementById("password").value,
@@ -78,15 +93,36 @@ form.addEventListener("submit", async (e) => {
         lastName: document.getElementById("lastName").value.trim(),
         dateOfBirth: document.getElementById("dateOfBirth").value,
         email: document.getElementById("email").value.trim(),
-        phone: document.getElementById("phone").value.trim(),
+        phone: buildE164(countryCode, localPhone) || null,
+        smsConsent: smsConsent.checked,
         faceRecognitionConsent: faceConsent.checked,
     };
 
     if (!payload.email) payload.email = null;
-    if (!payload.phone) payload.phone = null;
 
     if (!payload.username || !payload.password || !payload.firstName || !payload.lastName || !payload.dateOfBirth) {
         setMessage("Please fill in all required fields.");
+        return;
+    }
+
+    // -- Date of birth: at least 16 years old --
+    const dobDate = new Date(payload.dateOfBirth + "T00:00:00");
+    const today = new Date();
+    const minDob = new Date(today.getFullYear() - 16, today.getMonth(), today.getDate());
+    if (dobDate > minDob) {
+        setMessage("Patient must be at least 16 years old.");
+        return;
+    }
+
+    // -- Email format (if provided) --
+    if (payload.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) {
+        setMessage("Please enter a valid email address.");
+        return;
+    }
+
+    // -- Phone: E.164 format (if provided) --
+    if (payload.phone && !/^\+\d{7,15}$/.test(payload.phone)) {
+        setMessage("Please enter a valid phone number.");
         return;
     }
 

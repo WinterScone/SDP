@@ -6,7 +6,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+
 import java.io.IOException;
 
 @Service
@@ -22,15 +22,7 @@ public class SimpleFaceRecognitionService implements FaceRecognitionService {
             if (input == null) {
                 throw new IllegalArgumentException("Invalid image file");
             }
-
-            BufferedImage resized = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_BYTE_GRAY);
-            Graphics2D g = resized.createGraphics();
-            g.drawImage(input, 0, 0, SIZE, SIZE, null);
-            g.dispose();
-
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            ImageIO.write(resized, "jpg", out);
-            return out.toByteArray();
+            return imageBytes;
         } catch (IOException e) {
             throw new IllegalArgumentException("Could not process image");
         }
@@ -39,17 +31,22 @@ public class SimpleFaceRecognitionService implements FaceRecognitionService {
     @Override
     public boolean verify(byte[] enrolledFaceData, byte[] candidateImageBytes) {
         try {
-            BufferedImage enrolled = ImageIO.read(new ByteArrayInputStream(enrolledFaceData));
+            BufferedImage enrolledOriginal = ImageIO.read(new ByteArrayInputStream(enrolledFaceData));
             BufferedImage candidateOriginal = ImageIO.read(new ByteArrayInputStream(candidateImageBytes));
 
-            if (enrolled == null || candidateOriginal == null) {
+            if (enrolledOriginal == null || candidateOriginal == null) {
                 return false;
             }
 
+            BufferedImage enrolled = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_BYTE_GRAY);
+            Graphics2D g1 = enrolled.createGraphics();
+            g1.drawImage(enrolledOriginal, 0, 0, SIZE, SIZE, null);
+            g1.dispose();
+
             BufferedImage candidate = new BufferedImage(SIZE, SIZE, BufferedImage.TYPE_BYTE_GRAY);
-            Graphics2D g = candidate.createGraphics();
-            g.drawImage(candidateOriginal, 0, 0, SIZE, SIZE, null);
-            g.dispose();
+            Graphics2D g2 = candidate.createGraphics();
+            g2.drawImage(candidateOriginal, 0, 0, SIZE, SIZE, null);
+            g2.dispose();
 
             double similarity = compareImages(enrolled, candidate);
             return similarity >= MATCH_THRESHOLD;

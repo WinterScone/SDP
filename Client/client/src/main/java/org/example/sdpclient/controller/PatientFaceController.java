@@ -119,7 +119,7 @@ public class PatientFaceController {
             var prescriptions = patient.getPrescriptions().stream()
                     .map(p -> Map.of(
                             "prescriptionId", p.getId(),
-                            "medicineId", p.getMedicine().getMedicineId().getId(),
+                            "medicineId", p.getMedicine().getMedicineId(),
                             "medicineName", p.getMedicine().getMedicineName(),
                             "dosage", p.getDosage(),
                             "frequency", p.getFrequency(),

@@ -55,6 +55,11 @@ async function loadActivityLogs() {
 }
 
 function getActivityTypeClass(activityType) {
+    if (activityType.includes('MESSAGE')) return 'type-auth';
+    if (activityType.includes('LOGIN') || activityType.includes('LOGOUT')) return 'type-auth';
+    if (activityType.includes('SIGNUP')) return 'type-patient';
+    if (activityType.includes('FACE')) return 'type-face';
+    if (activityType.includes('DISPENSE')) return 'type-dispense';
     if (activityType.includes('MEDICINE')) return 'type-medicine';
     if (activityType.includes('PRESCRIPTION')) return 'type-prescription';
     if (activityType.includes('ADMIN')) return 'type-admin';

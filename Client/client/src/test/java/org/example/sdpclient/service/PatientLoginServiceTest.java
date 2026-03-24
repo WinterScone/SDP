@@ -29,6 +29,9 @@ class PatientLoginServiceTest {
     @Mock
     private PasswordEncoder encoder;
 
+    @Mock
+    private ActivityLogService activityLogService;
+
     @InjectMocks
     private PatientLoginService service;
 
@@ -192,7 +195,7 @@ class PatientLoginServiceTest {
         when(req.getLastName()).thenReturn("Doe");
         when(req.getDateOfBirth()).thenReturn("2000-01-02");
         when(req.getEmail()).thenReturn("  a@b.com  ");
-        when(req.getPhone()).thenReturn("  123  ");
+        when(req.getPhone()).thenReturn("  +447700900002  ");
 
         when(repo.existsByUsernameIgnoreCase("user")).thenReturn(false);
         when(encoder.encode("pw")).thenReturn("hashedPw");
@@ -209,7 +212,7 @@ class PatientLoginServiceTest {
 
         Patient toSave = captor.getValue();
         assertEquals("a@b.com", toSave.getEmail());
-        assertEquals("123", toSave.getPhone());
+        assertEquals("+447700900002", toSave.getPhone());
     }
 }
 

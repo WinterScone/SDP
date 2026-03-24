@@ -1,9 +1,7 @@
 package org.example.sdpclient.dto;
 
-import org.example.sdpclient.enums.MedicineType;
-
 public record MedicineViewDto(
-        MedicineType medicineId,
+        Integer medicineId,
         String medicineName,
         String instruction,
         Integer unitDose

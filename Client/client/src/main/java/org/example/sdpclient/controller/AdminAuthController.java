@@ -23,10 +23,13 @@ public class AdminAuthController {
 
     private final AdminLoginService service;
     private final AdminRepository adminRepo;
+    private final org.example.sdpclient.service.ActivityLogService activityLogService;
 
-    public AdminAuthController(AdminLoginService service, AdminRepository adminRepo) {
+    public AdminAuthController(AdminLoginService service, AdminRepository adminRepo,
+                               org.example.sdpclient.service.ActivityLogService activityLogService) {
         this.service = service;
         this.adminRepo = adminRepo;
+        this.activityLogService = activityLogService;
     }
 
     @PostMapping("/login")
@@ -54,7 +57,13 @@ public class AdminAuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse response) {
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+        Long adminId = CookieUtils.getAdminIdOrNull(request);
+        String adminUsername = CookieUtils.getCookieValue(request, "adminUsername");
+        if (adminId != null && adminUsername != null && !adminUsername.isBlank()) {
+            activityLogService.logAdminLogout(adminId, adminUsername);
+        }
+
         Cookie idCookie = new Cookie("adminId", "");
         idCookie.setHttpOnly(true);
         idCookie.setPath("/");

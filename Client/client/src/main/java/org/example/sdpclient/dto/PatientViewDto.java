@@ -11,6 +11,7 @@ public record PatientViewDto(
         String email,
         String phone,
         boolean smsConsent,
+        boolean faceRecognitionConsent,
         boolean faceActive,
         String linkedAdminName,
         List<PrescriptionViewDto> prescriptions

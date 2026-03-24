@@ -102,9 +102,9 @@
             tr.innerHTML = `
           <td class="center">${safe(p.id)}</td>
           <td>${safe(p.firstName)} ${safe(p.lastName)}</td>
-          <td>${safe(p.phone)}</td>
-          <td class="center">${p.faceActive ? "\u2705" : "\u274c"}</td>
-          <td class="center">${p.smsConsent ? "\u2705" : "\u274c"}</td>
+          <td>${formatPhone(p.phone)}</td>
+          <td class="center">${p.faceActive ? '<span class="checkmark">\u221A</span>' : ""}</td>
+          <td class="center">${p.smsConsent ? '<span class="checkmark">\u221A</span>' : ""}</td>
           <td class="actions">
             <button onclick="goPatientDetail(${safe(p.id)})">
               View Details
@@ -141,5 +141,13 @@
             .replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#39;");
+    }
+
+    function formatPhone(phone) {
+        if (!phone) return "-";
+        const ukMatch = phone.match(/^\+44(\d{4})(\d{6})$/);
+        if (ukMatch) return "+44 " + ukMatch[1] + " " + ukMatch[2];
+        if (/^07\d{9}$/.test(phone)) return phone.slice(0, 5) + " " + phone.slice(5);
+        return phone;
     }
 })();

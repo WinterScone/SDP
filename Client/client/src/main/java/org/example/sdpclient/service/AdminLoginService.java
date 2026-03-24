@@ -28,13 +28,17 @@ public class AdminLoginService {
         var userOptional = repo.findByUsernameIgnoreCase(req.getUsername());
 
         if (userOptional.isEmpty()) {
+            activityLogService.logAdminLoginFailed(req.getUsername());
             return Map.of("ok", false);
         }
 
         var user = userOptional.get();
         if (!encoder.matches(req.getPassword(), user.getPasswordHash())) {
+            activityLogService.logAdminLoginFailed(req.getUsername());
             return Map.of("ok", false);
         }
+
+        activityLogService.logAdminLogin(user.getId(), user.getUsername());
 
         return Map.of(
                 "ok", true,
@@ -66,6 +70,15 @@ public class AdminLoginService {
                     "ok", false,
                     "message", "Username already exists"
             );
+        }
+
+        if (!email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            return Map.of("ok", false, "message", "Invalid email format");
+        }
+
+        String phoneVal = req.getPhone().trim();
+        if (!phoneVal.matches("^\\+\\d{7,15}$")) {
+            return Map.of("ok", false, "message", "Phone must be in E.164 format (e.g. +447700900000)");
         }
 
         Admin admin = new Admin();

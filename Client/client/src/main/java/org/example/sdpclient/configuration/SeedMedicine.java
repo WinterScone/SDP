@@ -26,8 +26,8 @@ public class SeedMedicine implements ApplicationRunner {
         // Remove orphaned medicines (and their FK dependents) whose type no
         // longer exists in the enum. Uses native queries to avoid JPA
         // deserialization errors on invalid enum values.
-        List<String> validIds = Arrays.stream(MedicineType.values())
-                .map(Enum::name)
+        List<Integer> validIds = Arrays.stream(MedicineType.values())
+                .map(MedicineType::getId)
                 .toList();
         repository.deleteOrphanReminderTimes(validIds);
         repository.deleteOrphanReminderLogs(validIds);
@@ -38,9 +38,13 @@ public class SeedMedicine implements ApplicationRunner {
 
         // Upsert: create missing medicines, sync enum fields on existing ones
         for (MedicineType t : MedicineType.values()) {
-            Medicine m = repository.findById(t).orElseGet(Medicine::new);
+            Medicine m = repository.findById(t.getId()).orElseGet(() -> {
+                Medicine med = new Medicine();
+                med.setQuantity(20);
+                return med;
+            });
 
-            m.setMedicineId(t);
+            m.setMedicineId(t.getId());
 
             String name = t.getName();
             if (name == null || name.isBlank()) {

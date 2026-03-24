@@ -16,12 +16,12 @@ import static org.mockito.Mockito.*;
 
 class SeedMedicineTest {
 
-    private static final List<String> VALID_IDS = Arrays.stream(MedicineType.values()).map(Enum::name).toList();
+    private static final List<Integer> VALID_IDS = Arrays.stream(MedicineType.values()).map(MedicineType::getId).toList();
 
     @Test
     void run_savesAll_whenNoneExist() {
         MedicineRepository repo = mock(MedicineRepository.class);
-        when(repo.findById(any(MedicineType.class))).thenReturn(Optional.empty());
+        when(repo.findById(any(Integer.class))).thenReturn(Optional.empty());
 
         SeedMedicine runner = new SeedMedicine(repo);
         runner.run(new DefaultApplicationArguments(new String[0]));
@@ -38,7 +38,7 @@ class SeedMedicineTest {
             MedicineType t = MedicineType.values()[i];
             Medicine m = saved.get(i);
 
-            assertThat(m.getMedicineId()).isEqualTo(t);
+            assertThat(m.getMedicineId()).isEqualTo(t.getId());
             assertThat(m.getMedicineName()).isEqualTo(t.getName());
             assertThat(m.getShape()).isEqualTo(t.getShape());
             assertThat(m.getColour()).isEqualTo(t.getColour());
@@ -51,15 +51,15 @@ class SeedMedicineTest {
         MedicineRepository repo = mock(MedicineRepository.class);
 
         Medicine existing = new Medicine();
-        existing.setMedicineId(MedicineType.VTM01);
+        existing.setMedicineId(MedicineType.VTM01.getId());
         existing.setMedicineName("Old Name");
         existing.setQuantity(42);
         existing.setInstruction("Take with food");
 
-        when(repo.findById(MedicineType.VTM01)).thenReturn(Optional.of(existing));
+        when(repo.findById(MedicineType.VTM01.getId())).thenReturn(Optional.of(existing));
         for (MedicineType t : MedicineType.values()) {
             if (t != MedicineType.VTM01) {
-                when(repo.findById(t)).thenReturn(Optional.empty());
+                when(repo.findById(t.getId())).thenReturn(Optional.empty());
             }
         }
 
@@ -76,7 +76,7 @@ class SeedMedicineTest {
     @Test
     void run_callsOrphanCleanupInCorrectOrder() {
         MedicineRepository repo = mock(MedicineRepository.class);
-        when(repo.findById(any(MedicineType.class))).thenReturn(Optional.empty());
+        when(repo.findById(any(Integer.class))).thenReturn(Optional.empty());
 
         SeedMedicine runner = new SeedMedicine(repo);
         runner.run(new DefaultApplicationArguments(new String[0]));
@@ -95,13 +95,13 @@ class SeedMedicineTest {
         MedicineRepository repo = mock(MedicineRepository.class);
 
         Medicine negativeQty = new Medicine();
-        negativeQty.setMedicineId(MedicineType.VTM01);
+        negativeQty.setMedicineId(MedicineType.VTM01.getId());
         negativeQty.setQuantity(-5);
 
-        when(repo.findById(MedicineType.VTM01)).thenReturn(Optional.of(negativeQty));
+        when(repo.findById(MedicineType.VTM01.getId())).thenReturn(Optional.of(negativeQty));
         for (MedicineType t : MedicineType.values()) {
             if (t != MedicineType.VTM01) {
-                when(repo.findById(t)).thenReturn(Optional.empty());
+                when(repo.findById(t.getId())).thenReturn(Optional.empty());
             }
         }
 

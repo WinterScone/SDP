@@ -44,6 +44,9 @@ class AdminAuthControllerTest {
     @MockitoBean
     private AdminRepository adminRepo;
 
+    @MockitoBean
+    private org.example.sdpclient.service.ActivityLogService activityLogService;
+
     // -------------------------
     // POST /api/auth/admins/login
     // -------------------------

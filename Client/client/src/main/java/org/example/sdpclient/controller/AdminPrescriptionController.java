@@ -2,7 +2,6 @@ package org.example.sdpclient.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.example.sdpclient.dto.*;
-import org.example.sdpclient.enums.MedicineType;
 import org.example.sdpclient.service.AdminManagePatientDetailService;
 import org.example.sdpclient.util.CookieUtils;
 import org.springframework.http.HttpStatus;
@@ -46,7 +45,7 @@ public class AdminPrescriptionController {
         var patient = service.findPatient(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Patient not found"));
 
-        MedicineType medId = dto.getMedicineId();
+        Integer medId = dto.getMedicineId();
         var medicine = service.findMedicineById(medId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Medicine not found"));
 
@@ -115,7 +114,8 @@ public class AdminPrescriptionController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied to this patient");
         }
 
-        service.updatePrescription(rx, dto);
+        String adminUsername = CookieUtils.getCookieValue(request, "adminUsername");
+        service.updatePrescription(rx, dto, adminId, adminUsername);
     }
 
     @DeleteMapping("/prescriptions/{id}")

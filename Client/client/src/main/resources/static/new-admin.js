@@ -28,11 +28,32 @@
         const firstName = document.getElementById("su-firstname").value.trim();
         const lastName = document.getElementById("su-lastname").value.trim();
         const email = document.getElementById("su-email").value.trim();
-        const phone = document.getElementById("su-phone").value.trim();
         const password = document.getElementById("su-password").value;
+
+        function buildE164(cc, localNumber) {
+            let digits = localNumber.replace(/\s+/g, "").replace(/^0+/, "");
+            if (!digits) return "";
+            return cc + digits;
+        }
+
+        const countryCode = document.getElementById("su-phoneCountryCode").value;
+        const localPhone = document.getElementById("su-phone").value;
+        const phone = buildE164(countryCode, localPhone);
 
         if (!username || !firstName || !lastName || !email || !phone || !password) {
             msg.textContent = "Please fill in all fields.";
+            return;
+        }
+
+        // -- Email format --
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            msg.textContent = "Please enter a valid email address.";
+            return;
+        }
+
+        // -- Phone: E.164 format --
+        if (phone && !/^\+\d{7,15}$/.test(phone)) {
+            msg.textContent = "Please enter a valid phone number.";
             return;
         }
 

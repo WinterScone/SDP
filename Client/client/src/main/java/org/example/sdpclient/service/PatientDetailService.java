@@ -40,6 +40,10 @@ public class PatientDetailService {
         }
     }
 
+    public java.util.Optional<Patient> getPatientById(Long patientId) {
+        return patientRepo.findById(patientId);
+    }
+
     public boolean patientExists(Long patientId) {
         return patientRepo.existsById(patientId);
     }
@@ -61,7 +65,7 @@ public class PatientDetailService {
                     return new PatientPrescriptionsResponse.PrescriptionItem(
                             prescription.getId(),
                             slotNumber,
-                            prescription.getMedicine().getMedicineId().name(),
+                            String.valueOf(prescription.getMedicine().getMedicineId()),
                             prescription.getMedicine().getMedicineName(),
                             prescription.getDosage(),
                             prescription.getFrequency(),
@@ -71,4 +75,3 @@ public class PatientDetailService {
                 .toList();
     }
 }
-

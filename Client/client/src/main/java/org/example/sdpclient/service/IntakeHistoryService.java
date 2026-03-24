@@ -4,7 +4,6 @@ import org.example.sdpclient.dto.IntakeLogRequest;
 import org.example.sdpclient.entity.IntakeHistory;
 import org.example.sdpclient.entity.Medicine;
 import org.example.sdpclient.entity.Patient;
-import org.example.sdpclient.enums.MedicineType;
 import org.example.sdpclient.repository.IntakeHistoryRepository;
 import org.example.sdpclient.repository.MedicineRepository;
 import org.example.sdpclient.repository.PatientRepository;
@@ -23,13 +22,16 @@ public class IntakeHistoryService {
     private final IntakeHistoryRepository intakeHistoryRepo;
     private final PatientRepository patientRepo;
     private final MedicineRepository medicineRepo;
+    private final ActivityLogService activityLogService;
 
     public IntakeHistoryService(IntakeHistoryRepository intakeHistoryRepo,
                                 PatientRepository patientRepo,
-                                MedicineRepository medicineRepo) {
+                                MedicineRepository medicineRepo,
+                                ActivityLogService activityLogService) {
         this.intakeHistoryRepo = intakeHistoryRepo;
         this.patientRepo = patientRepo;
         this.medicineRepo = medicineRepo;
+        this.activityLogService = activityLogService;
     }
 
     public Map<String, Object> logIntake(Long patientId, IntakeLogRequest req) {
@@ -38,14 +40,14 @@ public class IntakeHistoryService {
             return Map.of("ok", false, "error", "Patient not found");
         }
 
-        MedicineType medicineType;
+        Integer medicineId;
         try {
-            medicineType = MedicineType.valueOf(req.getMedicineId());
-        } catch (IllegalArgumentException e) {
+            medicineId = Integer.parseInt(req.getMedicineId());
+        } catch (NumberFormatException e) {
             return Map.of("ok", false, "error", "Invalid medicine ID");
         }
 
-        Medicine medicine = medicineRepo.findById(medicineType).orElse(null);
+        Medicine medicine = medicineRepo.findById(medicineId).orElse(null);
         if (medicine == null) {
             return Map.of("ok", false, "error", "Medicine not found");
         }
@@ -71,6 +73,11 @@ public class IntakeHistoryService {
         record.setNotes(req.getNotes() != null && !req.getNotes().isBlank() ? req.getNotes().trim() : null);
 
         intakeHistoryRepo.save(record);
+
+        String patientName = patient.getFirstName() + " " + patient.getLastName();
+        activityLogService.logMedicineIntakeLogged(patient.getId(), patientName,
+                medicine.getMedicineName());
+
         return Map.of("ok", true);
     }
 
@@ -81,7 +88,7 @@ public class IntakeHistoryService {
                 .map(h -> {
                     Map<String, Object> m = new java.util.LinkedHashMap<>();
                     m.put("id", h.getId());
-                    m.put("medicineId", h.getMedicine().getMedicineId().name());
+                    m.put("medicineId", h.getMedicine().getMedicineId());
                     m.put("medicineName", h.getMedicine().getMedicineName());
                     m.put("takenDate", h.getTakenDate().toString());
                     m.put("takenTime", h.getTakenTime().toString());

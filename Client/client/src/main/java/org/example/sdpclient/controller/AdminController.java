@@ -50,10 +50,7 @@ public class AdminController {
 
             return ResponseEntity.ok(Map.of(
                     "ok", true,
-                    "message", String.format("Deleted %d admins, %d patients, %d prescriptions. Seed data preserved.",
-                            stats.adminsToDelete(),
-                            stats.patientsToDelete(),
-                            stats.prescriptionsToDelete())
+                    "message", "Database reset successful."
             ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

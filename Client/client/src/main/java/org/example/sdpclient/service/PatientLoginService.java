@@ -16,15 +16,19 @@ public class PatientLoginService {
 
     private final PatientRepository repo;
     private final PasswordEncoder encoder;
+    private final ActivityLogService activityLogService;
 
-    public PatientLoginService(PatientRepository repo, PasswordEncoder encoder) {
+    public PatientLoginService(PatientRepository repo, PasswordEncoder encoder,
+                               ActivityLogService activityLogService) {
         this.repo = repo;
         this.encoder = encoder;
+        this.activityLogService = activityLogService;
     }
 
     public Map<String, Object> login(PatientLogin req) {
         var userOptional = repo.findByUsernameIgnoreCase(req.getUsername());
         if (userOptional.isEmpty()) {
+            activityLogService.logPatientLoginFailed(req.getUsername());
             return Map.of(
                     "ok",
                     false
@@ -33,11 +37,15 @@ public class PatientLoginService {
 
         var user = userOptional.get();
         if (!encoder.matches(req.getPassword(), user.getPasswordHash())) {
+            activityLogService.logPatientLoginFailed(req.getUsername());
             return Map.of(
                     "ok",
                     false
             );
         }
+
+        activityLogService.logPatientLogin(user.getId(),
+                user.getFirstName() + " " + user.getLastName());
 
         return Map.of(
                 "ok",
@@ -78,6 +86,20 @@ public class PatientLoginService {
             return Map.of("ok", false, "error", "Invalid date format for dateOfBirth");
         }
 
+        if (dob.isAfter(LocalDate.now().minusYears(16))) {
+            return Map.of("ok", false, "error", "Patient must be at least 16 years old");
+        }
+
+        String emailVal = (req.getEmail() == null || req.getEmail().isBlank()) ? null : req.getEmail().trim();
+        if (emailVal != null && !emailVal.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            return Map.of("ok", false, "error", "Invalid email format");
+        }
+
+        String phoneVal = (req.getPhone() == null || req.getPhone().isBlank()) ? null : req.getPhone().trim();
+        if (phoneVal != null && !phoneVal.matches("^\\+\\d{7,15}$")) {
+            return Map.of("ok", false, "error", "Phone must be in E.164 format (e.g. +447700900000)");
+        }
+
         Patient patient = new Patient();
         patient.setUsername(username);
         patient.setPasswordHash(encoder.encode(req.getPassword()));
@@ -98,10 +120,14 @@ public class PatientLoginService {
             patient.setPhone(req.getPhone().trim());
         }
 
-        patient.setSmsConsent(req.isFaceRecognitionConsent());
+        patient.setSmsConsent(req.isSmsConsent());
+        patient.setFaceRecognitionConsent(req.isFaceRecognitionConsent());
         patient.setLinkedAdmin(null);
 
         Patient saved = repo.save(patient);
+
+        activityLogService.logPatientSignup(saved.getId(),
+                saved.getFirstName() + " " + saved.getLastName());
 
         return Map.of(
                 "ok",

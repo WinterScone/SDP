@@ -13,7 +13,6 @@ import org.example.sdpclient.dto.*;
 import org.example.sdpclient.entity.Medicine;
 import org.example.sdpclient.entity.Patient;
 import org.example.sdpclient.entity.Prescription;
-import org.example.sdpclient.enums.FrequencyType;
 import org.example.sdpclient.enums.MedicineType;
 import org.example.sdpclient.repository.MedicineRepository;
 import org.example.sdpclient.repository.PatientRepository;
@@ -39,9 +38,6 @@ class AdminManagePatientDetailServiceTest {
 
     @Mock
     private ActivityLogService activityLogService;
-
-    @Mock
-    private NotificationService notificationService;
 
     @InjectMocks
     private AdminManagePatientDetailService service;
@@ -92,15 +88,6 @@ class AdminManagePatientDetailServiceTest {
 
         assertEquals(2, result.size());
 
-        // If PatientViewDto is a record -> result.get(0).id()
-        // If it's a class -> result.get(0).getId()
-
-        // We can still validate key fields in a tolerant way:
-        // (uncomment the right style if needed)
-
-        // assertEquals(10L, result.get(0).id());
-        // assertEquals("Jane", result.get(0).firstName());
-
         verify(patientRepository).searchByKeyword("abc");
     }
 
@@ -128,14 +115,14 @@ class AdminManagePatientDetailServiceTest {
     @Test
     void getPrescriptionViews_shouldMapPrescriptionsToDtos() {
         Medicine med = new Medicine();
-        med.setMedicineId(MedicineType.VTM01);
+        med.setMedicineId(MedicineType.VTM01.getId());
         med.setMedicineName("TestMed");
 
         Prescription rx = new Prescription();
         rx.setId(1L);
         rx.setMedicine(med);
         rx.setDosage("10mg");
-        rx.setFrequency(FrequencyType.ONCE_A_DAY);
+        rx.setFrequency("ONCE_A_DAY");
 
         when(prescriptionRepository.findByPatientId(5L)).thenReturn(List.of(rx));
 
@@ -153,14 +140,14 @@ class AdminManagePatientDetailServiceTest {
     @Test
     void prescriptionExists_shouldDelegateToRepository() {
         when(prescriptionRepository
-                .existsByPatientIdAndMedicine_MedicineId(7L, MedicineType.VTM01))
+                .existsByPatientIdAndMedicine_MedicineId(7L, MedicineType.VTM01.getId()))
                 .thenReturn(true);
 
-        boolean exists = service.prescriptionExists(7L, MedicineType.VTM01);
+        boolean exists = service.prescriptionExists(7L, MedicineType.VTM01.getId());
 
         assertTrue(exists);
         verify(prescriptionRepository)
-                .existsByPatientIdAndMedicine_MedicineId(7L, MedicineType.VTM01);
+                .existsByPatientIdAndMedicine_MedicineId(7L, MedicineType.VTM01.getId());
     }
 
 
@@ -202,12 +189,12 @@ class AdminManagePatientDetailServiceTest {
         patient.setId(1L);
 
         Medicine medicine = new Medicine();
-        medicine.setMedicineId(MedicineType.VTM01);
+        medicine.setMedicineId(MedicineType.VTM01.getId());
         medicine.setMedicineName("Amoxicillin");
 
         PrescriptionCreateDto dto = mock(PrescriptionCreateDto.class);
         when(dto.getDosage()).thenReturn(" 10mg ");
-        when(dto.getFrequency()).thenReturn(FrequencyType.ONCE_A_DAY);
+        when(dto.getFrequency()).thenReturn("ONCE_A_DAY");
 
         service.createPrescription(patient, medicine, dto, 1L, "testAdmin");
 
@@ -218,24 +205,34 @@ class AdminManagePatientDetailServiceTest {
         assertSame(patient, saved.getPatient());
         assertSame(medicine, saved.getMedicine());
         assertEquals("10mg", saved.getDosage());
-        assertEquals(FrequencyType.ONCE_A_DAY, saved.getFrequency());
+        assertEquals("ONCE_A_DAY", saved.getFrequency());
     }
 
 
     @Test
     void updatePrescription_shouldTrimFields_andSave() {
+        Patient patient = new Patient();
+        patient.setId(1L);
+        patient.setFirstName("John");
+        patient.setLastName("Doe");
+
+        Medicine medicine = new Medicine();
+        medicine.setMedicineName("Aspirin");
+
         Prescription rx = new Prescription();
+        rx.setPatient(patient);
+        rx.setMedicine(medicine);
         rx.setDosage("old");
-        rx.setFrequency(FrequencyType.ONCE_A_DAY);
+        rx.setFrequency("ONCE_A_DAY");
 
         PrescriptionUpdateDto dto = mock(PrescriptionUpdateDto.class);
         when(dto.getDosage()).thenReturn(" 20mg ");
         when(dto.getFrequency()).thenReturn(" TWICE_A_DAY ");
 
-        service.updatePrescription(rx, dto);
+        service.updatePrescription(rx, dto, 1L, "admin1");
 
         assertEquals("20mg", rx.getDosage());
-        assertEquals(FrequencyType.TWICE_A_DAY, rx.getFrequency());
+        assertEquals("TWICE_A_DAY", rx.getFrequency());
 
         verify(prescriptionRepository).save(rx);
     }
@@ -247,7 +244,7 @@ class AdminManagePatientDetailServiceTest {
     @Test
     void listMedicines_shouldMapMedicinesToDtos() {
         Medicine m1 = new Medicine();
-        m1.setMedicineId(MedicineType.VTM01);
+        m1.setMedicineId(MedicineType.VTM01.getId());
         m1.setMedicineName("TestMed");
 
         when(medicineRepository.findAll()).thenReturn(List.of(m1));
@@ -256,26 +253,22 @@ class AdminManagePatientDetailServiceTest {
 
         assertEquals(1, result.size());
 
-        // record style:
-        // assertEquals(MedicineType.MEDICINE_ID1, result.get(0).medicineId());
-        // assertEquals("TestMed", result.get(0).medicineName());
-
         verify(medicineRepository).findAll();
     }
 
     @Test
     void findMedicineById_shouldDelegateToRepository() {
-        MedicineType type = MedicineType.VTM01;
+        Integer id = MedicineType.VTM01.getId();
 
         Medicine med = new Medicine();
-        med.setMedicineId(type);
+        med.setMedicineId(id);
 
-        when(medicineRepository.findById(type)).thenReturn(Optional.of(med));
+        when(medicineRepository.findById(id)).thenReturn(Optional.of(med));
 
-        Optional<Medicine> result = service.findMedicineById(type);
+        Optional<Medicine> result = service.findMedicineById(id);
 
         assertTrue(result.isPresent());
-        verify(medicineRepository).findById(type);
+        verify(medicineRepository).findById(id);
     }
 
 
