@@ -24,10 +24,10 @@
     const newDosageHint = document.getElementById("newDosageHint");
 
     const FREQUENCY_DEFAULTS = {
-        ONCE_A_DAY:        ["08:00"],
-        TWICE_A_DAY:       ["08:00", "20:00"],
-        THREE_TIMES_A_DAY: ["08:00", "14:00", "20:00"],
-        FOUR_TIMES_A_DAY:  ["08:00", "12:00", "16:00", "20:00"]
+        1: ["08:00"],
+        2: ["08:00", "20:00"],
+        3: ["08:00", "14:00", "20:00"],
+        4: ["08:00", "12:00", "16:00", "20:00"]
     };
 
     function generateTimePickers(prefix, frequency, existingTimes) {
@@ -50,13 +50,13 @@
 
     function frequencySelectHtml(id, selectedValue) {
         const options = [
-            {value: "ONCE_A_DAY", label: "Once a day"},
-            {value: "TWICE_A_DAY", label: "Twice a day"},
-            {value: "THREE_TIMES_A_DAY", label: "Three times a day"},
-            {value: "FOUR_TIMES_A_DAY", label: "Four times a day"}
+            {value: 1, label: "Once a day"},
+            {value: 2, label: "Twice a day"},
+            {value: 3, label: "Three times a day"},
+            {value: 4, label: "Four times a day"}
         ];
         return `<select id="freq-${id}" onchange="onEditFreqChange(${id})">` +
-            options.map(o => `<option value="${o.value}"${o.value === selectedValue ? ' selected' : ''}>${o.label}</option>`).join("") +
+            options.map(o => `<option value="${o.value}"${o.value == selectedValue ? ' selected' : ''}>${o.label}</option>`).join("") +
             `</select>`;
     }
 
@@ -148,6 +148,7 @@
       `;
 
         renderPrescriptions(p.prescriptions || []);
+        await loadClusteringPreview();
     }
 
     function renderPrescriptions(list){
@@ -193,7 +194,7 @@
         const qty = qtyInput.value.trim();
         const unitDose = parseFloat(qtyInput.dataset.unitDose);
         const dosage = unitDose && qty !== "" ? String(parseFloat(qty) * unitDose) : qty;
-        const frequency = document.getElementById(`freq-${id}`).value.trim();
+        const frequency = Number(document.getElementById(`freq-${id}`).value);
         const scheduledTimes = collectTimes(`rx-${id}`, frequency);
 
         if(!qty || !frequency){
@@ -228,7 +229,7 @@
     async function addPrescription(){
         const medicineId = newMedicine.value;
         const qty = newDosage.value.trim();
-        const frequency = newFrequency.value.trim();
+        const frequency = Number(newFrequency.value);
         const scheduledTimes = collectTimes("new", frequency);
 
         if(!medicineId || !qty || !frequency){
@@ -265,6 +266,40 @@
             await loadPatientAndPrescriptions();
         } else {
             msg.textContent = "Add failed (maybe already exists).";
+        }
+    }
+
+    async function loadClusteringPreview() {
+        const previewDiv = document.getElementById("clusteringPreview");
+        const statEl = document.getElementById("clusteringStat");
+        const rowsEl = document.getElementById("clusteringRows");
+        const warningsEl = document.getElementById("clusteringWarnings");
+
+        try {
+            const res = await fetch(`/api/admin/patients/${patientId}/prescriptions/clustering-preview`);
+            if (!res.ok) {
+                previewDiv.style.display = "none";
+                return;
+            }
+            const data = await res.json();
+
+            if (!data.slots || data.slots.length === 0) {
+                previewDiv.style.display = "none";
+                return;
+            }
+
+            statEl.textContent = data.originalDistinctTimes + " original times \u2192 " + data.clusteredDistinctTimes + " collection visits";
+
+            rowsEl.innerHTML = data.slots.map(slot => {
+                const meds = slot.medications.map(m => escapeHtml(m.medicineName)).join(", ");
+                return `<tr><td>${escapeHtml(slot.time)}</td><td>${meds}</td></tr>`;
+            }).join("");
+
+            warningsEl.innerHTML = (data.warnings || []).map(w => `<p>${escapeHtml(w)}</p>`).join("");
+
+            previewDiv.style.display = "block";
+        } catch (e) {
+            previewDiv.style.display = "none";
         }
     }
 

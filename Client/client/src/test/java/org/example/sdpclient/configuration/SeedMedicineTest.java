@@ -84,7 +84,6 @@ class SeedMedicineTest {
         var inOrder = inOrder(repo);
         inOrder.verify(repo).deleteOrphanReminderTimes(VALID_IDS);
         inOrder.verify(repo).deleteOrphanReminderLogs(VALID_IDS);
-        inOrder.verify(repo).deleteOrphanIntakeHistory(VALID_IDS);
         inOrder.verify(repo).deleteOrphanPrescriptions(VALID_IDS);
         inOrder.verify(repo).deleteOrphanDispenserSlots(VALID_IDS);
         inOrder.verify(repo).deleteOrphanMedicines(VALID_IDS);

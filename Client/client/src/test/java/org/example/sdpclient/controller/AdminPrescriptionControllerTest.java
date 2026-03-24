@@ -16,6 +16,7 @@ import org.example.sdpclient.entity.Patient;
 import org.example.sdpclient.entity.Prescription;
 import org.example.sdpclient.enums.MedicineType;
 import org.example.sdpclient.service.AdminManagePatientDetailService;
+import org.example.sdpclient.service.CollectionTimeClusteringService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -42,6 +43,9 @@ class AdminPrescriptionControllerTest {
     @MockitoBean
     private AdminManagePatientDetailService service;
 
+    @MockitoBean
+    private CollectionTimeClusteringService clusteringService;
+
     @Test
     void listMedicines_shouldReturn200_andDelegateToService() throws Exception {
         MedicineViewDto med = new MedicineViewDto(MedicineType.VTM01.getId(), "TestMed", null, null);
@@ -57,7 +61,7 @@ class AdminPrescriptionControllerTest {
     @Test
     void addPrescription_shouldReturn400_whenBodyMissingRequiredFields() throws Exception {
         String body = """
-                {"medicineId":0,"dosage":"  ","frequency":""}
+                {"medicineId":0,"dosage":"  ","frequency":null}
                 """;
 
         when(service.canAdminAccessPatient(anyLong(), anyLong(), anyBoolean())).thenReturn(true);
@@ -73,7 +77,7 @@ class AdminPrescriptionControllerTest {
     @Test
     void addPrescription_shouldReturn201_whenCreated() throws Exception {
         String body = """
-                {"medicineId":0,"dosage":"1000","frequency":"daily","scheduledTimes":["08:00","20:00"]}
+                {"medicineId":0,"dosage":"1000","frequency":1,"scheduledTimes":["08:00","20:00"]}
                 """;
 
         Patient patient = new Patient();
@@ -103,7 +107,7 @@ class AdminPrescriptionControllerTest {
     @Test
     void updatePrescription_shouldReturn200_whenUpdated() throws Exception {
         String body = """
-                {"dosage":"1000","frequency":"daily"}
+                {"dosage":"1000","frequency":1}
                 """;
 
         Patient patient = new Patient();

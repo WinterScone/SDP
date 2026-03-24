@@ -37,6 +37,7 @@ class CookieTest {
     @MockitoBean private AdminListService adminListService;
     @MockitoBean private ActivityLogService activityLogService;
     @MockitoBean private SmsService smsService;
+    @MockitoBean private CollectionTimeClusteringService clusteringService;
 
     @Test
     void noCookie_getPatients_returns401() throws Exception {
@@ -77,7 +78,7 @@ class CookieTest {
     void noCookie_addPrescription_returns401() throws Exception {
         mockMvc.perform(post("/api/admin/patients/1/prescriptions")
                         .contentType("application/json")
-                        .content("{\"medicineId\":\"ASPIRIN\",\"dosage\":\"100mg\",\"frequency\":\"once\"}"))
+                        .content("{\"medicineId\":1,\"dosage\":\"100mg\",\"frequency\":1}"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.ok").value(false));
     }
@@ -86,7 +87,7 @@ class CookieTest {
     void noCookie_updatePrescription_returns401() throws Exception {
         mockMvc.perform(put("/api/admin/prescriptions/1")
                         .contentType("application/json")
-                        .content("{\"dosage\":\"200mg\",\"frequency\":\"twice\"}"))
+                        .content("{\"dosage\":\"200mg\",\"frequency\":2}"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.ok").value(false));
     }

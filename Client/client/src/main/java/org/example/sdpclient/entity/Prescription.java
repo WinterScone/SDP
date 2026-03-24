@@ -32,7 +32,7 @@ public class Prescription {
     private String dosage;
 
     @Column(nullable = false)
-    private String frequency;
+    private int frequency;
 
     @Column(columnDefinition = "boolean default true")
     private boolean active = true;

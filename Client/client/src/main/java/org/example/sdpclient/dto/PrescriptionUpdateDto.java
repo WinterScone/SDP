@@ -14,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 public class PrescriptionUpdateDto{
     String dosage;
-    String frequency;
+    Integer frequency;
     String startDate;
     String endDate;
     List<String> reminderTimes;

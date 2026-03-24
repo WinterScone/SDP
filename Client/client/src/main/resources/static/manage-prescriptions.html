@@ -40,10 +40,10 @@
         <label for="newFrequency">Frequency</label>
         <select id="newFrequency" required>
             <option value="">Select Frequency</option>
-            <option value="ONCE_A_DAY">Once a day</option>
-            <option value="TWICE_A_DAY">Twice a day</option>
-            <option value="THREE_TIMES_A_DAY">Three times a day</option>
-            <option value="FOUR_TIMES_A_DAY">Four times a day</option>
+            <option value="1">Once a day</option>
+            <option value="2">Twice a day</option>
+            <option value="3">Three times a day</option>
+            <option value="4">Four times a day</option>
         </select>
 
         <label>Scheduled Times</label>
@@ -73,6 +73,23 @@
             </thead>
             <tbody id="rows"></tbody>
         </table>
+    </div>
+
+    <div id="clusteringPreview" style="display:none; margin-top:16px;">
+        <h3 class="section-title">Collection Schedule</h3>
+        <p id="clusteringStat" style="font-size:13px; color:#57606a; margin-bottom:8px;"></p>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th>Collection Time</th>
+                    <th>Medications</th>
+                </tr>
+                </thead>
+                <tbody id="clusteringRows"></tbody>
+            </table>
+        </div>
+        <div id="clusteringWarnings" style="font-size:13px; color:#cf222e; margin-top:4px;"></div>
     </div>
 </section>
 

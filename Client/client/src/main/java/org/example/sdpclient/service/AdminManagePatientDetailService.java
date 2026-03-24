@@ -8,7 +8,9 @@ import org.example.sdpclient.entity.PrescriptionReminderTime;
 import org.example.sdpclient.repository.MedicineRepository;
 import org.example.sdpclient.repository.PatientRepository;
 import org.example.sdpclient.repository.PrescriptionRepository;
+import org.example.sdpclient.repository.ReminderLogRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -22,16 +24,25 @@ public class AdminManagePatientDetailService {
     private final PatientRepository patientRepository;
     private final PrescriptionRepository prescriptionRepository;
     private final MedicineRepository medicineRepository;
+    private final ReminderLogRepository reminderLogRepository;
     private final ActivityLogService activityLogService;
+    private final CollectionTimeClusteringService clusteringService;
+    private final DoseTrackingService doseTrackingService;
 
     public AdminManagePatientDetailService(PatientRepository patientRepository,
                                            PrescriptionRepository prescriptionRepository,
                                            MedicineRepository medicineRepository,
-                                           ActivityLogService activityLogService) {
+                                           ReminderLogRepository reminderLogRepository,
+                                           ActivityLogService activityLogService,
+                                           CollectionTimeClusteringService clusteringService,
+                                           DoseTrackingService doseTrackingService) {
         this.patientRepository = patientRepository;
         this.prescriptionRepository = prescriptionRepository;
         this.medicineRepository = medicineRepository;
+        this.reminderLogRepository = reminderLogRepository;
         this.activityLogService = activityLogService;
+        this.clusteringService = clusteringService;
+        this.doseTrackingService = doseTrackingService;
     }
 
 
@@ -156,7 +167,7 @@ public class AdminManagePatientDetailService {
         rx.setPatient(patient);
         rx.setMedicine(medicine);
         rx.setDosage(dto.getDosage().trim());
-        rx.setFrequency(dto.getFrequency().trim());
+        rx.setFrequency(dto.getFrequency());
 
         if (!isBlank(dto.getStartDate())) {
             rx.setStartDate(LocalDate.parse(dto.getStartDate()));
@@ -174,6 +185,8 @@ public class AdminManagePatientDetailService {
         }
 
         prescriptionRepository.save(rx);
+        clusteringService.applyClusteredTimes(patient.getId());
+        doseTrackingService.checkAndNotifyPatient(patient.getId());
 
         // Log the activity
         String patientName = patient.getFirstName() + " " + patient.getLastName();
@@ -182,7 +195,7 @@ public class AdminManagePatientDetailService {
                 patientName,
                 medicine.getMedicineName(),
                 dto.getDosage().trim(),
-                dto.getFrequency().trim(),
+                dto.getFrequency(),
                 adminId,
                 adminUsername
         );
@@ -191,7 +204,7 @@ public class AdminManagePatientDetailService {
     public void updatePrescription(Prescription rx, PrescriptionUpdateDto dto,
                                    Long adminId, String adminUsername) {
         rx.setDosage(dto.getDosage().trim());
-        rx.setFrequency(dto.getFrequency().trim());
+        rx.setFrequency(dto.getFrequency());
 
         if (!isBlank(dto.getStartDate())) {
             rx.setStartDate(LocalDate.parse(dto.getStartDate()));
@@ -209,6 +222,8 @@ public class AdminManagePatientDetailService {
         }
 
         prescriptionRepository.save(rx);
+        clusteringService.applyClusteredTimes(rx.getPatient().getId());
+        doseTrackingService.checkAndNotifyPatient(rx.getPatient().getId());
 
         Patient patient = rx.getPatient();
         String patientName = patient.getFirstName() + " " + patient.getLastName();
@@ -217,7 +232,7 @@ public class AdminManagePatientDetailService {
                 patientName,
                 rx.getMedicine().getMedicineName(),
                 dto.getDosage().trim(),
-                dto.getFrequency().trim(),
+                dto.getFrequency(),
                 adminId,
                 adminUsername
         );
@@ -245,6 +260,7 @@ public class AdminManagePatientDetailService {
         return prescriptionRepository.existsById(id);
     }
 
+    @Transactional
     public void deletePrescription(Long id, Long adminId, String adminUsername) {
         // Get prescription details before deleting for logging
         Optional<Prescription> rxOpt = prescriptionRepository.findById(id);
@@ -265,7 +281,12 @@ public class AdminManagePatientDetailService {
             );
         }
 
+        Long patientIdForClustering = rxOpt.map(rx -> rx.getPatient().getId()).orElse(null);
+        reminderLogRepository.deleteByPrescriptionId(id);
         prescriptionRepository.deleteById(id);
+        if (patientIdForClustering != null) {
+            clusteringService.applyClusteredTimes(patientIdForClustering);
+        }
     }
 
 

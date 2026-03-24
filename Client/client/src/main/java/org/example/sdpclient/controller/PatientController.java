@@ -32,4 +32,20 @@ public class PatientController {
         var items = patientDetailService.getPrescriptionItems(patientId);
         return ResponseEntity.ok(new PatientPrescriptionsResponse(patientId, items));
     }
+
+    @GetMapping("/{patientId}/collectable")
+    public ResponseEntity<?> getCollectableMedications(@PathVariable Long patientId) {
+        if (!patientDetailService.patientExists(patientId)) {
+            return ResponseEntity.status(400)
+                    .body(Map.of(
+                            "ok",
+                            false,
+                            "error",
+                            "Patient not found")
+                    );
+        }
+
+        var items = patientDetailService.getCollectableItems(patientId);
+        return ResponseEntity.ok(new PatientPrescriptionsResponse(patientId, items));
+    }
 }

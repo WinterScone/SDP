@@ -15,7 +15,7 @@ import java.util.List;
 public class PrescriptionCreateDto {
     Integer medicineId;
     String dosage;
-    String frequency;
+    Integer frequency;
     String startDate;
     String endDate;
     List<String> reminderTimes;

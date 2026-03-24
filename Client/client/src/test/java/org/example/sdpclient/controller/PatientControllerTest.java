@@ -58,7 +58,7 @@ class PatientControllerTest {
                         "MEDICINE_ID1",
                         "TestMed",
                         "10mg",
-                        "daily"
+                        1
                 );
 
         when(patientDetailService.getPrescriptionItems(10L)).thenReturn(List.of(item));
@@ -69,9 +69,58 @@ class PatientControllerTest {
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("MEDICINE_ID1")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("TestMed")))
                 .andExpect(content().string(org.hamcrest.Matchers.containsString("10mg")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("daily")));
+                .andExpect(jsonPath("$.prescriptions[0].frequency").value(1));
 
         verify(patientDetailService).patientExists(10L);
         verify(patientDetailService).getPrescriptionItems(10L);
+    }
+
+    @Test
+    void getCollectableMedications_shouldReturn400_whenPatientNotFound() throws Exception {
+        when(patientDetailService.patientExists(10L)).thenReturn(false);
+
+        mockMvc.perform(get("/api/patients/10/collectable")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.ok").value(false))
+                .andExpect(jsonPath("$.error").value("Patient not found"));
+
+        verify(patientDetailService).patientExists(10L);
+        verify(patientDetailService, never()).getCollectableItems(anyLong());
+    }
+
+    @Test
+    void getCollectableMedications_shouldReturn200_withItems_whenPatientExists() throws Exception {
+        when(patientDetailService.patientExists(10L)).thenReturn(true);
+
+        PatientPrescriptionsResponse.PrescriptionItem item =
+                new PatientPrescriptionsResponse.PrescriptionItem(
+                        1L, 3, "101", "Amoxicillin", "10mg", "08:00:00"
+                );
+
+        when(patientDetailService.getCollectableItems(10L)).thenReturn(List.of(item));
+
+        mockMvc.perform(get("/api/patients/10/collectable"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.patientId").value(10))
+                .andExpect(jsonPath("$.prescriptions[0].prescriptionId").value(1))
+                .andExpect(jsonPath("$.prescriptions[0].medicineName").value("Amoxicillin"))
+                .andExpect(jsonPath("$.prescriptions[0].scheduledTime").value("08:00:00"));
+
+        verify(patientDetailService).patientExists(10L);
+        verify(patientDetailService).getCollectableItems(10L);
+    }
+
+    @Test
+    void getCollectableMedications_shouldReturn200_withEmptyList_whenNothingDue() throws Exception {
+        when(patientDetailService.patientExists(10L)).thenReturn(true);
+        when(patientDetailService.getCollectableItems(10L)).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/patients/10/collectable"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.patientId").value(10))
+                .andExpect(jsonPath("$.prescriptions").isEmpty());
+
+        verify(patientDetailService).getCollectableItems(10L);
     }
 }

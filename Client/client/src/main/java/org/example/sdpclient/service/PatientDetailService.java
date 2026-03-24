@@ -5,12 +5,21 @@ import org.example.sdpclient.dto.PatientViewDto;
 import org.example.sdpclient.entity.DispenserSlot;
 import org.example.sdpclient.entity.Patient;
 import org.example.sdpclient.entity.Prescription;
+import org.example.sdpclient.entity.PrescriptionReminderTime;
+import org.example.sdpclient.entity.ReminderStatus;
 import org.example.sdpclient.repository.DispenserSlotRepository;
 import org.example.sdpclient.repository.PatientRepository;
 import org.example.sdpclient.repository.PrescriptionRepository;
+import org.example.sdpclient.repository.ReminderLogRepository;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,12 +29,14 @@ public class PatientDetailService {
     private final PatientRepository patientRepo;
     private final PrescriptionRepository prescriptionRepo;
     private final DispenserSlotRepository dispenserSlotRepo;
+    private final ReminderLogRepository reminderLogRepo;
 
     public PatientDetailService(PatientRepository patientRepo, PrescriptionRepository prescriptionRepo,
-                                DispenserSlotRepository dispenserSlotRepo) {
+                                DispenserSlotRepository dispenserSlotRepo, ReminderLogRepository reminderLogRepo) {
         this.patientRepo = patientRepo;
         this.prescriptionRepo = prescriptionRepo;
         this.dispenserSlotRepo = dispenserSlotRepo;
+        this.reminderLogRepo = reminderLogRepo;
     }
 
     public List<Patient> getAllPatients() {
@@ -73,5 +84,74 @@ public class PatientDetailService {
                     );
                 })
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PatientPrescriptionsResponse.PrescriptionItem> getCollectableItems(Long patientId) {
+        LocalDate today = LocalDate.now();
+        LocalTime now = LocalTime.now();
+        List<PatientPrescriptionsResponse.PrescriptionItem> dueItems = new ArrayList<>();
+
+        List<Prescription> prescriptions = prescriptionRepo.findByPatientIdAndActiveTrue(patientId);
+
+        for (Prescription prescription : prescriptions) {
+            if (!isPrescriptionValidForToday(prescription, today)) {
+                continue;
+            }
+
+            for (PrescriptionReminderTime reminderTime : prescription.getReminderTimes()) {
+                if (!isDueNow(reminderTime.getReminderTime(), now)) {
+                    continue;
+                }
+
+                LocalDateTime scheduledDateTime = LocalDateTime.of(today, reminderTime.getReminderTime());
+
+                boolean alreadyDispensed = reminderLogRepo
+                        .findByPatientIdAndPrescriptionIdAndScheduledTime(
+                                patientId,
+                                prescription.getId(),
+                                scheduledDateTime
+                        )
+                        .filter(log -> log.getStatus() != ReminderStatus.NOTIFIED)
+                        .isPresent();
+
+                if (alreadyDispensed) {
+                    continue;
+                }
+
+                Integer slotNumber = dispenserSlotRepo
+                        .findByMedicineAndActiveTrue(prescription.getMedicine())
+                        .map(DispenserSlot::getSlotNumber)
+                        .orElse(null);
+
+                dueItems.add(new PatientPrescriptionsResponse.PrescriptionItem(
+                        prescription.getId(),
+                        slotNumber,
+                        String.valueOf(prescription.getMedicine().getMedicineId()),
+                        prescription.getMedicine().getMedicineName(),
+                        prescription.getDosage(),
+                        reminderTime.getReminderTime().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+                ));
+            }
+        }
+
+        return dueItems;
+    }
+
+    private boolean isPrescriptionValidForToday(Prescription prescription, LocalDate today) {
+        if (prescription.getStartDate() != null && today.isBefore(prescription.getStartDate())) {
+            return false;
+        }
+        if (prescription.getEndDate() != null && today.isAfter(prescription.getEndDate())) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isDueNow(LocalTime scheduledTime, LocalTime now) {
+        int windowMinutes = 15;
+        LocalTime start = scheduledTime.minusMinutes(windowMinutes);
+        LocalTime end = scheduledTime.plusMinutes(windowMinutes);
+        return !now.isBefore(start) && !now.isAfter(end);
     }
 }

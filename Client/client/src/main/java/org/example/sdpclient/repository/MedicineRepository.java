@@ -18,10 +18,6 @@ public interface MedicineRepository extends JpaRepository<Medicine, Integer> {
     void deleteOrphanReminderTimes(@Param("validIds") List<Integer> validIds);
 
     @Modifying
-    @Query(value = "DELETE FROM intake_history WHERE medicine_id NOT IN (:validIds)", nativeQuery = true)
-    void deleteOrphanIntakeHistory(@Param("validIds") List<Integer> validIds);
-
-    @Modifying
     @Query(value = "DELETE FROM reminder_log WHERE prescription_id IN " +
             "(SELECT id FROM prescription WHERE medicine_id NOT IN (:validIds))", nativeQuery = true)
     void deleteOrphanReminderLogs(@Param("validIds") List<Integer> validIds);

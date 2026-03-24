@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class NotificationService {
 
     private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
-    private static final int RATE_LIMIT_MINUTES = 5;
+    private static final int RATE_LIMIT_MINUTES = 1;
 
     private final SmsAsyncService smsAsyncService;
     private final PatientRepository patientRepository;

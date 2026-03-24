@@ -7,7 +7,7 @@ public record PrescriptionViewDto(
         Integer medicineId,
         String medicineName,
         String dosage,
-        String frequency,
+        int frequency,
         List<String> scheduledTimes,
         Integer unitDose
 ) {}

@@ -13,7 +13,6 @@ public class DatabaseResetService {
     private final AdminRepository adminRepo;
     private final PatientRepository patientRepo;
     private final PrescriptionRepository prescriptionRepo;
-    private final IntakeHistoryRepository intakeHistoryRepo;
     private final DispenserSlotRepository dispenserSlotRepo;
     private final MedicineRepository medicineRepo;
     private final PatientImageRepository patientImageRepo;
@@ -26,7 +25,6 @@ public class DatabaseResetService {
     public DatabaseResetService(AdminRepository adminRepo,
                                 PatientRepository patientRepo,
                                 PrescriptionRepository prescriptionRepo,
-                                IntakeHistoryRepository intakeHistoryRepo,
                                 DispenserSlotRepository dispenserSlotRepo,
                                 MedicineRepository medicineRepo,
                                 PatientImageRepository patientImageRepo,
@@ -35,7 +33,6 @@ public class DatabaseResetService {
         this.adminRepo = adminRepo;
         this.patientRepo = patientRepo;
         this.prescriptionRepo = prescriptionRepo;
-        this.intakeHistoryRepo = intakeHistoryRepo;
         this.dispenserSlotRepo = dispenserSlotRepo;
         this.medicineRepo = medicineRepo;
         this.patientImageRepo = patientImageRepo;
@@ -49,10 +46,7 @@ public class DatabaseResetService {
 
         // Clear all logs
         activityLogService.clearAllLogs();
-        reminderLogRepo.deleteAll();
-
-        // Clear tables that have FK references to prescriptions/patients
-        intakeHistoryRepo.deleteAll();
+        reminderLogRepo.deleteAllNative();
 
         // Delete all prescriptions (use native queries to avoid JPA entity
         // deserialization errors from legacy frequency strings in the DB)

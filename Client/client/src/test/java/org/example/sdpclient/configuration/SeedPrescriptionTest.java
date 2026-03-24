@@ -8,6 +8,7 @@ import org.example.sdpclient.enums.MedicineType;
 import org.example.sdpclient.repository.MedicineRepository;
 import org.example.sdpclient.repository.PatientRepository;
 import org.example.sdpclient.repository.PrescriptionRepository;
+import org.example.sdpclient.service.CollectionTimeClusteringService;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -26,7 +27,8 @@ class SeedPrescriptionTest {
 
         when(patientRepo.findByUsername("testPatient1")).thenReturn(Optional.empty());
 
-        var runner = new SeedPrescription().seed(patientRepo, medicineRepo, prescriptionRepo);
+        CollectionTimeClusteringService clusteringService = mock(CollectionTimeClusteringService.class);
+        var runner = new SeedPrescription().seed(patientRepo, medicineRepo, prescriptionRepo, clusteringService);
 
         runner.run();
 
@@ -50,7 +52,8 @@ class SeedPrescriptionTest {
         when(prescriptionRepo.existsByPatientIdAndMedicine_MedicineId(1L, MedicineType.VTM02.getId())).thenReturn(true);
         when(prescriptionRepo.existsByPatientIdAndMedicine_MedicineId(1L, MedicineType.VTM03.getId())).thenReturn(true);
 
-        var runner = new SeedPrescription().seed(patientRepo, medicineRepo, prescriptionRepo);
+        CollectionTimeClusteringService clusteringService = mock(CollectionTimeClusteringService.class);
+        var runner = new SeedPrescription().seed(patientRepo, medicineRepo, prescriptionRepo, clusteringService);
 
         runner.run();
 
@@ -89,7 +92,8 @@ class SeedPrescriptionTest {
 
         ArgumentCaptor<Prescription> captor = ArgumentCaptor.forClass(Prescription.class);
 
-        var runner = new SeedPrescription().seed(patientRepo, medicineRepo, prescriptionRepo);
+        CollectionTimeClusteringService clusteringService = mock(CollectionTimeClusteringService.class);
+        var runner = new SeedPrescription().seed(patientRepo, medicineRepo, prescriptionRepo, clusteringService);
         runner.run();
 
         verify(prescriptionRepo, times(3)).save(captor.capture());
@@ -101,17 +105,22 @@ class SeedPrescriptionTest {
         assertSame(patient, p1.getPatient());
         assertSame(med1, p1.getMedicine());
         assertEquals("1000", p1.getDosage());
-        assertEquals("TWICE_A_DAY", p1.getFrequency());
+        assertEquals(2, p1.getFrequency());
+        assertEquals(2, p1.getReminderTimes().size());
 
         Prescription p2 = saved.get(1);
         assertSame(med2, p2.getMedicine());
         assertEquals("268", p2.getDosage());
-        assertEquals("ONCE_A_DAY", p2.getFrequency());
+        assertEquals(1, p2.getFrequency());
+        assertEquals(1, p2.getReminderTimes().size());
 
         Prescription p3 = saved.get(2);
         assertSame(med3, p3.getMedicine());
         assertEquals("100", p3.getDosage());
-        assertEquals("FOUR_TIMES_A_DAY", p3.getFrequency());
+        assertEquals(4, p3.getFrequency());
+        assertEquals(4, p3.getReminderTimes().size());
+
+        verify(clusteringService).applyClusteredTimes(1L);
     }
 
     @Test
@@ -128,7 +137,8 @@ class SeedPrescriptionTest {
 
         when(medicineRepo.findById(any())).thenReturn(Optional.empty());
 
-        var runner = new SeedPrescription().seed(patientRepo, medicineRepo, prescriptionRepo);
+        CollectionTimeClusteringService clusteringService = mock(CollectionTimeClusteringService.class);
+        var runner = new SeedPrescription().seed(patientRepo, medicineRepo, prescriptionRepo, clusteringService);
         runner.run();
 
         verify(prescriptionRepo, never()).save(any());

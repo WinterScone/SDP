@@ -17,6 +17,7 @@ import org.example.sdpclient.enums.MedicineType;
 import org.example.sdpclient.repository.MedicineRepository;
 import org.example.sdpclient.repository.PatientRepository;
 import org.example.sdpclient.repository.PrescriptionRepository;
+import org.example.sdpclient.repository.ReminderLogRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -37,7 +38,16 @@ class AdminManagePatientDetailServiceTest {
     private MedicineRepository medicineRepository;
 
     @Mock
+    private ReminderLogRepository reminderLogRepository;
+
+    @Mock
     private ActivityLogService activityLogService;
+
+    @Mock
+    private CollectionTimeClusteringService clusteringService;
+
+    @Mock
+    private DoseTrackingService doseTrackingService;
 
     @InjectMocks
     private AdminManagePatientDetailService service;
@@ -122,7 +132,7 @@ class AdminManagePatientDetailServiceTest {
         rx.setId(1L);
         rx.setMedicine(med);
         rx.setDosage("10mg");
-        rx.setFrequency("ONCE_A_DAY");
+        rx.setFrequency(1);
 
         when(prescriptionRepository.findByPatientId(5L)).thenReturn(List.of(rx));
 
@@ -174,8 +184,9 @@ class AdminManagePatientDetailServiceTest {
     }
 
     @Test
-    void deletePrescription_shouldDelegateToRepository() {
+    void deletePrescription_shouldDeleteReminderLogsThenPrescription() {
         service.deletePrescription(77L, 1L, "testAdmin");
+        verify(reminderLogRepository).deleteByPrescriptionId(77L);
         verify(prescriptionRepository).deleteById(77L);
     }
 
@@ -194,7 +205,7 @@ class AdminManagePatientDetailServiceTest {
 
         PrescriptionCreateDto dto = mock(PrescriptionCreateDto.class);
         when(dto.getDosage()).thenReturn(" 10mg ");
-        when(dto.getFrequency()).thenReturn("ONCE_A_DAY");
+        when(dto.getFrequency()).thenReturn(1);
 
         service.createPrescription(patient, medicine, dto, 1L, "testAdmin");
 
@@ -205,7 +216,8 @@ class AdminManagePatientDetailServiceTest {
         assertSame(patient, saved.getPatient());
         assertSame(medicine, saved.getMedicine());
         assertEquals("10mg", saved.getDosage());
-        assertEquals("ONCE_A_DAY", saved.getFrequency());
+        assertEquals(1, saved.getFrequency());
+        verify(doseTrackingService).checkAndNotifyPatient(patient.getId());
     }
 
 
@@ -223,18 +235,19 @@ class AdminManagePatientDetailServiceTest {
         rx.setPatient(patient);
         rx.setMedicine(medicine);
         rx.setDosage("old");
-        rx.setFrequency("ONCE_A_DAY");
+        rx.setFrequency(1);
 
         PrescriptionUpdateDto dto = mock(PrescriptionUpdateDto.class);
         when(dto.getDosage()).thenReturn(" 20mg ");
-        when(dto.getFrequency()).thenReturn(" TWICE_A_DAY ");
+        when(dto.getFrequency()).thenReturn(2);
 
         service.updatePrescription(rx, dto, 1L, "admin1");
 
         assertEquals("20mg", rx.getDosage());
-        assertEquals("TWICE_A_DAY", rx.getFrequency());
+        assertEquals(2, rx.getFrequency());
 
         verify(prescriptionRepository).save(rx);
+        verify(doseTrackingService).checkAndNotifyPatient(patient.getId());
     }
 
     // -------------------------

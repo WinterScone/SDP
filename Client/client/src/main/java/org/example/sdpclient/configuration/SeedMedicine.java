@@ -31,7 +31,6 @@ public class SeedMedicine implements ApplicationRunner {
                 .toList();
         repository.deleteOrphanReminderTimes(validIds);
         repository.deleteOrphanReminderLogs(validIds);
-        repository.deleteOrphanIntakeHistory(validIds);
         repository.deleteOrphanPrescriptions(validIds);
         repository.deleteOrphanDispenserSlots(validIds);
         repository.deleteOrphanMedicines(validIds);

@@ -8,7 +8,6 @@ import org.example.sdpclient.dto.MachinePatientImagesResponse;
 import org.example.sdpclient.dto.PatientPrescriptionsResponse;
 import org.example.sdpclient.entity.Patient;
 import org.example.sdpclient.entity.Prescription;
-import org.example.sdpclient.entity.PrescriptionReminderTime;
 import org.example.sdpclient.entity.ReminderLog;
 import org.example.sdpclient.entity.ReminderStatus;
 import org.example.sdpclient.repository.PatientRepository;
@@ -16,11 +15,7 @@ import org.example.sdpclient.repository.PrescriptionRepository;
 import org.example.sdpclient.repository.ReminderLogRepository;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
@@ -32,19 +27,22 @@ public class MachineService {
     private final ReminderLogRepository reminderLogRepository;
     private final PatientRepository patientRepository;
     private final ActivityLogService activityLogService;
+    private final PatientDetailService patientDetailService;
 
     public MachineService(
             PatientFaceService patientFaceService,
             PrescriptionRepository prescriptionRepository,
             ReminderLogRepository reminderLogRepository,
             PatientRepository patientRepository,
-            ActivityLogService activityLogService
+            ActivityLogService activityLogService,
+            PatientDetailService patientDetailService
     ) {
         this.patientFaceService = patientFaceService;
         this.prescriptionRepository = prescriptionRepository;
         this.reminderLogRepository = reminderLogRepository;
         this.patientRepository = patientRepository;
         this.activityLogService = activityLogService;
+        this.patientDetailService = patientDetailService;
     }
 
     public MachinePatientImagesResponse getAllPatientImages() {
@@ -141,10 +139,14 @@ public class MachineService {
         }
 
         ReminderStatus status;
-        try {
-            status = ReminderStatus.valueOf(request.getStatus().toUpperCase());
-        } catch (Exception e) {
-            return new DispenseResultResponse(false, "Invalid status. Use TAKEN, MISSED, FAILED, or SKIPPED");
+        String rawStatus = request.getStatus().toUpperCase();
+        switch (rawStatus) {
+            case "TAKEN", "COLLECTED" -> status = ReminderStatus.COLLECTED;
+            case "FAILED", "SKIPPED", "MISSED" -> status = ReminderStatus.MISSED;
+            default -> {
+                return new DispenseResultResponse(false,
+                        "Invalid status. Use COLLECTED, MISSED, or legacy: TAKEN, FAILED, SKIPPED");
+            }
         }
 
         ReminderLog log = reminderLogRepository
@@ -161,7 +163,7 @@ public class MachineService {
         log.setStatus(status);
         log.setFailureReason(request.getFailureReason());
 
-        if (status == ReminderStatus.TAKEN) {
+        if (status == ReminderStatus.COLLECTED) {
             log.setDispensedAt(LocalDateTime.now());
         } else {
             log.setDispensedAt(null);
@@ -182,49 +184,8 @@ public class MachineService {
     }
 
     private MachineIdentifyResponse buildDuePrescriptionResponse(Patient patient) {
-        LocalDate today = LocalDate.now();
-        LocalTime now = LocalTime.now();
-        List<PatientPrescriptionsResponse.PrescriptionItem> dueItems = new ArrayList<>();
-
-        List<Prescription> prescriptions = prescriptionRepository.findByPatientIdAndActiveTrue(patient.getId());
-
-        for (Prescription prescription : prescriptions) {
-            if (!isPrescriptionValidForToday(prescription, today)) {
-                continue;
-            }
-
-            for (PrescriptionReminderTime reminderTime : prescription.getReminderTimes()) {
-                if (!isDueNow(reminderTime.getReminderTime(), now)) {
-                    continue;
-                }
-
-                LocalDateTime scheduledDateTime = LocalDateTime.of(today, reminderTime.getReminderTime());
-
-                boolean alreadyLogged = reminderLogRepository
-                        .findByPatientIdAndPrescriptionIdAndScheduledTime(
-                                patient.getId(),
-                                prescription.getId(),
-                                scheduledDateTime
-                        )
-                        .isPresent();
-
-                if (alreadyLogged) {
-                    continue;
-                }
-
-                dueItems.add(
-                        new PatientPrescriptionsResponse.PrescriptionItem(
-                                prescription.getId(),
-                                prescription.getMedicine().getMedicineId(),
-                                String.valueOf(prescription.getMedicine().getMedicineId()),
-                                prescription.getMedicine().getMedicineName(),
-                                prescription.getDosage(),
-                                prescription.getFrequency(),
-                                reminderTime.getReminderTime().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
-                        )
-                );
-            }
-        }
+        List<PatientPrescriptionsResponse.PrescriptionItem> dueItems =
+                patientDetailService.getCollectableItems(patient.getId());
 
         String patientName = (patient.getFirstName() == null ? "" : patient.getFirstName().trim()) + " "
                 + (patient.getLastName() == null ? "" : patient.getLastName().trim());
@@ -242,22 +203,5 @@ public class MachineService {
                         ? "Patient identified successfully, but no medicine is due now"
                         : "Patient identified successfully"
         );
-    }
-
-    private boolean isPrescriptionValidForToday(Prescription prescription, LocalDate today) {
-        if (prescription.getStartDate() != null && today.isBefore(prescription.getStartDate())) {
-            return false;
-        }
-        if (prescription.getEndDate() != null && today.isAfter(prescription.getEndDate())) {
-            return false;
-        }
-        return true;
-    }
-
-    private boolean isDueNow(LocalTime scheduledTime, LocalTime now) {
-        int windowMinutes = 15;
-        LocalTime start = scheduledTime.minusMinutes(windowMinutes);
-        LocalTime end = scheduledTime.plusMinutes(windowMinutes);
-        return !now.isBefore(start) && !now.isAfter(end);
     }
 }

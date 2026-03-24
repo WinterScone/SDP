@@ -42,35 +42,35 @@ public class ActivityLogService {
 
     @Transactional
     public void logPrescriptionCreated(Long patientId, String patientName, String medicineName,
-                                      String dosage, String frequency,
+                                      String dosage, int frequency,
                                       Long adminId, String adminUsername) {
         ActivityLog log = new ActivityLog();
         log.setActivityType("PRESCRIPTION_CREATED");
         log.setDescription(String.format("New prescription added for %s: %s (%s, %s)",
-                                        patientName, medicineName, dosage, frequency));
+                                        patientName, medicineName, dosage, String.valueOf(frequency)));
         log.setAdminId(adminId);
         log.setAdminUsername(adminUsername);
         log.setPatientId(patientId);
         log.setPatientName(patientName);
         log.setMedicineName(medicineName);
-        log.setAdditionalDetails(String.format("Dosage: %s, Frequency: %s", dosage, frequency));
+        log.setAdditionalDetails(String.format("Dosage: %s, Frequency: %s", dosage, String.valueOf(frequency)));
         repository.save(log);
     }
 
     @Transactional
     public void logPrescriptionDeleted(Long patientId, String patientName, String medicineName,
-                                      String dosage, String frequency,
+                                      String dosage, int frequency,
                                       Long adminId, String adminUsername) {
         ActivityLog log = new ActivityLog();
         log.setActivityType("PRESCRIPTION_DELETED");
         log.setDescription(String.format("Prescription deleted for %s: %s (%s, %s)",
-                                        patientName, medicineName, dosage, frequency));
+                                        patientName, medicineName, dosage, String.valueOf(frequency)));
         log.setAdminId(adminId);
         log.setAdminUsername(adminUsername);
         log.setPatientId(patientId);
         log.setPatientName(patientName);
         log.setMedicineName(medicineName);
-        log.setAdditionalDetails(String.format("Dosage: %s, Frequency: %s", dosage, frequency));
+        log.setAdditionalDetails(String.format("Dosage: %s, Frequency: %s", dosage, String.valueOf(frequency)));
         repository.save(log);
     }
 
@@ -173,18 +173,18 @@ public class ActivityLogService {
 
     @Transactional
     public void logPrescriptionUpdated(Long patientId, String patientName, String medicineName,
-                                       String dosage, String frequency,
+                                       String dosage, int frequency,
                                        Long adminId, String adminUsername) {
         ActivityLog log = new ActivityLog();
         log.setActivityType("PRESCRIPTION_UPDATED");
         log.setDescription(String.format("Prescription updated for %s: %s (%s, %s)",
-                                        patientName, medicineName, dosage, frequency));
+                                        patientName, medicineName, dosage, String.valueOf(frequency)));
         log.setAdminId(adminId);
         log.setAdminUsername(adminUsername);
         log.setPatientId(patientId);
         log.setPatientName(patientName);
         log.setMedicineName(medicineName);
-        log.setAdditionalDetails(String.format("Dosage: %s, Frequency: %s", dosage, frequency));
+        log.setAdditionalDetails(String.format("Dosage: %s, Frequency: %s", dosage, String.valueOf(frequency)));
         repository.save(log);
     }
 
@@ -204,7 +204,7 @@ public class ActivityLogService {
     public void logMedicineDispensed(Long patientId, String patientName,
                                      String medicineName, String status) {
         ActivityLog log = new ActivityLog();
-        if ("TAKEN".equalsIgnoreCase(status)) {
+        if ("COLLECTED".equalsIgnoreCase(status)) {
             log.setActivityType("MEDICINE_DISPENSED");
             log.setDescription(String.format("Medicine dispensed to %s: %s", patientName, medicineName));
         } else {
