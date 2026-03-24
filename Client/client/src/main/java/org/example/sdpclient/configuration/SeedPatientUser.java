@@ -16,19 +16,29 @@ public class SeedPatientUser {
     CommandLineRunner seedPatients(PatientRepository repo, PasswordEncoder encoder) {
         return args -> {
             seed(repo, encoder, "testPatient1", "testPatient1",
-                    "Asshmar", "Patient One",
+                    "Asshmar", "Patient",
                     LocalDate.of(1990, 1, 1),
                     "patient1@sdp.com", "+447444660738");
 
             seed(repo, encoder, "testPatient2", "testPatient2",
-                    "Angelo", "Patient Two",
+                    "Angelo", "Patient",
                     LocalDate.of(1990, 1, 1),
                     "testpatient1@sdp.com", "+447496151506");
 
             seed(repo, encoder, "testPatient3", "testPatient3",
-                    "Bahar", "Patient Three",
+                    "Bahar", "Patient",
                     LocalDate.of(1990, 1, 2),
                     "testpatient2@sdp.com", "+447398742784");
+
+            seed(repo, encoder, "testPatient4", "testPatient4",
+                    "Louis", "Patient",
+                    LocalDate.of(1995, 6, 15),
+                    "testpatient3@sdp.com", "+447751246179");
+
+            seed(repo, encoder, "testPatient5", "testPatient5",
+                    "Andrea", "Patient",
+                    LocalDate.of(1993, 3, 20),
+                    "testpatient4@sdp.com", "+85291003599");
         };
     }
 
@@ -50,6 +60,7 @@ public class SeedPatientUser {
         patient.setDateOfBirth(dateOfBirth);
         patient.setEmail(email);
         patient.setPhone(phone);
+        patient.setSmsConsent(true);
 
         repo.save(patient);
     }

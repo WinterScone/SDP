@@ -20,7 +20,7 @@ public class DatabaseResetService {
     private final ActivityLogService activityLogService;
 
     private static final Set<String> SEED_ADMIN_USERNAMES = Set.of("root", "testAdmin1", "testAdmin2");
-    private static final Set<String> SEED_PATIENT_USERNAMES = Set.of("testPatient1", "testPatient2", "testPatient3");
+    private static final Set<String> SEED_PATIENT_USERNAMES = Set.of("testPatient1", "testPatient2", "testPatient3", "testPatient4", "testPatient5");
 
     public DatabaseResetService(AdminRepository adminRepo,
                                 PatientRepository patientRepo,
