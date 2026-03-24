@@ -76,9 +76,9 @@ public class AdminLoginService {
             return Map.of("ok", false, "message", "Invalid email format");
         }
 
-        String phoneVal = req.getPhone().replaceAll("\\s+", "");
-        if (!phoneVal.matches("^0\\d{10}$")) {
-            return Map.of("ok", false, "message", "Phone must be a valid UK number (11 digits starting with 0)");
+        String phoneVal = req.getPhone().trim();
+        if (!phoneVal.matches("^\\+\\d{7,15}$")) {
+            return Map.of("ok", false, "message", "Phone must be in E.164 format (e.g. +447700900000)");
         }
 
         Admin admin = new Admin();
@@ -87,7 +87,7 @@ public class AdminLoginService {
         admin.setFirstName(req.getFirstName().trim());
         admin.setLastName(req.getLastName().trim());
         admin.setEmail(email);
-        admin.setPhone(req.getPhone().replaceAll("\\s+", ""));
+        admin.setPhone(req.getPhone().trim());
 
         repo.save(admin);
 

@@ -145,6 +145,8 @@
 
     function formatPhone(phone) {
         if (!phone) return "-";
+        const ukMatch = phone.match(/^\+44(\d{4})(\d{6})$/);
+        if (ukMatch) return "+44 " + ukMatch[1] + " " + ukMatch[2];
         if (/^07\d{9}$/.test(phone)) return phone.slice(0, 5) + " " + phone.slice(5);
         return phone;
     }

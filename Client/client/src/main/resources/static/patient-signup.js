@@ -1,5 +1,6 @@
 const form = document.getElementById("signupForm");
 const messageEl = document.getElementById("message");
+const smsConsent = document.getElementById("smsConsent");
 const faceConsent = document.getElementById("faceConsent");
 const faceSection = document.getElementById("faceSection");
 const video = document.getElementById("faceVideo");
@@ -76,6 +77,15 @@ captureFaceBtn.addEventListener("click", () => {
 form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    const countryCode = document.getElementById("phoneCountryCode").value;
+    const localPhone = document.getElementById("phone").value;
+
+    function buildE164(cc, localNumber) {
+        let digits = localNumber.replace(/\s+/g, "").replace(/^0+/, "");
+        if (!digits) return "";
+        return cc + digits;
+    }
+
     const payload = {
         username: document.getElementById("username").value.trim(),
         password: document.getElementById("password").value,
@@ -83,12 +93,12 @@ form.addEventListener("submit", async (e) => {
         lastName: document.getElementById("lastName").value.trim(),
         dateOfBirth: document.getElementById("dateOfBirth").value,
         email: document.getElementById("email").value.trim(),
-        phone: document.getElementById("phone").value.trim(),
+        phone: buildE164(countryCode, localPhone) || null,
+        smsConsent: smsConsent.checked,
         faceRecognitionConsent: faceConsent.checked,
     };
 
     if (!payload.email) payload.email = null;
-    if (!payload.phone) payload.phone = null;
 
     if (!payload.username || !payload.password || !payload.firstName || !payload.lastName || !payload.dateOfBirth) {
         setMessage("Please fill in all required fields.");
@@ -110,13 +120,10 @@ form.addEventListener("submit", async (e) => {
         return;
     }
 
-    // -- Phone: UK format (if provided) --
-    if (payload.phone) {
-        const phoneClean = payload.phone.replace(/\s+/g, "");
-        if (!/^0\d{10}$/.test(phoneClean)) {
-            setMessage("Phone must be a valid UK number (11 digits starting with 0).");
-            return;
-        }
+    // -- Phone: E.164 format (if provided) --
+    if (payload.phone && !/^\+\d{7,15}$/.test(payload.phone)) {
+        setMessage("Please enter a valid phone number.");
+        return;
     }
 
     try {

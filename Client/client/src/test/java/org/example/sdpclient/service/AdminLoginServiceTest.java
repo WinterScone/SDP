@@ -130,7 +130,7 @@ class AdminLoginServiceTest {
         when(req.getFirstName()).thenReturn("John");
         when(req.getLastName()).thenReturn("Doe");
         when(req.getEmail()).thenReturn("admin@test.com");
-        when(req.getPhone()).thenReturn("07700 900001");
+        when(req.getPhone()).thenReturn("+447700900001");
 
         when(repo.findByUsernameIgnoreCase("admin")).thenReturn(Optional.of(new Admin()));
 
@@ -152,7 +152,7 @@ class AdminLoginServiceTest {
         when(req.getFirstName()).thenReturn(" John ");
         when(req.getLastName()).thenReturn(" Doe ");
         when(req.getEmail()).thenReturn(" admin@test.com ");
-        when(req.getPhone()).thenReturn(" 07700 900001 ");
+        when(req.getPhone()).thenReturn(" +447700900001 ");
 
         when(repo.findByUsernameIgnoreCase("admin")).thenReturn(Optional.empty());
         when(encoder.encode("pw")).thenReturn("hashedPw");
@@ -172,7 +172,7 @@ class AdminLoginServiceTest {
         assertEquals("John", saved.getFirstName());
         assertEquals("Doe", saved.getLastName());
         assertEquals("admin@test.com", saved.getEmail());
-        assertEquals("07700900001", saved.getPhone());
+        assertEquals("+447700900001", saved.getPhone());
 
         verify(repo).findByUsernameIgnoreCase("admin");
         verify(encoder).encode("pw");

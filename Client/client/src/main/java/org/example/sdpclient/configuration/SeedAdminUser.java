@@ -13,9 +13,9 @@ public class SeedAdminUser {
     @Bean
     CommandLineRunner seedAdmins(AdminRepository repo, PasswordEncoder encoder) {
         return args -> {
-            seed(repo, encoder, "root",       "root",       "Root",  "Admin",     "root@sdp.com",       "07761844142", true);
-            seed(repo, encoder, "testAdmin1", "testAdmin1", "Louis",  "Admin One", "testadmin1@sdp.com", "07751246179", false);
-            seed(repo, encoder, "testAdmin2", "testAdmin2", "Ting",  "Admin Two", "testadmin2@sdp.com", "07828163035", false);
+            seed(repo, encoder, "root",       "root",       "Root",  "Admin",     "root@sdp.com",       "+447761844142", true);
+            seed(repo, encoder, "testAdmin1", "testAdmin1", "Louis",  "Admin One", "testadmin1@sdp.com", "+447751246179", false);
+            seed(repo, encoder, "testAdmin2", "testAdmin2", "Ting",  "Admin Two", "testadmin2@sdp.com", "+447828163035", false);
         };
     }
 

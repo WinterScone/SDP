@@ -12,9 +12,9 @@ import java.util.List;
 @Service
 public class AdminMessagingService {
 
-    public record RecipientDto(Long id, String role, String name, boolean hasPhone) {}
+    public record RecipientDto(Long id, String role, String name, boolean hasPhone, boolean smsConsent) {}
     public record RecipientEntry(Long id, String role) {}
-    public record SendResult(int sent, int skippedNoPhone, int failed, List<String> errors) {}
+    public record SendResult(int sent, int skippedNoPhone, int skippedNoConsent, int failed, List<String> errors) {}
 
     private final SmsService smsService;
     private final AdminRepository adminRepository;
@@ -36,13 +36,13 @@ public class AdminMessagingService {
             if (admin.getId().equals(senderAdminId)) continue;
             boolean hasPhone = admin.getPhone() != null && !admin.getPhone().isBlank();
             String name = admin.getFirstName() + " " + admin.getLastName();
-            recipients.add(new RecipientDto(admin.getId(), "ADMIN", name, hasPhone));
+            recipients.add(new RecipientDto(admin.getId(), "ADMIN", name, hasPhone, true));
         }
 
         for (Patient patient : patientRepository.findAll()) {
             boolean hasPhone = patient.getPhone() != null && !patient.getPhone().isBlank();
             String name = patient.getFirstName() + " " + patient.getLastName();
-            recipients.add(new RecipientDto(patient.getId(), "PATIENT", name, hasPhone));
+            recipients.add(new RecipientDto(patient.getId(), "PATIENT", name, hasPhone, patient.isSmsConsent()));
         }
 
         return recipients;
@@ -54,6 +54,7 @@ public class AdminMessagingService {
 
         int sent = 0;
         int skippedNoPhone = 0;
+        int skippedNoConsent = 0;
         int failed = 0;
         List<String> errors = new ArrayList<>();
 
@@ -64,6 +65,15 @@ public class AdminMessagingService {
             if (phone == null || phone.isBlank()) {
                 skippedNoPhone++;
                 continue;
+            }
+
+            if ("PATIENT".equals(entry.role())) {
+                boolean consent = patientRepository.findById(entry.id())
+                        .map(Patient::isSmsConsent).orElse(false);
+                if (!consent) {
+                    skippedNoConsent++;
+                    continue;
+                }
             }
 
             String error = smsService.sendSms(phone, fullBody);
@@ -77,7 +87,7 @@ public class AdminMessagingService {
 
         activityLogService.logMessageSent(senderAdminId, senderUsername, recipients.size());
 
-        return new SendResult(sent, skippedNoPhone, failed, errors);
+        return new SendResult(sent, skippedNoPhone, skippedNoConsent, failed, errors);
     }
 
     private String getPhone(RecipientEntry entry) {

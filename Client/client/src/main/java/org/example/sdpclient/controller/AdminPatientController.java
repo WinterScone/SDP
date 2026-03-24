@@ -92,6 +92,7 @@ public class AdminPatientController {
                 patient.getEmail(),
                 patient.getPhone(),
                 patient.isSmsConsent(),
+                patient.isFaceRecognitionConsent(),
                 patient.isFaceActive(),
                 patient.getLinkedAdmin() != null ? patient.getLinkedAdmin().getUsername() : null,
                 prescriptions

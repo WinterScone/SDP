@@ -57,6 +57,7 @@ public class AdminManagePatientDetailService {
                         p.getEmail(),
                         p.getPhone(),
                         p.isSmsConsent(),
+                        p.isFaceRecognitionConsent(),
                         p.isFaceActive(),
                         p.getLinkedAdmin() != null ? p.getLinkedAdmin().getUsername() : null,
                         List.of()
@@ -91,16 +92,16 @@ public class AdminManagePatientDetailService {
             throw new IllegalArgumentException("Invalid email format");
         }
 
-        String phoneVal = (dto.getPhone() == null || dto.getPhone().isBlank()) ? null : dto.getPhone().replaceAll("\\s+", "");
-        if (phoneVal != null && !phoneVal.matches("^0\\d{10}$")) {
-            throw new IllegalArgumentException("Phone must be a valid UK number (11 digits starting with 0)");
+        String phoneVal = (dto.getPhone() == null || dto.getPhone().isBlank()) ? null : dto.getPhone().trim();
+        if (phoneVal != null && !phoneVal.matches("^\\+\\d{7,15}$")) {
+            throw new IllegalArgumentException("Phone must be in E.164 format (e.g. +447700900000)");
         }
 
         if (dto.getFirstName() != null && !dto.getFirstName().isBlank()) patient.setFirstName(dto.getFirstName());
         if (dto.getLastName() != null && !dto.getLastName().isBlank()) patient.setLastName(dto.getLastName());
         if (dto.getDateOfBirth() != null) patient.setDateOfBirth(dto.getDateOfBirth());
         if (dto.getEmail() != null) patient.setEmail(dto.getEmail().isBlank() ? null : dto.getEmail());
-        if (dto.getPhone() != null) patient.setPhone(dto.getPhone().isBlank() ? null : dto.getPhone().replaceAll("\\s+", ""));
+        if (dto.getPhone() != null) patient.setPhone(dto.getPhone().isBlank() ? null : dto.getPhone().trim());
         if (dto.getSmsConsent() != null) patient.setSmsConsent(dto.getSmsConsent());
         if (dto.getFaceRecognitionConsent() != null) patient.setFaceRecognitionConsent(dto.getFaceRecognitionConsent());
 
@@ -116,6 +117,7 @@ public class AdminManagePatientDetailService {
                 patient.getEmail(),
                 patient.getPhone(),
                 patient.isSmsConsent(),
+                patient.isFaceRecognitionConsent(),
                 patient.isFaceActive(),
                 patient.getLinkedAdmin() != null ? patient.getLinkedAdmin().getUsername() : null,
                 getPrescriptionViews(patientId)

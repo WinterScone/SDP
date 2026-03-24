@@ -95,9 +95,9 @@ public class PatientLoginService {
             return Map.of("ok", false, "error", "Invalid email format");
         }
 
-        String phoneVal = (req.getPhone() == null || req.getPhone().isBlank()) ? null : req.getPhone().replaceAll("\\s+", "");
-        if (phoneVal != null && !phoneVal.matches("^0\\d{10}$")) {
-            return Map.of("ok", false, "error", "Phone must be a valid UK number (11 digits starting with 0)");
+        String phoneVal = (req.getPhone() == null || req.getPhone().isBlank()) ? null : req.getPhone().trim();
+        if (phoneVal != null && !phoneVal.matches("^\\+\\d{7,15}$")) {
+            return Map.of("ok", false, "error", "Phone must be in E.164 format (e.g. +447700900000)");
         }
 
         Patient patient = new Patient();
@@ -117,10 +117,11 @@ public class PatientLoginService {
         if (req.getPhone() == null || req.getPhone().isBlank()) {
             patient.setPhone(null);
         } else {
-            patient.setPhone(req.getPhone().replaceAll("\\s+", ""));
+            patient.setPhone(req.getPhone().trim());
         }
 
-        patient.setSmsConsent(req.isFaceRecognitionConsent());
+        patient.setSmsConsent(req.isSmsConsent());
+        patient.setFaceRecognitionConsent(req.isFaceRecognitionConsent());
         patient.setLinkedAdmin(null);
 
         Patient saved = repo.save(patient);

@@ -57,12 +57,18 @@ function renderRecipientList() {
 }
 
 function recipientRow(r) {
-    const disabled = !r.hasPhone;
+    const noConsent = r.role === 'PATIENT' && r.smsConsent === false;
+    const disabled = !r.hasPhone || noConsent;
     const disabledClass = disabled ? ' disabled' : '';
     const disabledAttr = disabled ? ' disabled' : '';
     const roleClass = r.role === 'ADMIN' ? 'role-admin' : 'role-patient';
     const roleLabel = r.role === 'ADMIN' ? 'Admin' : 'Patient';
-    const noPhoneTag = disabled ? ' <span class="no-phone">(no phone)</span>' : '';
+    let statusTag = '';
+    if (!r.hasPhone) {
+        statusTag = ' <span class="no-phone">(no phone)</span>';
+    } else if (noConsent) {
+        statusTag = ' <span class="no-phone">(no SMS consent)</span>';
+    }
 
     return `
         <div class="recipient-item${disabledClass}">
@@ -71,7 +77,7 @@ function recipientRow(r) {
                        onchange="updateState()"${disabledAttr}>
                 <span>${escapeHtml(r.name)}</span>
                 <span class="role-badge ${roleClass}">${roleLabel}</span>
-                ${noPhoneTag}
+                ${statusTag}
             </label>
         </div>
     `;
@@ -145,6 +151,7 @@ async function sendMessage() {
 
         let summary = `Sent: ${result.sent}`;
         if (result.skippedNoPhone > 0) summary += ` | Skipped (no phone): ${result.skippedNoPhone}`;
+        if (result.skippedNoConsent > 0) summary += ` | Skipped (no consent): ${result.skippedNoConsent}`;
         if (result.failed > 0) summary += ` | Failed: ${result.failed}`;
 
         if (result.errors && result.errors.length > 0) {
