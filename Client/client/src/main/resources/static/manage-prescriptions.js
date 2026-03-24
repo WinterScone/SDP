@@ -21,13 +21,24 @@
     const newScheduledTimesEl = document.getElementById("newScheduledTimes");
     const formMessage = document.getElementById("formMessage");
     const unitDoseHint = document.getElementById("unitDoseHint");
+    const newDosageHint = document.getElementById("newDosageHint");
+
+    function updateNewDosageHint() {
+        const selected = medicinesCache.find(m => m.medicineId === newMedicine.value);
+        const unitDose = selected && selected.unitDose != null ? selected.unitDose : null;
+        const qty = parseFloat(newDosage.value);
+        newDosageHint.textContent = unitDose && !isNaN(qty) ? `Total Dosage: ${qty * unitDose}mg` : "";
+    }
 
     newMedicine.addEventListener("change", () => {
         const selected = medicinesCache.find(m => m.medicineId === newMedicine.value);
         unitDoseHint.textContent = selected && selected.unitDose != null
             ? `Unit Dosage: ${selected.unitDose}mg`
             : "";
+        updateNewDosageHint();
     });
+
+    newDosage.addEventListener("input", updateNewDosageHint);
 
     showFormBtn.addEventListener("click", () => {
         prescriptionForm.style.display = "block";
@@ -42,6 +53,7 @@
         newFrequency.value = "";
         newScheduledTimesEl.value = "";
         unitDoseHint.textContent = "";
+        newDosageHint.textContent = "";
         msg.textContent = "";
         formMessage.textContent = "";
     });
@@ -108,19 +120,23 @@
 
         if(list.length === 0){
             const tr = document.createElement("tr");
-            tr.innerHTML = `<td colspan="8">No prescriptions found.</td>`;
+            tr.innerHTML = `<td colspan="9">No prescriptions found.</td>`;
             rows.appendChild(tr);
             return;
         }
 
         list.forEach(rx => {
             const timesStr = (rx.scheduledTimes || []).join(", ");
+            const unitDose = rx.unitDose;
+            const qtyVal = unitDose ? Math.round(parseFloat(rx.dosage || 0) / unitDose) : (rx.dosage || "");
+            const initialHint = unitDose && qtyVal !== "" ? `${qtyVal * unitDose}mg` : "";
             const tr = document.createElement("tr");
             tr.innerHTML = `
           <td>${escapeHtml(rx.medicineName)}</td>
           <td>${escapeHtml(rx.medicineId)}</td>
           <td>${escapeHtml(rx.unitDose != null ? rx.unitDose + 'mg' : '-')}</td>
-          <td><input id="dosage-${rx.id}" value="${escapeAttr(rx.dosage)}" /></td>
+          <td><input id="qty-${rx.id}" value="${escapeAttr(String(qtyVal))}" data-unit-dose="${escapeAttr(String(unitDose ?? ''))}" oninput="updateDosageHint(${rx.id})" placeholder="Quantity" /></td>
+          <td id="dosage-hint-${rx.id}" style="font-size:13px; color:#57606a;">${escapeHtml(initialHint)}</td>
           <td><input id="freq-${rx.id}" value="${escapeAttr(rx.frequency)}" /></td>
           <td><input id="times-${rx.id}" value="${escapeAttr(timesStr)}" placeholder="08:00, 20:00" /></td>
           <td><button onclick="saveRx(${rx.id})">Save</button></td>
@@ -130,13 +146,24 @@
         });
     }
 
+    window.updateDosageHint = function(id) {
+        const qtyInput = document.getElementById(`qty-${id}`);
+        const hintEl = document.getElementById(`dosage-hint-${id}`);
+        const unitDose = parseFloat(qtyInput.dataset.unitDose);
+        const qty = parseFloat(qtyInput.value);
+        hintEl.textContent = unitDose && !isNaN(qty) ? `${qty * unitDose}mg` : "";
+    };
+
     window.saveRx = async function(id){
-        const dosage = document.getElementById(`dosage-${id}`).value.trim();
+        const qtyInput = document.getElementById(`qty-${id}`);
+        const qty = qtyInput.value.trim();
+        const unitDose = parseFloat(qtyInput.dataset.unitDose);
+        const dosage = unitDose && qty !== "" ? String(parseFloat(qty) * unitDose) : qty;
         const frequency = document.getElementById(`freq-${id}`).value.trim();
         const scheduledTimes = parseTimes(document.getElementById(`times-${id}`).value);
 
-        if(!dosage || !frequency){
-            msg.textContent = "Dosage and frequency are required.";
+        if(!qty || !frequency){
+            msg.textContent = "Quantity and frequency are required.";
             return;
         }
 
@@ -160,15 +187,19 @@
 
     async function addPrescription(){
         const medicineId = newMedicine.value;
-        const dosage = newDosage.value.trim();
+        const qty = newDosage.value.trim();
         const frequency = newFrequency.value.trim();
         const scheduledTimes = parseTimes(newScheduledTimesEl.value);
 
-        if(!medicineId || !dosage || !frequency){
-            formMessage.textContent = "Select medicine, dosage, and frequency.";
+        if(!medicineId || !qty || !frequency){
+            formMessage.textContent = "Select medicine, quantity, and frequency.";
             formMessage.className = "msg error";
             return;
         }
+
+        const selected = medicinesCache.find(m => m.medicineId === medicineId);
+        const unitDose = selected && selected.unitDose != null ? selected.unitDose : null;
+        const dosage = unitDose ? String(parseFloat(qty) * unitDose) : qty;
 
         if(scheduledTimes.length === 0){
             msg.textContent = "At least one scheduled time is required (e.g. 08:00).";
@@ -187,6 +218,8 @@
             newDosage.value = "";
             newFrequency.value = "";
             newScheduledTimesEl.value = "";
+            unitDoseHint.textContent = "";
+            newDosageHint.textContent = "";
             prescriptionForm.style.display = "none";
             showFormBtn.style.display = "block";
             await loadPatientAndPrescriptions();
