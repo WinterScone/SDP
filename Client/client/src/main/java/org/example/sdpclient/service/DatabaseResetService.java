@@ -1,6 +1,7 @@
 package org.example.sdpclient.service;
 
 import jakarta.transaction.Transactional;
+import org.example.sdpclient.entity.Medicine;
 import org.example.sdpclient.repository.*;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,9 @@ public class DatabaseResetService {
     private final PatientRepository patientRepo;
     private final PrescriptionRepository prescriptionRepo;
     private final IntakeHistoryRepository intakeHistoryRepo;
+    private final DispenserSlotRepository dispenserSlotRepo;
+    private final MedicineRepository medicineRepo;
+    private final PatientImageRepository patientImageRepo;
     private final ReminderLogRepository reminderLogRepo;
     private final ActivityLogService activityLogService;
 
@@ -23,55 +27,74 @@ public class DatabaseResetService {
                                 PatientRepository patientRepo,
                                 PrescriptionRepository prescriptionRepo,
                                 IntakeHistoryRepository intakeHistoryRepo,
+                                DispenserSlotRepository dispenserSlotRepo,
+                                MedicineRepository medicineRepo,
+                                PatientImageRepository patientImageRepo,
                                 ReminderLogRepository reminderLogRepo,
                                 ActivityLogService activityLogService) {
         this.adminRepo = adminRepo;
         this.patientRepo = patientRepo;
         this.prescriptionRepo = prescriptionRepo;
         this.intakeHistoryRepo = intakeHistoryRepo;
+        this.dispenserSlotRepo = dispenserSlotRepo;
+        this.medicineRepo = medicineRepo;
+        this.patientImageRepo = patientImageRepo;
         this.reminderLogRepo = reminderLogRepo;
         this.activityLogService = activityLogService;
     }
 
     @Transactional
     public void resetToSeedData(Long adminId, String adminUsername) {
-        // Get stats before clearing
         ResetStats stats = getResetStats();
 
-        // Clear all activity logs first
+        // Clear all logs
         activityLogService.clearAllLogs();
+        reminderLogRepo.deleteAll();
 
         // Clear tables that have FK references to prescriptions/patients
         intakeHistoryRepo.deleteAll();
-        reminderLogRepo.deleteAll();
 
         // Delete all prescriptions (use native queries to avoid JPA entity
         // deserialization errors from legacy frequency strings in the DB)
         prescriptionRepo.deleteAllReminderTimesNative();
         prescriptionRepo.deleteAllPrescriptionsNative();
 
+        // Clear dispenser slots
+        dispenserSlotRepo.deleteAll();
+
+        // Clear patient images
+        patientImageRepo.deleteAll();
+
         // Delete non-seed patients
-        var allPatients = patientRepo.findAll();
-        var patientsToDelete = allPatients.stream()
+        var patientsToDelete = patientRepo.findAll().stream()
                 .filter(p -> !SEED_PATIENT_USERNAMES.contains(p.getUsername()))
                 .toList();
         patientRepo.deleteAll(patientsToDelete);
 
-        // Reset linked admin for seed patients
-        var seedPatients = patientRepo.findAll();
-        seedPatients.forEach(p -> {
+        // Reset seed patients to clean state
+        patientRepo.findAll().forEach(p -> {
             p.setLinkedAdmin(null);
+            p.setFaceData(null);
+            p.setFaceContentType(null);
+            p.setFaceEnrolledAt(null);
+            p.setFaceActive(false);
+            p.setSmsConsent(false);
         });
-        patientRepo.saveAll(seedPatients);
+        patientRepo.saveAll(patientRepo.findAll());
 
         // Delete non-seed admins
-        var allAdmins = adminRepo.findAll();
-        var adminsToDelete = allAdmins.stream()
+        var adminsToDelete = adminRepo.findAll().stream()
                 .filter(a -> !SEED_ADMIN_USERNAMES.contains(a.getUsername()))
                 .toList();
         adminRepo.deleteAll(adminsToDelete);
 
-        // Log the database reset action
+        // Reset all medicine stock to 0
+        for (Medicine m : medicineRepo.findAll()) {
+            m.setQuantity(0);
+        }
+        medicineRepo.saveAll(medicineRepo.findAll());
+
+        // Log the reset
         activityLogService.logDatabaseReset(
                 adminId,
                 adminUsername,
