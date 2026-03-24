@@ -262,6 +262,18 @@ public class ActivityLogService {
     }
 
     @Transactional
+    public void logMessageSent(Long adminId, String adminUsername, int recipientCount) {
+        ActivityLog log = new ActivityLog();
+        log.setActivityType("MESSAGE_SENT");
+        log.setDescription(String.format("SMS message sent to %d recipient(s) by %s",
+                recipientCount, adminUsername));
+        log.setAdminId(adminId);
+        log.setAdminUsername(adminUsername);
+        log.setAdditionalDetails(String.format("Recipients: %d", recipientCount));
+        repository.save(log);
+    }
+
+    @Transactional
     public void clearAllLogs() {
         repository.deleteAll();
     }

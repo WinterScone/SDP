@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Messaging</title>
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <style>
+        .recipient-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .recipient-list {
+            max-height: 320px;
+            overflow-y: auto;
+            border: 1px solid #d0d7de;
+            border-radius: 6px;
+            padding: 8px;
+        }
+
+        .recipient-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            border-radius: 4px;
+        }
+
+        .recipient-item:hover {
+            background: #f6f8fa;
+        }
+
+        .recipient-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .recipient-item label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .recipient-item.disabled label {
+            cursor: not-allowed;
+        }
+
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .role-admin {
+            background: #fff8c5;
+            color: #9a6700;
+        }
+
+        .role-patient {
+            background: #fbefff;
+            color: #8250df;
+        }
+
+        .no-phone {
+            font-size: 12px;
+            color: #8c959f;
+            font-style: italic;
+        }
+
+        .role-group-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #57606a;
+            padding: 8px 8px 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .message-section {
+            margin-top: 16px;
+        }
+
+        .message-section label {
+            font-weight: 600;
+            font-size: 14px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .message-section textarea {
+            width: 100%;
+            min-height: 120px;
+        }
+
+        .char-count {
+            font-size: 12px;
+            color: #57606a;
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        .send-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .selected-count {
+            font-size: 14px;
+            color: #57606a;
+        }
+    </style>
+</head>
+
+<body>
+
+<section class="card wide">
+    <div class="topbar">
+        <h2>Messaging</h2>
+        <button class="btn" onclick="window.location.href='/advanced.html'">← Back</button>
+    </div>
+
+    <div id="loadingMessage" class="center-message">Loading recipients...</div>
+    <div id="errorMessage" class="center-message" style="display:none; color:#cf222e;">Failed to load recipients.</div>
+
+    <div id="mainContent" style="display:none;">
+        <h3 class="section-title" style="margin-top:0;">Recipients</h3>
+
+        <div class="recipient-controls">
+            <button onclick="selectGroup('ADMIN')">Select All Admins</button>
+            <button onclick="selectGroup('PATIENT')">Select All Patients</button>
+            <button onclick="selectGroup('ALL')">Select All</button>
+            <button onclick="selectGroup('NONE')">Clear</button>
+        </div>
+
+        <div class="recipient-list" id="recipientList"></div>
+
+        <div class="message-section">
+            <label for="messageBody">Message</label>
+            <textarea id="messageBody" placeholder="Type your message here..." oninput="updateState()"></textarea>
+            <div class="char-count" id="charCount">0 characters</div>
+        </div>
+
+        <div class="send-row">
+            <button class="btn-primary" id="sendBtn" disabled onclick="sendMessage()">Send SMS</button>
+            <span class="selected-count" id="selectedCount">0 recipients selected</span>
+        </div>
+
+        <div id="resultBox" class="message-box" style="display:none;"></div>
+    </div>
+</section>
+
+<script src="/messaging.js"></script>
+</body>
+</html>
