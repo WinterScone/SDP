@@ -172,7 +172,7 @@ class AdminLoginServiceTest {
         assertEquals("John", saved.getFirstName());
         assertEquals("Doe", saved.getLastName());
         assertEquals("admin@test.com", saved.getEmail());
-        assertEquals("07700 900001", saved.getPhone());
+        assertEquals("07700900001", saved.getPhone());
 
         verify(repo).findByUsernameIgnoreCase("admin");
         verify(encoder).encode("pw");
