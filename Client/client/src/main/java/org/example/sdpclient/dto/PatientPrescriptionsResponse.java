@@ -42,12 +42,14 @@ public class PatientPrescriptionsResponse {
 
         // Constructor for machine/dispenser usage
         public PrescriptionItem(Long prescriptionId, Integer medicineNumber, String medicineCode,
-                                String medicineName, String dosage, String scheduledTime) {
+                                String medicineName, String dosage, String frequency, String scheduledTime) {
             this.prescriptionId = prescriptionId;
+            this.medicineId = medicineCode;
             this.medicineNumber = medicineNumber;
             this.medicineCode = medicineCode;
             this.medicineName = medicineName;
             this.dosage = dosage;
+            this.frequency = frequency;
             this.scheduledTime = scheduledTime;
         }
     }

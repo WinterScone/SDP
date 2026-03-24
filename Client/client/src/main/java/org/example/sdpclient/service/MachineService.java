@@ -219,6 +219,7 @@ public class MachineService {
                                 String.valueOf(prescription.getMedicine().getMedicineId()),
                                 prescription.getMedicine().getMedicineName(),
                                 prescription.getDosage(),
+                                prescription.getFrequency(),
                                 reminderTime.getReminderTime().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
                         )
                 );
