@@ -95,7 +95,7 @@ class PatientControllerTest {
 
         PatientPrescriptionsResponse.PrescriptionItem item =
                 new PatientPrescriptionsResponse.PrescriptionItem(
-                        1L, 3, "101", "Amoxicillin", "10mg", "08:00:00"
+                        1L, 3, "101", "Amoxicillin", "10mg", 1, "08:00:00"
                 );
 
         when(patientDetailService.getCollectableItems(10L)).thenReturn(List.of(item));
