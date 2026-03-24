@@ -42,7 +42,7 @@ class SeedMedicineTest {
             assertThat(m.getMedicineName()).isEqualTo(t.getName());
             assertThat(m.getShape()).isEqualTo(t.getShape());
             assertThat(m.getColour()).isEqualTo(t.getColour());
-            assertThat(m.getDosagePerForm()).isEqualTo(t.getDosage());
+            assertThat(m.getUnitDose()).isEqualTo(t.getDosage());
         }
     }
 

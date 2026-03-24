@@ -50,7 +50,7 @@ public class SeedMedicine implements ApplicationRunner {
             m.setMedicineName(name);
             m.setShape(t.getShape());
             m.setColour(t.getColour());
-            m.setDosagePerForm(t.getDosage());
+            m.setUnitDose(t.getDosage());
 
             // Preserve existing quantity; only fix invalid values
             if (m.getQuantity() < 0) {

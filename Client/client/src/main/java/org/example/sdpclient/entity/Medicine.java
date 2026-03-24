@@ -25,7 +25,7 @@ public class Medicine {
 
     private String shape;
     private String colour;
-    private Integer dosagePerForm;
+    private Integer unitDose;
     private int quantity;
 
     @Column(length = 500)

@@ -126,7 +126,8 @@ public class AdminManagePatientDetailService {
                         rx.getFrequency().name(),
                         rx.getReminderTimes().stream()
                                 .map(rt -> rt.getReminderTime().toString())
-                                .toList()
+                                .toList(),
+                        rx.getMedicine().getUnitDose()
                 ))
                 .toList();
     }
@@ -258,7 +259,8 @@ public class AdminManagePatientDetailService {
                 .map(m -> new MedicineViewDto(
                         m.getMedicineId(),
                         m.getMedicineName(),
-                        m.getInstruction()
+                        m.getInstruction(),
+                        m.getUnitDose()
                 ))
                 .toList();
     }
@@ -284,7 +286,7 @@ public class AdminManagePatientDetailService {
         sb.append("Hi ").append(firstName).append(", your medication at ")
           .append(reminderTimes).append(" is ready to collect.");
         for (Prescription rx : prescriptions) {
-            int tablets = calculateTablets(rx.getDosage(), rx.getMedicine().getDosagePerForm());
+            int tablets = calculateTablets(rx.getDosage(), rx.getMedicine().getUnitDose());
             sb.append("\n- ").append(rx.getMedicine().getMedicineName())
               .append(", ").append(rx.getDosage()).append("mg")
               .append(", ").append(tablets).append(" tablet(s)");
@@ -301,10 +303,10 @@ public class AdminManagePatientDetailService {
         };
     }
 
-    private static int calculateTablets(String dosage, Integer dosagePerForm) {
-        if (dosagePerForm == null || dosagePerForm == 0) return 1;
+    private static int calculateTablets(String dosage, Integer unitDose) {
+        if (unitDose == null || unitDose == 0) return 1;
         try {
-            return (int) Math.ceil((double) Integer.parseInt(dosage) / dosagePerForm);
+            return (int) Math.ceil((double) Integer.parseInt(dosage) / unitDose);
         } catch (NumberFormatException e) {
             return 1;
         }

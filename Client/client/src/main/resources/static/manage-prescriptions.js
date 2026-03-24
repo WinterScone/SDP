@@ -20,6 +20,14 @@
     const newFrequency = document.getElementById("newFrequency");
     const newScheduledTimesEl = document.getElementById("newScheduledTimes");
     const formMessage = document.getElementById("formMessage");
+    const unitDoseHint = document.getElementById("unitDoseHint");
+
+    newMedicine.addEventListener("change", () => {
+        const selected = medicinesCache.find(m => m.medicineId === newMedicine.value);
+        unitDoseHint.textContent = selected && selected.unitDose != null
+            ? `Unit Dosage: ${selected.unitDose}mg`
+            : "";
+    });
 
     showFormBtn.addEventListener("click", () => {
         prescriptionForm.style.display = "block";
@@ -33,6 +41,7 @@
         newDosage.value = "";
         newFrequency.value = "";
         newScheduledTimesEl.value = "";
+        unitDoseHint.textContent = "";
         msg.textContent = "";
         formMessage.textContent = "";
     });
@@ -99,7 +108,7 @@
 
         if(list.length === 0){
             const tr = document.createElement("tr");
-            tr.innerHTML = `<td colspan="7">No prescriptions found.</td>`;
+            tr.innerHTML = `<td colspan="8">No prescriptions found.</td>`;
             rows.appendChild(tr);
             return;
         }
@@ -110,6 +119,7 @@
             tr.innerHTML = `
           <td>${escapeHtml(rx.medicineName)}</td>
           <td>${escapeHtml(rx.medicineId)}</td>
+          <td>${escapeHtml(rx.unitDose != null ? rx.unitDose + 'mg' : '-')}</td>
           <td><input id="dosage-${rx.id}" value="${escapeAttr(rx.dosage)}" /></td>
           <td><input id="freq-${rx.id}" value="${escapeAttr(rx.frequency)}" /></td>
           <td><input id="times-${rx.id}" value="${escapeAttr(timesStr)}" placeholder="08:00, 20:00" /></td>
