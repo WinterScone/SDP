@@ -43,7 +43,7 @@ faceConsent.addEventListener("change", () => {
 
 startCameraBtn.addEventListener("click", async () => {
     try {
-        cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        cameraStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 } } });
         video.srcObject = cameraStream;
         video.style.display = "block";
         startCameraBtn.style.display = "none";
@@ -56,7 +56,12 @@ startCameraBtn.addEventListener("click", async () => {
 
 captureFaceBtn.addEventListener("click", () => {
     const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const vw = video.videoWidth;
+    const vh = video.videoHeight;
+    const side = Math.min(vw, vh);
+    const sx = (vw - side) / 2;
+    const sy = (vh - side) / 2;
+    ctx.drawImage(video, sx, sy, side, side, 0, 0, canvas.width, canvas.height);
     canvas.toBlob(blob => {
         capturedBlob = blob;
         setFaceStatus("Face captured successfully!", true);
@@ -88,6 +93,30 @@ form.addEventListener("submit", async (e) => {
     if (!payload.username || !payload.password || !payload.firstName || !payload.lastName || !payload.dateOfBirth) {
         setMessage("Please fill in all required fields.");
         return;
+    }
+
+    // -- Date of birth: at least 16 years old --
+    const dobDate = new Date(payload.dateOfBirth + "T00:00:00");
+    const today = new Date();
+    const minDob = new Date(today.getFullYear() - 16, today.getMonth(), today.getDate());
+    if (dobDate > minDob) {
+        setMessage("Patient must be at least 16 years old.");
+        return;
+    }
+
+    // -- Email format (if provided) --
+    if (payload.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) {
+        setMessage("Please enter a valid email address.");
+        return;
+    }
+
+    // -- Phone: UK format (if provided) --
+    if (payload.phone) {
+        const phoneClean = payload.phone.replace(/\s+/g, "");
+        if (!/^0\d{10}$/.test(phoneClean)) {
+            setMessage("Phone must be a valid UK number (11 digits starting with 0).");
+            return;
+        }
     }
 
     try {

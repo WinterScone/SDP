@@ -72,13 +72,22 @@ public class AdminLoginService {
             );
         }
 
+        if (!email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            return Map.of("ok", false, "message", "Invalid email format");
+        }
+
+        String phoneVal = req.getPhone().replaceAll("\\s+", "");
+        if (!phoneVal.matches("^0\\d{10}$")) {
+            return Map.of("ok", false, "message", "Phone must be a valid UK number (11 digits starting with 0)");
+        }
+
         Admin admin = new Admin();
         admin.setUsername(username);
         admin.setPasswordHash(encoder.encode(req.getPassword()));
         admin.setFirstName(req.getFirstName().trim());
         admin.setLastName(req.getLastName().trim());
         admin.setEmail(email);
-        admin.setPhone(req.getPhone().trim());
+        admin.setPhone(req.getPhone().replaceAll("\\s+", ""));
 
         repo.save(admin);
 

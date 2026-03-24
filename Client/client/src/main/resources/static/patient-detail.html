@@ -16,17 +16,40 @@
 
     <div id="message" class="msg"></div>
 
-    <div style="display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap; margin-top:16px;">
-        <div>
-            <h3>Face Image</h3>
-            <img id="patientFace" width="220" height="180" style="border:1px solid #ccc; object-fit:cover;" />
+    <!-- Profile Header -->
+    <div style="display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap;">
+        <img id="patientFace" width="200" height="200" style="border:1px solid #d0d7de; object-fit:cover; border-radius:6px; flex-shrink:0;" />
+        <div style="flex:1; min-width:200px;">
+            <h3 id="patientName" style="margin:0 0 4px 0;"></h3>
+            <p id="patientMeta" style="margin:0 0 12px 0; color:#57606a; font-size:14px;"></p>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <button type="button" id="recaptureBtn" class="btn">Recapture Face</button>
+                <button type="button" class="btn" onclick="showEditForm()">Edit Details</button>
+            </div>
         </div>
-
-        <div id="content" style="min-width:280px;"></div>
     </div>
 
+    <!-- Information -->
+    <div class="section-title">Information</div>
+    <div id="content"></div>
+
+    <!-- Recapture Face (collapsible) -->
+    <div id="faceRecaptureSection" style="display:none; margin-top:24px; padding:16px; border:1px solid #d0d7de; border-radius:6px; background:#f6f8fa;">
+        <h4 style="margin:0 0 12px 0;">Recapture Face</h4>
+        <video id="faceVideo" width="200" height="200" autoplay playsinline style="display:none; border:1px solid #d0d7de; border-radius:6px; object-fit:cover"></video>
+        <canvas id="faceCanvas" width="480" height="480" style="display:none"></canvas>
+        <div style="display:flex; gap:0.5rem; margin-top:0.5rem; flex-wrap:wrap;">
+            <button type="button" id="startCameraBtn" class="btn">Start Camera</button>
+            <button type="button" id="captureFaceBtn" class="btn" style="display:none">Capture Face</button>
+            <button type="button" id="saveFaceBtn" class="btn" style="display:none">Save</button>
+            <button type="button" id="cancelRecaptureBtn" class="btn">Cancel</button>
+        </div>
+        <div id="faceStatus" class="msg" style="margin-top:0.25rem"></div>
+    </div>
+
+    <!-- Edit Patient Details (collapsible) -->
     <div id="editSection" style="display:none; margin-top:24px; padding:16px; border:1px solid #d0d7de; border-radius:6px; background:#f6f8fa;">
-        <h3 style="margin-top:0">Edit Patient Details</h3>
+        <h4 style="margin:0 0 12px 0;">Edit Patient Details</h4>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
             <div>
                 <label>First Name</label>
@@ -60,8 +83,8 @@
             </label>
         </div>
         <div style="margin-top:16px; display:flex; gap:8px;">
-            <button class="btn" onclick="submitEdit()">Save</button>
-            <button class="btn" onclick="document.getElementById('editSection').style.display='none'">Cancel</button>
+            <button class="btn btn-primary" onclick="submitEdit()">Save</button>
+            <button class="btn" onclick="cancelEdit()">Cancel</button>
         </div>
     </div>
 </section>

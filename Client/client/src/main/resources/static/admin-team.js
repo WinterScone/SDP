@@ -43,7 +43,7 @@
             tr.innerHTML = `
           <td>${safe(fullName)}</td>
           <td>${safe(a.email)}</td>
-          <td>${safe(a.phone)}</td>
+          <td>${formatPhone(a.phone)}</td>
           <td>${rootMark}</td>
         `;
             rows.appendChild(tr);
@@ -52,5 +52,11 @@
 
     function safe(v) {
         return v == null ? "" : String(v);
+    }
+
+    function formatPhone(phone) {
+        if (!phone) return "-";
+        if (/^07\d{9}$/.test(phone)) return phone.slice(0, 5) + " " + phone.slice(5);
+        return phone;
     }
 })();

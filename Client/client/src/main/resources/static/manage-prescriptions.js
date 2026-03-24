@@ -144,7 +144,7 @@
         <tr><th>Last Name</th><td>${safe(p.lastName)}</td></tr>
         <tr><th>Date of Birth</th><td>${safe(p.dateOfBirth)}</td></tr>
         <tr><th>Email</th><td>${safe(p.email)}</td></tr>
-        <tr><th>Phone</th><td>${safe(p.phone)}</td></tr>
+        <tr><th>Phone</th><td>${formatPhone(p.phone)}</td></tr>
       `;
 
         renderPrescriptions(p.prescriptions || []);
@@ -269,6 +269,12 @@
     }
 
     function safe(v){ return v == null ? "" : String(v); }
+
+    function formatPhone(phone) {
+        if (!phone) return "-";
+        if (/^07\d{9}$/.test(phone)) return phone.slice(0, 5) + " " + phone.slice(5);
+        return phone;
+    }
 
     function escapeHtml(s){
         return safe(s)

@@ -122,7 +122,11 @@ public class AdminPatientController {
             PatientViewDto updated = adminManageService.updatePatientDetails(id, dto, adminId, adminUsername);
             return ResponseEntity.ok(updated);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+            String msg = e.getMessage();
+            if (msg != null && msg.startsWith("Patient not found")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", msg));
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", msg));
         }
     }
 

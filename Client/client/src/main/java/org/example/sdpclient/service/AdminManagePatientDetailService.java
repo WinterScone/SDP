@@ -82,11 +82,25 @@ public class AdminManagePatientDetailService {
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new IllegalArgumentException("Patient not found: " + patientId));
 
+        if (dto.getDateOfBirth() != null && dto.getDateOfBirth().isAfter(LocalDate.now().minusYears(16))) {
+            throw new IllegalArgumentException("Patient must be at least 16 years old");
+        }
+
+        String emailVal = (dto.getEmail() == null || dto.getEmail().isBlank()) ? null : dto.getEmail().trim();
+        if (emailVal != null && !emailVal.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            throw new IllegalArgumentException("Invalid email format");
+        }
+
+        String phoneVal = (dto.getPhone() == null || dto.getPhone().isBlank()) ? null : dto.getPhone().replaceAll("\\s+", "");
+        if (phoneVal != null && !phoneVal.matches("^0\\d{10}$")) {
+            throw new IllegalArgumentException("Phone must be a valid UK number (11 digits starting with 0)");
+        }
+
         if (dto.getFirstName() != null && !dto.getFirstName().isBlank()) patient.setFirstName(dto.getFirstName());
         if (dto.getLastName() != null && !dto.getLastName().isBlank()) patient.setLastName(dto.getLastName());
         if (dto.getDateOfBirth() != null) patient.setDateOfBirth(dto.getDateOfBirth());
         if (dto.getEmail() != null) patient.setEmail(dto.getEmail().isBlank() ? null : dto.getEmail());
-        if (dto.getPhone() != null) patient.setPhone(dto.getPhone().isBlank() ? null : dto.getPhone());
+        if (dto.getPhone() != null) patient.setPhone(dto.getPhone().isBlank() ? null : dto.getPhone().replaceAll("\\s+", ""));
         if (dto.getSmsConsent() != null) patient.setSmsConsent(dto.getSmsConsent());
         if (dto.getFaceRecognitionConsent() != null) patient.setFaceRecognitionConsent(dto.getFaceRecognitionConsent());
 

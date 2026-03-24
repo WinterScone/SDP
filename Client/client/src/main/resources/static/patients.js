@@ -102,7 +102,7 @@
             tr.innerHTML = `
           <td class="center">${safe(p.id)}</td>
           <td>${safe(p.firstName)} ${safe(p.lastName)}</td>
-          <td>${safe(p.phone)}</td>
+          <td>${formatPhone(p.phone)}</td>
           <td class="center">${p.faceActive ? '<span class="checkmark">\u221A</span>' : ""}</td>
           <td class="center">${p.smsConsent ? '<span class="checkmark">\u221A</span>' : ""}</td>
           <td class="actions">
@@ -141,5 +141,11 @@
             .replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#39;");
+    }
+
+    function formatPhone(phone) {
+        if (!phone) return "-";
+        if (/^07\d{9}$/.test(phone)) return phone.slice(0, 5) + " " + phone.slice(5);
+        return phone;
     }
 })();

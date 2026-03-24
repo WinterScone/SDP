@@ -18,17 +18,17 @@ public class SeedPatientUser {
             seed(repo, encoder, "testPatient1", "testPatient1",
                     "Asshmar", "Patient One",
                     LocalDate.of(1990, 1, 1),
-                    "patient1@sdp.com", "07444 660738");
+                    "patient1@sdp.com", "07444660738");
 
             seed(repo, encoder, "testPatient2", "testPatient2",
                     "Angelo", "Patient Two",
                     LocalDate.of(1990, 1, 1),
-                    "testpatient1@sdp.com", "07496 151506");
+                    "testpatient1@sdp.com", "07496151506");
 
             seed(repo, encoder, "testPatient3", "testPatient3",
                     "Bahar", "Patient Three",
                     LocalDate.of(1990, 1, 2),
-                    "testpatient2@sdp.com", "07398 742784");
+                    "testpatient2@sdp.com", "07398742784");
         };
     }
 

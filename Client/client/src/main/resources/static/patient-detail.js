@@ -29,6 +29,12 @@ function escapeHtml(str) {
         .replaceAll("'", "&#039;");
 }
 
+function formatPhone(phone) {
+    if (!phone) return "-";
+    if (/^07\d{9}$/.test(phone)) return phone.slice(0, 5) + " " + phone.slice(5);
+    return phone;
+}
+
 function getPatientId() {
     const params = new URLSearchParams(window.location.search);
     return params.get("patientId");
@@ -70,17 +76,21 @@ async function loadPatient() {
 
         currentPatientData = data;
 
+        document.getElementById("patientName").textContent = data.firstName + " " + data.lastName;
+        document.getElementById("patientMeta").textContent = "ID: " + data.id;
+
         contentEl.innerHTML = `
-            <p><strong>ID:</strong> ${escapeHtml(data.id)}</p>
-            <p><strong>First name:</strong> ${escapeHtml(data.firstName)}</p>
-            <p><strong>Last name:</strong> ${escapeHtml(data.lastName)}</p>
-            <p><strong>Date of birth:</strong> ${escapeHtml(data.dateOfBirth)}</p>
-            <p><strong>Email:</strong> ${escapeHtml(data.email || "-")}</p>
-            <p><strong>Phone:</strong> ${escapeHtml(data.phone || "-")}</p>
-            <p><strong>Face Recognition:</strong> ${data.faceActive ? "✓ Enrolled" : "✗ Not enrolled"}</p>
-            <p><strong>SMS Consent:</strong> ${data.smsConsent ? "✓ Yes" : "✗ No"}</p>
-            <button class="btn" style="margin-top:12px" onclick="showEditForm()">Edit Details</button>
-        `;
+<div class="table-wrapper">
+  <table>
+    <tbody>
+      <tr><td><strong>Date of birth</strong></td><td>${escapeHtml(data.dateOfBirth || "-")}</td></tr>
+      <tr><td><strong>Email</strong></td><td>${escapeHtml(data.email || "-")}</td></tr>
+      <tr><td><strong>Phone</strong></td><td>${formatPhone(data.phone)}</td></tr>
+      <tr><td><strong>Face Recognition</strong></td><td>${data.faceActive ? "✓ Enrolled" : "✗ Not enrolled"}</td></tr>
+      <tr><td><strong>SMS Consent</strong></td><td>${data.smsConsent ? "✓ Yes" : "✗ No"}</td></tr>
+    </tbody>
+  </table>
+</div>`;
 
         faceImg.src = `/api/patient-face/${patientId}/image`;
         faceImg.onerror = () => {
@@ -93,6 +103,10 @@ async function loadPatient() {
         console.error(e);
         setMessage(`Network error while loading patient details: ${e.message}`);
     }
+}
+
+function cancelEdit() {
+    document.getElementById("editSection").style.display = "none";
 }
 
 function showEditForm() {
@@ -120,6 +134,32 @@ async function submitEdit() {
         faceRecognitionConsent: document.getElementById("editFaceConsent").checked,
     };
 
+    // -- Date of birth: at least 16 years old (if provided) --
+    if (payload.dateOfBirth) {
+        const dobDate = new Date(payload.dateOfBirth + "T00:00:00");
+        const today = new Date();
+        const minDob = new Date(today.getFullYear() - 16, today.getMonth(), today.getDate());
+        if (dobDate > minDob) {
+            setMessage("Patient must be at least 16 years old.");
+            return;
+        }
+    }
+
+    // -- Email format (if provided) --
+    if (payload.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) {
+        setMessage("Please enter a valid email address.");
+        return;
+    }
+
+    // -- Phone: UK format (if provided) --
+    if (payload.phone) {
+        const phoneClean = payload.phone.replace(/\s+/g, "");
+        if (!/^0\d{10}$/.test(phoneClean)) {
+            setMessage("Phone must be a valid UK number (11 digits starting with 0).");
+            return;
+        }
+    }
+
     try {
         const res = await fetch(`/api/admin/patients/${patientId}`, {
             method: "PUT",
@@ -140,5 +180,113 @@ async function submitEdit() {
         setMessage("Network error: " + e.message);
     }
 }
+
+// --- Face Recapture ---
+const recaptureBtn = document.getElementById("recaptureBtn");
+const recaptureSection = document.getElementById("faceRecaptureSection");
+const faceVideo = document.getElementById("faceVideo");
+const faceCanvas = document.getElementById("faceCanvas");
+const startCameraBtn = document.getElementById("startCameraBtn");
+const captureFaceBtn = document.getElementById("captureFaceBtn");
+const saveFaceBtn = document.getElementById("saveFaceBtn");
+const cancelRecaptureBtn = document.getElementById("cancelRecaptureBtn");
+const faceStatusEl = document.getElementById("faceStatus");
+
+let cameraStream = null;
+let capturedBlob = null;
+
+function setFaceStatus(text, ok = false) {
+    faceStatusEl.textContent = text;
+    faceStatusEl.style.color = ok ? "green" : "crimson";
+}
+
+function stopCamera() {
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(t => t.stop());
+        cameraStream = null;
+    }
+}
+
+function resetRecaptureUI() {
+    stopCamera();
+    capturedBlob = null;
+    faceVideo.style.display = "none";
+    captureFaceBtn.style.display = "none";
+    saveFaceBtn.style.display = "none";
+    startCameraBtn.style.display = "inline-block";
+    startCameraBtn.textContent = "Start Camera";
+    recaptureSection.style.display = "none";
+    recaptureBtn.style.display = "inline-block";
+    setFaceStatus("");
+}
+
+recaptureBtn.addEventListener("click", () => {
+    recaptureBtn.style.display = "none";
+    recaptureSection.style.display = "block";
+    setFaceStatus("");
+});
+
+cancelRecaptureBtn.addEventListener("click", () => {
+    resetRecaptureUI();
+});
+
+startCameraBtn.addEventListener("click", async () => {
+    try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 640 }, height: { ideal: 480 } } });
+        faceVideo.srcObject = cameraStream;
+        faceVideo.style.display = "block";
+        startCameraBtn.style.display = "none";
+        captureFaceBtn.style.display = "inline-block";
+        saveFaceBtn.style.display = "none";
+        setFaceStatus("Camera active — position face and click Capture.", true);
+    } catch (err) {
+        setFaceStatus("Could not access camera: " + err.message);
+    }
+});
+
+captureFaceBtn.addEventListener("click", () => {
+    const ctx = faceCanvas.getContext("2d");
+    const vw = faceVideo.videoWidth;
+    const vh = faceVideo.videoHeight;
+    const side = Math.min(vw, vh);
+    const sx = (vw - side) / 2;
+    const sy = (vh - side) / 2;
+    ctx.drawImage(faceVideo, sx, sy, side, side, 0, 0, faceCanvas.width, faceCanvas.height);
+    faceCanvas.toBlob(blob => {
+        capturedBlob = blob;
+        setFaceStatus("Face captured! Click Save to enroll, or Retake.", true);
+        stopCamera();
+        faceVideo.style.display = "none";
+        captureFaceBtn.style.display = "none";
+        saveFaceBtn.style.display = "inline-block";
+        startCameraBtn.style.display = "inline-block";
+        startCameraBtn.textContent = "Retake";
+    }, "image/jpeg", 0.85);
+});
+
+saveFaceBtn.addEventListener("click", async () => {
+    if (!capturedBlob) return;
+    const patientId = getPatientId();
+    setFaceStatus("Enrolling face...");
+    try {
+        const formData = new FormData();
+        formData.append("image", capturedBlob, "face.jpg");
+        const res = await fetch(`/api/patient-face/${patientId}/enroll`, {
+            method: "POST",
+            credentials: "include",
+            body: formData,
+        });
+        if (res.ok) {
+            setFaceStatus("Face enrolled successfully!", true);
+            resetRecaptureUI();
+            loadPatient();
+        } else {
+            const data = await res.json().catch(() => null);
+            setFaceStatus("Enrollment failed: " + (data?.error || res.status));
+        }
+    } catch (err) {
+        setFaceStatus("Network error: " + err.message);
+    }
+});
 
 loadPatient();

@@ -36,6 +36,19 @@
             return;
         }
 
+        // -- Email format --
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            msg.textContent = "Please enter a valid email address.";
+            return;
+        }
+
+        // -- Phone: UK format --
+        const phoneClean = phone.replace(/\s+/g, "");
+        if (!/^0\d{10}$/.test(phoneClean)) {
+            msg.textContent = "Phone must be a valid UK number (11 digits starting with 0).";
+            return;
+        }
+
         msg.textContent = "Registering...";
 
         try {

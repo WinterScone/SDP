@@ -86,6 +86,20 @@ public class PatientLoginService {
             return Map.of("ok", false, "error", "Invalid date format for dateOfBirth");
         }
 
+        if (dob.isAfter(LocalDate.now().minusYears(16))) {
+            return Map.of("ok", false, "error", "Patient must be at least 16 years old");
+        }
+
+        String emailVal = (req.getEmail() == null || req.getEmail().isBlank()) ? null : req.getEmail().trim();
+        if (emailVal != null && !emailVal.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            return Map.of("ok", false, "error", "Invalid email format");
+        }
+
+        String phoneVal = (req.getPhone() == null || req.getPhone().isBlank()) ? null : req.getPhone().replaceAll("\\s+", "");
+        if (phoneVal != null && !phoneVal.matches("^0\\d{10}$")) {
+            return Map.of("ok", false, "error", "Phone must be a valid UK number (11 digits starting with 0)");
+        }
+
         Patient patient = new Patient();
         patient.setUsername(username);
         patient.setPasswordHash(encoder.encode(req.getPassword()));
@@ -103,7 +117,7 @@ public class PatientLoginService {
         if (req.getPhone() == null || req.getPhone().isBlank()) {
             patient.setPhone(null);
         } else {
-            patient.setPhone(req.getPhone().trim());
+            patient.setPhone(req.getPhone().replaceAll("\\s+", ""));
         }
 
         patient.setSmsConsent(req.isFaceRecognitionConsent());
