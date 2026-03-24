@@ -1,7 +1,7 @@
 package org.example.sdpclient.dto;
 
 public record PatientImageDto(
-        String username,
+        Long patientId,
         String image,
         String contentType
 ) {}

@@ -206,6 +206,7 @@ public class MachineService {
                                 prescription.getMedicine().getMedicineId().name(),
                                 prescription.getMedicine().getMedicineName(),
                                 prescription.getDosage(),
+                                prescription.getFrequency(),
                                 reminderTime.getReminderTime().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
                         )
                 );

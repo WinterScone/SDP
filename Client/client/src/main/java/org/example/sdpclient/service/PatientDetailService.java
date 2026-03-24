@@ -64,6 +64,7 @@ public class PatientDetailService {
                             prescription.getMedicine().getMedicineId().name(),
                             prescription.getMedicine().getMedicineName(),
                             prescription.getDosage(),
+                            prescription.getFrequency(),
                             scheduledTime.isEmpty() ? null : scheduledTime
                     );
                 })
