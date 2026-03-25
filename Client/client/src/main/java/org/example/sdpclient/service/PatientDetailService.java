@@ -15,9 +15,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,13 +32,24 @@ public class PatientDetailService {
     private final PrescriptionRepository prescriptionRepo;
     private final DispenserSlotRepository dispenserSlotRepo;
     private final ReminderLogRepository reminderLogRepo;
+    private final Clock clock;
 
+    @org.springframework.beans.factory.annotation.Autowired
     public PatientDetailService(PatientRepository patientRepo, PrescriptionRepository prescriptionRepo,
-                                DispenserSlotRepository dispenserSlotRepo, ReminderLogRepository reminderLogRepo) {
+                                DispenserSlotRepository dispenserSlotRepo, ReminderLogRepository reminderLogRepo,
+                                @org.springframework.beans.factory.annotation.Value("${app.timezone:Europe/London}") String timezone) {
+        this(patientRepo, prescriptionRepo, dispenserSlotRepo, reminderLogRepo,
+                Clock.system(ZoneId.of(timezone)));
+    }
+
+    PatientDetailService(PatientRepository patientRepo, PrescriptionRepository prescriptionRepo,
+                         DispenserSlotRepository dispenserSlotRepo, ReminderLogRepository reminderLogRepo,
+                         Clock clock) {
         this.patientRepo = patientRepo;
         this.prescriptionRepo = prescriptionRepo;
         this.dispenserSlotRepo = dispenserSlotRepo;
         this.reminderLogRepo = reminderLogRepo;
+        this.clock = clock;
     }
 
     public List<Patient> getAllPatients() {
@@ -88,8 +101,8 @@ public class PatientDetailService {
 
     @Transactional(readOnly = true)
     public List<PatientPrescriptionsResponse.PrescriptionItem> getCollectableItems(Long patientId) {
-        LocalDate today = LocalDate.now();
-        LocalTime now = LocalTime.now();
+        LocalDate today = LocalDate.now(clock);
+        LocalTime now = LocalTime.now(clock);
         List<PatientPrescriptionsResponse.PrescriptionItem> dueItems = new ArrayList<>();
 
         List<Prescription> prescriptions = prescriptionRepo.findByPatientIdAndActiveTrue(patientId);

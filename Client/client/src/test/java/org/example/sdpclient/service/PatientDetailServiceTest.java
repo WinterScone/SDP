@@ -4,8 +4,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,9 +23,9 @@ import org.example.sdpclient.repository.DispenserSlotRepository;
 import org.example.sdpclient.repository.PatientRepository;
 import org.example.sdpclient.repository.PrescriptionRepository;
 import org.example.sdpclient.repository.ReminderLogRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -41,8 +44,21 @@ class PatientDetailServiceTest {
     @Mock
     private ReminderLogRepository reminderLogRepo;
 
-    @InjectMocks
     private PatientDetailService service;
+
+    // Fixed clock: 2026-03-24 10:00:00 London time
+    private static final ZoneId ZONE = ZoneId.of("Europe/London");
+    private static final Instant FIXED_INSTANT = LocalDate.of(2026, 3, 24)
+            .atTime(10, 0).atZone(ZONE).toInstant();
+    private static final Clock CLOCK = Clock.fixed(FIXED_INSTANT, ZONE);
+    private static final LocalTime NOW = LocalTime.of(10, 0);
+    private static final LocalDate TODAY = LocalDate.of(2026, 3, 24);
+
+    @BeforeEach
+    void setUp() {
+        service = new PatientDetailService(patientRepo, prescriptionRepo,
+                dispenserSlotRepo, reminderLogRepo, CLOCK);
+    }
 
     @Test
     void patientExists_shouldDelegateToRepository() {
@@ -95,7 +111,7 @@ class PatientDetailServiceTest {
 
     @Test
     void getCollectableItems_shouldReturnDueItems() {
-        LocalTime now = LocalTime.now();
+        LocalTime now = NOW;
 
         Medicine med = new Medicine();
         med.setMedicineId(MedicineType.VTM01.getId());
@@ -106,8 +122,8 @@ class PatientDetailServiceTest {
         rx.setMedicine(med);
         rx.setDosage("10mg");
         rx.setActive(true);
-        rx.setStartDate(LocalDate.now().minusDays(1));
-        rx.setEndDate(LocalDate.now().plusDays(1));
+        rx.setStartDate(TODAY.minusDays(1));
+        rx.setEndDate(TODAY.plusDays(1));
 
         PrescriptionReminderTime rt = new PrescriptionReminderTime();
         rt.setReminderTime(now);
@@ -130,7 +146,7 @@ class PatientDetailServiceTest {
 
     @Test
     void getCollectableItems_shouldExcludeAlreadyDispensedItems() {
-        LocalTime now = LocalTime.now();
+        LocalTime now = NOW;
 
         Medicine med = new Medicine();
         med.setMedicineId(MedicineType.VTM01.getId());
@@ -162,7 +178,7 @@ class PatientDetailServiceTest {
 
     @Test
     void getCollectableItems_shouldIncludeNotifiedItems() {
-        LocalTime now = LocalTime.now();
+        LocalTime now = NOW;
 
         Medicine med = new Medicine();
         med.setMedicineId(MedicineType.VTM01.getId());
@@ -207,7 +223,7 @@ class PatientDetailServiceTest {
         rx.setActive(true);
 
         PrescriptionReminderTime rt = new PrescriptionReminderTime();
-        rt.setReminderTime(LocalTime.now().plusHours(3));
+        rt.setReminderTime(NOW.plusHours(3));
         rt.setPrescription(rx);
         rx.setReminderTimes(List.of(rt));
 
