@@ -2,7 +2,6 @@ package org.example.sdpclient.service;
 
 import org.example.sdpclient.dto.PatientPrescriptionsResponse;
 import org.example.sdpclient.dto.PatientViewDto;
-import org.example.sdpclient.entity.DispenserSlot;
 import org.example.sdpclient.entity.Patient;
 import org.example.sdpclient.entity.Prescription;
 import org.example.sdpclient.entity.PrescriptionReminderTime;
@@ -77,10 +76,7 @@ public class PatientDetailService {
 
         return prescriptions.stream()
                 .map(prescription -> {
-                    Integer slotNumber = dispenserSlotRepo
-                            .findByMedicineAndActiveTrue(prescription.getMedicine())
-                            .map(DispenserSlot::getSlotNumber)
-                            .orElse(null);
+                    var medicine = prescription.getMedicine();
 
                     String scheduledTime = prescription.getReminderTimes().stream()
                             .map(rt -> rt.getReminderTime().toString())
@@ -88,12 +84,13 @@ public class PatientDetailService {
 
                     return new PatientPrescriptionsResponse.PrescriptionItem(
                             prescription.getId(),
-                            slotNumber,
-                            String.valueOf(prescription.getMedicine().getMedicineId()),
-                            prescription.getMedicine().getMedicineName(),
+                            medicine.getMedicineId(),
+                            String.valueOf(medicine.getMedicineId()),
+                            medicine.getMedicineName(),
                             prescription.getDosage(),
                             prescription.getFrequency(),
-                            scheduledTime.isEmpty() ? null : scheduledTime
+                            scheduledTime.isEmpty() ? null : scheduledTime,
+                            computeDoseQuantity(prescription.getDosage(), medicine.getUnitDose())
                     );
                 })
                 .toList();
@@ -132,19 +129,17 @@ public class PatientDetailService {
                     continue;
                 }
 
-                Integer slotNumber = dispenserSlotRepo
-                        .findByMedicineAndActiveTrue(prescription.getMedicine())
-                        .map(DispenserSlot::getSlotNumber)
-                        .orElse(null);
+                var medicine = prescription.getMedicine();
 
                 dueItems.add(new PatientPrescriptionsResponse.PrescriptionItem(
                         prescription.getId(),
-                        slotNumber,
-                        String.valueOf(prescription.getMedicine().getMedicineId()),
-                        prescription.getMedicine().getMedicineName(),
+                        medicine.getMedicineId(),
+                        String.valueOf(medicine.getMedicineId()),
+                        medicine.getMedicineName(),
                         prescription.getDosage(),
                         prescription.getFrequency(),
-                        reminderTime.getReminderTime().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+                        reminderTime.getReminderTime().format(DateTimeFormatter.ofPattern("HH:mm:ss")),
+                        computeDoseQuantity(prescription.getDosage(), medicine.getUnitDose())
                 ));
             }
         }
@@ -160,6 +155,14 @@ public class PatientDetailService {
             return false;
         }
         return true;
+    }
+
+    private Integer computeDoseQuantity(String dosage, Integer unitDose) {
+        if (unitDose == null || unitDose == 0) {
+            return null;
+        }
+        int dosageValue = Integer.parseInt(dosage.replaceAll("[^0-9]", ""));
+        return dosageValue / unitDose;
     }
 
     private boolean isDueNow(LocalTime scheduledTime, LocalTime now) {

@@ -75,6 +75,7 @@ class PatientDetailServiceTest {
         Medicine med = new Medicine();
         med.setMedicineId(MedicineType.VTM01.getId());
         med.setMedicineName("Amoxicillin");
+        med.setUnitDose(10);
 
         Prescription rx = new Prescription();
         rx.setId(1L);
@@ -92,6 +93,8 @@ class PatientDetailServiceTest {
         PatientPrescriptionsResponse.PrescriptionItem item = result.get(0);
 
         assertNotNull(item);
+        assertEquals(MedicineType.VTM01.getId(), item.getMedicineNumber());
+        assertEquals(1, item.getDoseQuantity());
 
         verify(prescriptionRepo).findByPatientId(5L);
     }
@@ -116,6 +119,7 @@ class PatientDetailServiceTest {
         Medicine med = new Medicine();
         med.setMedicineId(MedicineType.VTM01.getId());
         med.setMedicineName("Amoxicillin");
+        med.setUnitDose(10);
 
         Prescription rx = new Prescription();
         rx.setId(1L);
@@ -133,7 +137,6 @@ class PatientDetailServiceTest {
         when(prescriptionRepo.findByPatientIdAndActiveTrue(5L)).thenReturn(List.of(rx));
         when(reminderLogRepo.findByPatientIdAndPrescriptionIdAndScheduledTime(anyLong(), anyLong(), any()))
                 .thenReturn(Optional.empty());
-        when(dispenserSlotRepo.findByMedicineAndActiveTrue(med)).thenReturn(Optional.empty());
 
         List<PatientPrescriptionsResponse.PrescriptionItem> result =
                 service.getCollectableItems(5L);
@@ -142,6 +145,8 @@ class PatientDetailServiceTest {
         assertEquals("Amoxicillin", result.get(0).getMedicineName());
         assertEquals("10mg", result.get(0).getDosage());
         assertEquals(1L, result.get(0).getPrescriptionId());
+        assertEquals(MedicineType.VTM01.getId(), result.get(0).getMedicineNumber());
+        assertEquals(1, result.get(0).getDoseQuantity());
     }
 
     @Test
@@ -183,6 +188,7 @@ class PatientDetailServiceTest {
         Medicine med = new Medicine();
         med.setMedicineId(MedicineType.VTM01.getId());
         med.setMedicineName("Amoxicillin");
+        med.setUnitDose(10);
 
         Prescription rx = new Prescription();
         rx.setId(1L);
@@ -201,7 +207,6 @@ class PatientDetailServiceTest {
         when(prescriptionRepo.findByPatientIdAndActiveTrue(5L)).thenReturn(List.of(rx));
         when(reminderLogRepo.findByPatientIdAndPrescriptionIdAndScheduledTime(anyLong(), anyLong(), any()))
                 .thenReturn(Optional.of(log));
-        when(dispenserSlotRepo.findByMedicineAndActiveTrue(med)).thenReturn(Optional.empty());
 
         List<PatientPrescriptionsResponse.PrescriptionItem> result =
                 service.getCollectableItems(5L);
@@ -259,6 +264,7 @@ class PatientDetailServiceTest {
         Medicine med = new Medicine();
         med.setMedicineId(MedicineType.VTM01.getId());
         med.setMedicineName("Paracetamol");
+        med.setUnitDose(500);
 
         Prescription rx = new Prescription();
         rx.setId(2L);
@@ -274,7 +280,6 @@ class PatientDetailServiceTest {
         when(prescriptionRepo.findByPatientIdAndActiveTrue(5L)).thenReturn(List.of(rx));
         when(reminderLogRepo.findByPatientIdAndPrescriptionIdAndScheduledTime(anyLong(), anyLong(), any()))
                 .thenReturn(Optional.empty());
-        when(dispenserSlotRepo.findByMedicineAndActiveTrue(med)).thenReturn(Optional.empty());
 
         List<PatientPrescriptionsResponse.PrescriptionItem> result = svc.getCollectableItems(5L);
 
@@ -293,6 +298,7 @@ class PatientDetailServiceTest {
         Medicine med = new Medicine();
         med.setMedicineId(MedicineType.VTM01.getId());
         med.setMedicineName("Ibuprofen");
+        med.setUnitDose(200);
 
         Prescription rx = new Prescription();
         rx.setId(3L);
@@ -308,7 +314,6 @@ class PatientDetailServiceTest {
         when(prescriptionRepo.findByPatientIdAndActiveTrue(5L)).thenReturn(List.of(rx));
         when(reminderLogRepo.findByPatientIdAndPrescriptionIdAndScheduledTime(anyLong(), anyLong(), any()))
                 .thenReturn(Optional.empty());
-        when(dispenserSlotRepo.findByMedicineAndActiveTrue(med)).thenReturn(Optional.empty());
 
         List<PatientPrescriptionsResponse.PrescriptionItem> result = svc.getCollectableItems(5L);
 

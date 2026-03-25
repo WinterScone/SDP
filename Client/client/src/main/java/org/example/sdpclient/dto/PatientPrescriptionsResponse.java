@@ -31,6 +31,7 @@ public class PatientPrescriptionsResponse {
         private Integer medicineNumber;
         private String medicineCode;
         private String scheduledTime;
+        private Integer doseQuantity;
 
         // Constructor for existing usage (admin/patient views)
         public PrescriptionItem(String medicineId, String medicineName, String dosage, int frequency) {
@@ -42,7 +43,8 @@ public class PatientPrescriptionsResponse {
 
         // Constructor for machine/dispenser usage
         public PrescriptionItem(Long prescriptionId, Integer medicineNumber, String medicineCode,
-                                String medicineName, String dosage, int frequency, String scheduledTime) {
+                                String medicineName, String dosage, int frequency, String scheduledTime,
+                                Integer doseQuantity) {
             this.prescriptionId = prescriptionId;
             this.medicineId = medicineCode;
             this.medicineNumber = medicineNumber;
@@ -51,6 +53,7 @@ public class PatientPrescriptionsResponse {
             this.dosage = dosage;
             this.frequency = frequency;
             this.scheduledTime = scheduledTime;
+            this.doseQuantity = doseQuantity;
         }
     }
 }
