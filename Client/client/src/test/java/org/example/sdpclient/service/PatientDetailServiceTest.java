@@ -245,4 +245,104 @@ class PatientDetailServiceTest {
         assertNotNull(result);
         assertTrue(result.isEmpty());
     }
+
+    // ── Midnight wrap tests ──────────────────────────────────────────────
+
+    @Test
+    void isDueNow_shouldHandleMidnightWrap_endWraps() {
+        // Dose at 23:50, now is 00:02 → window is 23:35–00:05, should be in window
+        Clock midnightClock = Clock.fixed(
+                LocalDate.of(2026, 3, 25).atTime(0, 2).atZone(ZONE).toInstant(), ZONE);
+        PatientDetailService svc = new PatientDetailService(
+                patientRepo, prescriptionRepo, dispenserSlotRepo, reminderLogRepo, midnightClock);
+
+        Medicine med = new Medicine();
+        med.setMedicineId(MedicineType.VTM01.getId());
+        med.setMedicineName("Paracetamol");
+
+        Prescription rx = new Prescription();
+        rx.setId(2L);
+        rx.setMedicine(med);
+        rx.setDosage("500mg");
+        rx.setActive(true);
+
+        PrescriptionReminderTime rt = new PrescriptionReminderTime();
+        rt.setReminderTime(LocalTime.of(23, 50));
+        rt.setPrescription(rx);
+        rx.setReminderTimes(List.of(rt));
+
+        when(prescriptionRepo.findByPatientIdAndActiveTrue(5L)).thenReturn(List.of(rx));
+        when(reminderLogRepo.findByPatientIdAndPrescriptionIdAndScheduledTime(anyLong(), anyLong(), any()))
+                .thenReturn(Optional.empty());
+        when(dispenserSlotRepo.findByMedicineAndActiveTrue(med)).thenReturn(Optional.empty());
+
+        List<PatientPrescriptionsResponse.PrescriptionItem> result = svc.getCollectableItems(5L);
+
+        assertEquals(1, result.size());
+        assertEquals("Paracetamol", result.get(0).getMedicineName());
+    }
+
+    @Test
+    void isDueNow_shouldHandleMidnightWrap_startWraps() {
+        // Dose at 00:05, now is 23:55 → window is 23:50–00:20, should be in window
+        Clock midnightClock = Clock.fixed(
+                LocalDate.of(2026, 3, 24).atTime(23, 55).atZone(ZONE).toInstant(), ZONE);
+        PatientDetailService svc = new PatientDetailService(
+                patientRepo, prescriptionRepo, dispenserSlotRepo, reminderLogRepo, midnightClock);
+
+        Medicine med = new Medicine();
+        med.setMedicineId(MedicineType.VTM01.getId());
+        med.setMedicineName("Ibuprofen");
+
+        Prescription rx = new Prescription();
+        rx.setId(3L);
+        rx.setMedicine(med);
+        rx.setDosage("200mg");
+        rx.setActive(true);
+
+        PrescriptionReminderTime rt = new PrescriptionReminderTime();
+        rt.setReminderTime(LocalTime.of(0, 5));
+        rt.setPrescription(rx);
+        rx.setReminderTimes(List.of(rt));
+
+        when(prescriptionRepo.findByPatientIdAndActiveTrue(5L)).thenReturn(List.of(rx));
+        when(reminderLogRepo.findByPatientIdAndPrescriptionIdAndScheduledTime(anyLong(), anyLong(), any()))
+                .thenReturn(Optional.empty());
+        when(dispenserSlotRepo.findByMedicineAndActiveTrue(med)).thenReturn(Optional.empty());
+
+        List<PatientPrescriptionsResponse.PrescriptionItem> result = svc.getCollectableItems(5L);
+
+        assertEquals(1, result.size());
+        assertEquals("Ibuprofen", result.get(0).getMedicineName());
+    }
+
+    @Test
+    void isDueNow_shouldRejectOutsideMidnightWrap() {
+        // Dose at 23:50, now is 00:20 → window is 23:35–00:05, should be outside
+        Clock midnightClock = Clock.fixed(
+                LocalDate.of(2026, 3, 25).atTime(0, 20).atZone(ZONE).toInstant(), ZONE);
+        PatientDetailService svc = new PatientDetailService(
+                patientRepo, prescriptionRepo, dispenserSlotRepo, reminderLogRepo, midnightClock);
+
+        Medicine med = new Medicine();
+        med.setMedicineId(MedicineType.VTM01.getId());
+        med.setMedicineName("Paracetamol");
+
+        Prescription rx = new Prescription();
+        rx.setId(2L);
+        rx.setMedicine(med);
+        rx.setDosage("500mg");
+        rx.setActive(true);
+
+        PrescriptionReminderTime rt = new PrescriptionReminderTime();
+        rt.setReminderTime(LocalTime.of(23, 50));
+        rt.setPrescription(rx);
+        rx.setReminderTimes(List.of(rt));
+
+        when(prescriptionRepo.findByPatientIdAndActiveTrue(5L)).thenReturn(List.of(rx));
+
+        List<PatientPrescriptionsResponse.PrescriptionItem> result = svc.getCollectableItems(5L);
+
+        assertTrue(result.isEmpty());
+    }
 }

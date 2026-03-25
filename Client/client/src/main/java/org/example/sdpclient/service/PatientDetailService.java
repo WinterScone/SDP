@@ -166,6 +166,12 @@ public class PatientDetailService {
         int windowMinutes = 15;
         LocalTime start = scheduledTime.minusMinutes(windowMinutes);
         LocalTime end = scheduledTime.plusMinutes(windowMinutes);
+
+        if (start.isAfter(end)) {
+            // Window wraps midnight (e.g., 23:30→00:00 for dose at 23:45)
+            return !now.isBefore(start) || !now.isAfter(end);
+        }
+
         return !now.isBefore(start) && !now.isAfter(end);
     }
 }
